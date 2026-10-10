@@ -9,6 +9,7 @@ interface NavbarProps {
   onTabChange: (tab: ActiveTab) => void;
   currentRole: UserRole;
   onRoleChange: (role: UserRole) => void;
+  onReturnToLanding?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onTabChange,
   currentRole,
   onRoleChange,
+  onReturnToLanding,
 }) => {
   return (
     <header
@@ -41,7 +43,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         }}
       >
         {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div
+          onClick={onReturnToLanding}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: onReturnToLanding ? 'pointer' : 'default' }}
+          title={onReturnToLanding ? 'Return to Landing Page' : undefined}
+        >
           <div
             style={{
               width: '32px',
@@ -123,6 +129,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Layers size={15} />
             Admin &amp; Audit Log
           </button>
+
+          {onReturnToLanding && (
+            <button
+              onClick={onReturnToLanding}
+              className="btn btn-ghost"
+              style={{ fontSize: '13px', padding: '0.45rem 0.85rem', color: 'var(--color-accent)' }}
+              title="Return to Public Landing Showcase"
+            >
+              &larr; Landing Showcase
+            </button>
+          )}
         </nav>
 
         {/* Role Switcher & System Telemetry Pill */}

@@ -5,9 +5,11 @@ import { ShipmentDetailView } from './components/ShipmentDetailView';
 import { ArrivalVerificationView } from './components/ArrivalVerificationView';
 import { AiRiskIntelligenceView } from './components/AiRiskIntelligenceView';
 import { AdminManagementView } from './components/AdminManagementView';
+import { LandingView } from './components/landing/LandingView';
 import { ShipmentSummary, MOCK_SHIPMENTS } from './services/api';
 
 export default function App() {
+  const [viewMode, setViewMode] = useState<'landing' | 'dashboard'>('landing');
   const [activeTab, setActiveTab] = useState<ActiveTab>('shipments');
   const [userRole, setUserRole] = useState<UserRole>('operator');
   const [selectedShipment, setSelectedShipment] = useState<ShipmentSummary>(MOCK_SHIPMENTS[0]);
@@ -20,8 +22,20 @@ export default function App() {
     }, 4000);
   };
 
+  if (viewMode === 'landing') {
+    return (
+      <LandingView
+        onEnterDashboard={(role) => {
+          if (role) setUserRole(role);
+          setViewMode('dashboard');
+          showToast(`Entered Console as ${role?.toUpperCase() || 'OPERATOR'}`);
+        }}
+      />
+    );
+  }
+
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', background: 'var(--fl-bg-primary)', color: 'var(--fl-text)' }}>
+    <div style={{ position: 'relative', minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text)' }}>
       {/* Background Plasma Canvas */}
       <AtmosphereCanvas />
 
@@ -36,6 +50,7 @@ export default function App() {
             setUserRole(r);
             showToast(`Switched active role to ${r.toUpperCase()}`);
           }}
+          onReturnToLanding={() => setViewMode('landing')}
         />
 
         {/* Dynamic View Content */}
@@ -73,7 +88,6 @@ export default function App() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontWeight: 600, color: 'var(--fl-text)' }}>FrostLedger</span>
             <span>· Cold Chain Integrity &amp; Tamper Detection System v3.1</span>
-            <span style={{ color: 'var(--fl-mint)', fontFamily: 'var(--fl-font-mono)' }}>[STAGE 8 COMPLETED]</span>
           </div>
 
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>

@@ -1,37 +1,56 @@
-:root {
-  --color-bg: #0A0A0B;
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: #0a0a0b;
   --color-panel: #111113;
   --color-panel-elevated: #161619;
-  --color-border: #1F1F23;
-  --color-border-hover: #2E2E35;
-  --color-text: #E8E8E8;
-  --color-text-dim: #C0C0C6;
-  --color-muted: #8A8A92;
-  --color-accent: #7DF9C4;
+  --color-border: #1f1f23;
+  --color-border-hover: #2e2e35;
+  --color-text: #e8e8e8;
+  --color-text-dim: #c0c0c6;
+  --color-muted: #8a8a92;
+  --color-accent: #7df9c4;
+  --color-warn: #e8b14c;
+  --color-critical: #e0574c;
+  --color-pass: #5bc98c;
+  --color-ai-badge: #9d7bff;
+
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-panel: 4px;
+}
+
+:root {
+  --color-bg: #0a0a0b;
+  --color-panel: #111113;
+  --color-panel-elevated: #161619;
+  --color-border: #1f1f23;
+  --color-border-hover: #2e2e35;
+  --color-text: #e8e8e8;
+  --color-text-dim: #c0c0c6;
+  --color-muted: #8a8a92;
+  --color-accent: #7df9c4;
   --color-accent-subtle: rgba(125, 249, 196, 0.12);
   --color-accent-glow: rgba(125, 249, 196, 0.25);
-  --color-warn: #E8B14C;
+  --color-warn: #e8b14c;
   --color-warn-subtle: rgba(232, 177, 76, 0.12);
-  --color-critical: #E0574C;
+  --color-critical: #e0574c;
   --color-critical-subtle: rgba(224, 87, 76, 0.12);
-  --color-pass: #5BC98C;
+  --color-pass: #5bc98c;
   --color-pass-subtle: rgba(91, 201, 140, 0.12);
-  --color-ai-badge: #9D7BFF;
+  --color-ai-badge: #9d7bff;
   --color-ai-badge-bg: rgba(157, 123, 255, 0.12);
 
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-sans: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, Menlo, Monaco, monospace;
 
+  --radius-panel: 4px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html {
@@ -106,9 +125,38 @@ body {
 }
 
 /* Mint Glow Effects */
+.dot-matrix {
+  background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
 .glow-accent {
-  border-color: rgba(125, 249, 196, 0.4);
-  box-shadow: 0 0 20px -8px rgba(125, 249, 196, 0.25), inset 0 0 16px -12px rgba(125, 249, 196, 0.15);
+  border-color: color-mix(in oklab, var(--color-accent) 34%, transparent);
+  box-shadow: 0 0 22px -10px var(--color-accent), inset 0 0 18px -14px var(--color-accent);
+}
+
+.glow-accent-strong {
+  border-color: color-mix(in oklab, var(--color-accent) 55%, transparent);
+  box-shadow: 0 0 34px -10px var(--color-accent), inset 0 0 22px -14px var(--color-accent);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-accent);
+  text-shadow: 0 0 14px color-mix(in oklab, var(--color-accent) 45%, transparent),
+               0 0 30px color-mix(in oklab, var(--color-accent) 20%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .glow-warn {
