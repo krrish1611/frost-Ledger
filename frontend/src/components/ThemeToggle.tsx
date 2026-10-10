@@ -18,10 +18,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', compac
       type="button"
       className={`relative inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded border hairline transition-all duration-200 cursor-pointer select-none font-mono text-xs ${
         isLight
-          ? 'bg-white hover:bg-[#f0f9ff] text-[#0284c7] border-[#cbd5e1] shadow-[0_2px_10px_rgba(2,132,199,0.15)]'
+          ? 'bg-white hover:bg-[#d0fbf5]/50 text-[#008072] border-[#a0e3d8] shadow-[0_2px_10px_rgba(0,128,114,0.15)]'
           : 'bg-[#121215] hover:bg-[#1a1a1f] text-neutral-300 hover:text-white border-[#222227]'
       } ${className}`}
-      title={isLight ? 'Switch to Cyber Dark Mode' : 'Switch to Cryo Light Mode'}
+      title={isLight ? 'Switch to Cyber Dark Mode' : 'Switch to Emerald Light Mode'}
       aria-label="Toggle Theme"
     >
       <motion.div
@@ -33,7 +33,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', compac
         className="flex items-center justify-center"
       >
         {isLight ? (
-          <Sun size={14} className="text-[#0284c7] drop-shadow-[0_0_6px_rgba(2,132,199,0.5)]" />
+          <Sun size={14} className="text-[#008072] drop-shadow-[0_0_6px_rgba(0,128,114,0.5)]" />
         ) : (
           <Moon size={14} className="text-[var(--color-accent)] drop-shadow-[0_0_6px_rgba(125,249,196,0.5)]" />
         )}

@@ -59,10 +59,10 @@ export const AtmosphereCanvas: React.FC = () => {
 
           const isLight = document.documentElement.classList.contains('light');
           if (isLight) {
-            // Vibrant Deep Cryo-Cobalt & Electric Sapphire plasma on ice white
-            data[idx] = Math.floor(248 - m * (248 - 2));
-            data[idx + 1] = Math.floor(250 - m * (250 - 132));
-            data[idx + 2] = Math.floor(252 - m * (252 - 199));
+            // Official Success Emerald Teal (#008072) & Seafoam (#A0E3D8) on ice-mint canvas
+            data[idx] = Math.floor(244 - m * (244 - 0));
+            data[idx + 1] = Math.floor(250 - m * (250 - 128));
+            data[idx + 2] = Math.floor(248 - m * (248 - 114));
             data[idx + 3] = Math.floor(m * 145);
           } else {
             // Electric mint (#7DF9C4 -> r: 125, g: 249, b: 196) on dark (#0A0A0B)

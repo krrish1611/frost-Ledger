@@ -53,30 +53,41 @@
   --radius-lg: 8px;
 }
 
-/* Light Theme: Crisp Ice-White Canvas with Deep Cryo-Cobalt & Electric Sapphire Accents */
+/* Light Theme: Official Design System Tokens (Success #008072, Warning #8F7200, Error #B21919) */
 html.light,
 html[data-theme="light"],
 :root[data-theme="light"],
 .light {
-  --color-bg: #f8fafc;
+  --color-bg: #f4faf8;
   --color-panel: #ffffff;
-  --color-panel-elevated: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-border-hover: #94a3b8;
-  --color-text: #0f172a;
-  --color-text-dim: #334155;
-  --color-muted: #64748b;
-  --color-accent: #0284c7;
-  --color-accent-subtle: rgba(2, 132, 199, 0.09);
-  --color-accent-glow: rgba(2, 132, 199, 0.25);
-  --color-warn: #d97706;
-  --color-warn-subtle: rgba(217, 119, 6, 0.09);
-  --color-critical: #e11d48;
-  --color-critical-subtle: rgba(225, 29, 72, 0.09);
-  --color-pass: #059669;
-  --color-pass-subtle: rgba(5, 150, 105, 0.09);
-  --color-ai-badge: #0284c7;
-  --color-ai-badge-bg: rgba(2, 132, 199, 0.1);
+  --color-panel-elevated: #ebf8f5;
+  --color-border: #a0e3d8;
+  --color-border-hover: #008072;
+  --color-text: #0d1f1c;
+  --color-text-dim: #243d38;
+  --color-muted: #51706b;
+
+  /* Primary Brand Accent (l.success-100 / l.success-60 / l.success-10) */
+  --color-accent: #008072;
+  --color-accent-subtle: #d0fbf5;
+  --color-accent-border: #a0e3d8;
+  --color-accent-glow: rgba(0, 128, 114, 0.22);
+
+  /* Pass / Success (l.success-100 / l.success-60 / l.success-10) */
+  --color-pass: #008072;
+  --color-pass-subtle: #d0fbf5;
+
+  /* Warning / Advisory (l.warning-100 / l.warning-60 / l.warning-10) */
+  --color-warn: #8f7200;
+  --color-warn-subtle: #fff3c2;
+
+  /* Error / Critical Excursion (l.error-100 / l.error-60 / l.error-10) */
+  --color-critical: #b21919;
+  --color-critical-subtle: #fbe0e0;
+
+  /* AI Advisory Badge */
+  --color-ai-badge: #008072;
+  --color-ai-badge-bg: #d0fbf5;
 }
 
 html {
@@ -378,13 +389,13 @@ html.light body {
 /* Panels and Containers */
 html.light .panel {
   background: var(--color-panel) !important;
-  border-color: var(--color-border) !important;
-  box-shadow: 0 4px 20px rgba(2, 132, 199, 0.06);
+  border-color: #a0e3d8 !important;
+  box-shadow: 0 4px 20px rgba(0, 128, 114, 0.06);
 }
 
 html.light .panel-elevated {
   background: var(--color-panel-elevated) !important;
-  border-color: var(--color-border-hover) !important;
+  border-color: #a0e3d8 !important;
 }
 
 /* Background Card Replacements */
@@ -403,7 +414,7 @@ html.light [class*="bg-[#121214]"],
 html.light [class*="bg-[#131316]"],
 html.light [class*="bg-[#18181c]"] {
   background-color: var(--color-panel) !important;
-  border-color: var(--color-border);
+  border-color: #a0e3d8;
 }
 
 html.light [class*="bg-[#151518]"],
@@ -425,7 +436,7 @@ html.light [class*="border-[#232328]"],
 html.light [class*="border-white/[0.06]"],
 html.light [class*="border-white/[0.08]"],
 html.light [class*="border-white/[0.12]"] {
-  border-color: var(--color-border) !important;
+  border-color: #a0e3d8 !important;
 }
 
 /* Text Adaptations */
@@ -444,13 +455,13 @@ html.light .text-neutral-500 {
 
 /* Glow Effects */
 html.light .glow-accent {
-  border-color: rgba(2, 132, 199, 0.4) !important;
-  box-shadow: 0 4px 20px -4px rgba(2, 132, 199, 0.22), inset 0 0 14px -6px rgba(2, 132, 199, 0.08) !important;
+  border-color: #a0e3d8 !important;
+  box-shadow: 0 4px 20px -4px rgba(0, 128, 114, 0.22), inset 0 0 14px -6px rgba(0, 128, 114, 0.08) !important;
 }
 
 html.light .glow-accent-strong {
-  border-color: rgba(2, 132, 199, 0.6) !important;
-  box-shadow: 0 8px 30px -4px rgba(2, 132, 199, 0.32), inset 0 0 18px -6px rgba(2, 132, 199, 0.12) !important;
+  border-color: #008072 !important;
+  box-shadow: 0 8px 30px -4px rgba(0, 128, 114, 0.32), inset 0 0 18px -6px rgba(0, 128, 114, 0.12) !important;
 }
 
 html.light .card-title {
@@ -461,26 +472,26 @@ html.light .card-title {
 /* Buttons */
 html.light .btn-accent,
 html.light button.bg-\[var\(--color-accent\)\] {
-  background: var(--color-accent) !important;
+  background: #008072 !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35) !important;
+  box-shadow: 0 4px 18px rgba(0, 128, 114, 0.35) !important;
 }
 
 html.light .btn-accent:hover,
 html.light button.bg-\[var\(--color-accent\)\]:hover {
-  background: #0369a1 !important;
-  box-shadow: 0 6px 22px rgba(2, 132, 199, 0.5) !important;
+  background: #00665b !important;
+  box-shadow: 0 6px 24px rgba(0, 128, 114, 0.45) !important;
 }
 
 html.light .btn-outline {
-  border-color: var(--color-border) !important;
+  border-color: #a0e3d8 !important;
   color: var(--color-text) !important;
 }
 
 html.light .btn-outline:hover {
-  border-color: var(--color-accent) !important;
-  color: var(--color-accent) !important;
-  background: var(--color-accent-subtle) !important;
+  border-color: #008072 !important;
+  color: #008072 !important;
+  background: #d0fbf5 !important;
 }
 
 html.light .btn-ghost:hover {
@@ -488,34 +499,75 @@ html.light .btn-ghost:hover {
   color: var(--color-text) !important;
 }
 
+/* Badges with Official Design System Tiers */
+html.light .badge-pass {
+  background-color: #d0fbf5 !important;
+  color: #008072 !important;
+  border-color: #a0e3d8 !important;
+}
+
+html.light .badge-warn {
+  background-color: #fff3c2 !important;
+  color: #8f7200 !important;
+  border-color: #f8e081 !important;
+}
+
+html.light .badge-critical {
+  background-color: #fbe0e0 !important;
+  color: #b21919 !important;
+  border-color: #ea9e9e !important;
+}
+
+html.light .badge-advisory {
+  background-color: #d0fbf5 !important;
+  color: #008072 !important;
+  border-color: #a0e3d8 !important;
+}
+
+/* Status dots */
+html.light .status-dot-active {
+  background: #008072 !important;
+  box-shadow: 0 0 8px #008072 !important;
+}
+
+html.light .status-dot-warn {
+  background: #8f7200 !important;
+  box-shadow: 0 0 8px #8f7200 !important;
+}
+
+html.light .status-dot-critical {
+  background: #b21919 !important;
+  box-shadow: 0 0 8px #b21919 !important;
+}
+
 /* Forms & Modals */
 html.light input,
 html.light select,
 html.light textarea {
   background-color: #ffffff !important;
-  border-color: var(--color-border) !important;
+  border-color: #a0e3d8 !important;
   color: var(--color-text) !important;
 }
 
 html.light input:focus,
 html.light select:focus,
 html.light textarea:focus {
-  border-color: var(--color-accent) !important;
-  box-shadow: 0 0 12px rgba(2, 132, 199, 0.25) !important;
+  border-color: #008072 !important;
+  box-shadow: 0 0 12px rgba(0, 128, 114, 0.25) !important;
 }
 
 html.light .bg-\[\#0a0a0b\]\/85 {
-  background-color: rgba(241, 245, 249, 0.9) !important;
+  background-color: rgba(244, 250, 248, 0.92) !important;
 }
 
 /* Table rows */
 html.light .telemetry-table th {
-  border-bottom: 1px solid var(--color-border) !important;
+  border-bottom: 1px solid #a0e3d8 !important;
   color: var(--color-muted) !important;
 }
 
 html.light .telemetry-table td {
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+  border-bottom: 1px solid rgba(160, 227, 216, 0.4) !important;
 }
 
 html.light .telemetry-table tr:hover td {

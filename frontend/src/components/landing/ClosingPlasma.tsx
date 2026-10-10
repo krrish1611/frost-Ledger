@@ -79,10 +79,10 @@ export const ClosingPlasma: React.FC<ClosingPlasmaProps> = ({
 
           const isLight = document.documentElement.classList.contains('light');
           if (isLight) {
-            // Light mode: ice-white (#f8fafc: 248, 250, 252) to Deep Cryo-Cobalt (#0284c7: 2, 132, 199)
-            data[idx] = Math.floor(248 - glow * (248 - 2));
-            data[idx + 1] = Math.floor(250 - glow * (250 - 132));
-            data[idx + 2] = Math.floor(252 - glow * (252 - 199));
+            // Light mode: ice-mint canvas to official Success Teal (#008072: 0, 128, 114)
+            data[idx] = Math.floor(244 - glow * (244 - 0));
+            data[idx + 1] = Math.floor(250 - glow * (250 - 128));
+            data[idx + 2] = Math.floor(248 - glow * (248 - 114));
             data[idx + 3] = 255;
           } else {
             // Dark mode: #0a0a0b (10, 10, 11) to #7df9c4 (125, 249, 196)
