@@ -42,6 +42,7 @@
   --color-pass-subtle: rgba(91, 201, 140, 0.12);
   --color-ai-badge: #9d7bff;
   --color-ai-badge-bg: rgba(157, 123, 255, 0.12);
+  --color-circle-annotation: #7df9c4;
 
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-sans: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -100,6 +101,9 @@ html[data-theme="light"],
   --color-ai-badge: #033500;
   --color-ai-badge-bg: #d7edd5;
 
+  /* Light green circle annotation for hero text */
+  --color-circle-annotation: #4ade80;
+
   /* FL Variables mapped for light theme */
   --fl-mint: #033500;
   --fl-cyan: #033500;
@@ -123,9 +127,9 @@ html[data-theme="light"],
 .fl-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.5rem;
+  padding: 0.3rem 0.6rem;
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: 12.5px;
   font-family: var(--font-mono);
 }
 
@@ -138,9 +142,9 @@ html[data-theme="light"],
 .fl-button {
   display: inline-flex;
   align-items: center;
-  padding: 0.4rem 0.75rem;
+  padding: 0.45rem 0.85rem;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: 13.5px;
   font-family: var(--font-mono);
   border: 1px solid var(--color-border);
   cursor: pointer;
@@ -148,11 +152,13 @@ html[data-theme="light"],
 }
 
 html {
+  font-size: 17.5px;
   background-color: var(--color-bg);
   color-scheme: dark;
 }
 
 html.light {
+  font-size: 17.5px;
   background-color: var(--color-bg);
   color-scheme: light;
 }
@@ -161,12 +167,29 @@ body {
   margin: 0;
   color: var(--color-text);
   font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15.5px;
+  line-height: 1.6;
   background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   position: relative;
+}
+
+/* Global Micro-typography Readability Boost */
+.text-\[8px\], [class*="text-[8px]"] {
+  font-size: 12px !important;
+}
+.text-\[9px\], [class*="text-[9px]"] {
+  font-size: 12.5px !important;
+}
+.text-\[10px\], [class*="text-[10px]"] {
+  font-size: 13px !important;
+}
+.text-\[11px\], [class*="text-[11px]"] {
+  font-size: 13.5px !important;
+}
+.text-xs {
+  font-size: 13.5px !important;
 }
 
 /* Background Atmosphere */
@@ -482,7 +505,16 @@ html.light [class*="bg-[#1b1b1f]"],
 html.light [class*="bg-[#1b1b20]"],
 html.light [class*="bg-[#1c1c20]"],
 html.light [class*="bg-[#1f1f23]"],
-html.light [class*="bg-[#101014]"] {
+html.light [class*="bg-[#101014]"],
+html.light [class*="bg-[#0c0d12]"],
+html.light [class*="bg-[#0d0e12]"],
+html.light [class*="bg-[#0b0c10]"],
+html.light [class*="bg-[#101116]"],
+html.light [class*="bg-[#0a0a0c]"],
+html.light [class*="bg-[#0d0d0f]"],
+html.light [class*="bg-[#0b0b0d]"],
+html.light [class*="bg-[#080809]"],
+html.light [class*="bg-[#111113]"] {
   background-color: var(--color-panel-elevated) !important;
 }
 
@@ -499,6 +531,24 @@ html.light [class*="border-white/[0.12]"] {
 /* Text Adaptations */
 html.light .text-white {
   color: var(--color-text) !important;
+}
+
+/* Contrast Protection: White text on dark green, accent, or status surfaces MUST stay pure white */
+html.light [class*="bg-[#033500]"],
+html.light [class*="bg-[#033500]"] *,
+html.light [class*="bg-[#022400]"],
+html.light [class*="bg-[#022400]"] *,
+html.light [class*="bg-[#044a00]"],
+html.light [class*="bg-[#044a00]"] *,
+html.light [class*="bg-[#8f7200]"],
+html.light [class*="bg-[#8f7200]"] *,
+html.light [class*="bg-[#b21919]"],
+html.light [class*="bg-[#b21919]"] *,
+html.light .btn-accent,
+html.light .btn-accent *,
+html.light .force-white,
+html.light .force-white * {
+  color: #ffffff !important;
 }
 
 html.light .text-neutral-300,

@@ -2,9 +2,12 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, useReducedMotion } from 'framer-motion';
 import { AsciiImage } from './AsciiImage';
 import { Cpu, Thermometer, ShieldCheck, Radio, ChevronRight, Layers, Zap, Play, ShieldAlert } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 // Playable Component 1: ESP32 Hardware Ed25519 Signing Enclave
 const Pillar1Playable: React.FC = () => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [sampleType, setSampleType] = useState<'nominal' | 'excursion' | 'shock'>('nominal');
   const [isTampered, setIsTampered] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
@@ -33,9 +36,9 @@ const Pillar1Playable: React.FC = () => {
 
   return (
     <div className="space-y-2.5 font-mono text-xs select-none">
-      <div className="flex items-center justify-between text-[10px]">
-        <span className="text-[var(--color-muted)]">SENSOR TELEMETRY SAMPLE:</span>
-        <div className="flex gap-1">
+      <div className="flex items-center justify-between text-[11px]">
+        <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-semibold">SENSOR TELEMETRY SAMPLE:</span>
+        <div className="flex gap-1.5">
           {(['nominal', 'excursion', 'shock'] as const).map((type) => (
             <button
               key={type}
@@ -43,10 +46,14 @@ const Pillar1Playable: React.FC = () => {
                 setSampleType(type);
                 setIsTampered(false);
               }}
-              className={`px-2 py-0.5 rounded text-[9px] uppercase transition-all cursor-pointer ${
+              className={`px-2.5 py-1 rounded text-[10.5px] uppercase transition-all cursor-pointer font-bold ${
                 sampleType === type
-                  ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/40 font-bold'
-                  : 'text-neutral-400 hover:text-white bg-white/[0.03] border border-white/[0.06]'
+                  ? isLight
+                    ? 'bg-[#033500] text-white border border-[#033500]'
+                    : 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/40 font-bold'
+                  : isLight
+                    ? 'text-[#033500] bg-white border border-[#a7d3a2] hover:bg-[#033500]/5'
+                    : 'text-neutral-400 hover:text-white bg-white/[0.03] border border-white/[0.06]'
               }`}
             >
               {type === 'nominal' ? '4.2°C Norm' : type === 'excursion' ? '12.8°C Spike' : '3.4G Shock'}
@@ -56,22 +63,26 @@ const Pillar1Playable: React.FC = () => {
       </div>
 
       {/* Packet Hex & Signature Terminal */}
-      <div className="p-2.5 rounded-lg bg-[#0b0c10] border border-white/[0.08] space-y-1.5 text-[10px]">
+      <div className={`p-2.5 rounded-lg border space-y-1.5 text-[11px] ${
+        isLight ? 'bg-[#f0f7f0] border-[#a7d3a2]' : 'bg-[#0b0c10] border-white/[0.08]'
+      }`}>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--color-muted)]">RFC 8785 CANONICAL DIGEST</span>
-          <span className="text-neutral-300">{isTampered ? '0xTAMPERED_BYTE_42' : current.hash}</span>
+          <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">RFC 8785 CANONICAL DIGEST</span>
+          <span className="text-[#033500] dark:text-neutral-300 font-bold">{isTampered ? '0xTAMPERED_BYTE_42' : current.hash}</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--color-muted)]">ED25519 HARDWARE SIG</span>
-          <span className={isTampered ? 'text-[var(--color-critical)] font-bold' : 'text-[var(--color-accent)] font-semibold'}>
+          <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">ED25519 HARDWARE SIG</span>
+          <span className={isTampered ? 'text-[var(--color-critical)] font-bold' : isLight ? 'text-[#033500] font-bold' : 'text-[var(--color-accent)] font-semibold'}>
             {isTampered ? '0xINVALID_SIG_MISMATCH' : current.sig}
           </span>
         </div>
         <div
-          className={`p-1.5 rounded text-[10px] font-semibold flex items-center justify-between transition-colors ${
+          className={`p-1.5 rounded text-[11px] font-bold flex items-center justify-between transition-colors ${
             isTampered
               ? 'bg-[var(--color-critical)]/15 text-[var(--color-critical)] border border-[var(--color-critical)]/30'
-              : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)] border border-[var(--color-pass)]/30'
+              : isLight
+                ? 'bg-[#d7edd5] text-[#033500] border border-[#033500]/30'
+                : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)] border border-[var(--color-pass)]/30'
           }`}
         >
           <span>{isTampered ? '✗ SIGNATURE REJECTED · TAMPER DETECTED' : '✓ HARDWARE ENCLAVE VERIFIED'}</span>
@@ -84,20 +95,27 @@ const Pillar1Playable: React.FC = () => {
         <button
           onClick={handleSign}
           disabled={isSigning}
-          className="px-2.5 py-1.5 rounded-lg bg-[var(--color-accent)]/15 border border-[var(--color-accent)]/40 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/25 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+          style={isLight ? { color: '#ffffff' } : undefined}
+          className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+            isLight
+              ? 'bg-[#033500] !text-white force-white border border-[#033500] hover:bg-[#044a00] shadow-sm'
+              : 'bg-[var(--color-accent)]/15 border border-[var(--color-accent)]/40 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/25'
+          }`}
         >
-          <Zap size={11} className={isSigning ? 'animate-spin' : ''} />
+          <Zap size={12} className={isSigning ? 'animate-spin' : ''} />
           {isSigning ? 'SIGNING...' : '⚡ RE-SIGN PACKET'}
         </button>
         <button
           onClick={handleTamper}
-          className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+          className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
             isTampered
-              ? 'bg-white/10 text-white border border-white/20'
+              ? isLight
+                ? 'bg-[#033500]/10 text-[#033500] border border-[#033500]/30'
+                : 'bg-white/10 text-white border border-white/20'
               : 'bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/30 text-[var(--color-critical)] hover:bg-[var(--color-critical)]/20'
           }`}
         >
-          <ShieldAlert size={11} />
+          <ShieldAlert size={12} />
           {isTampered ? 'RESTORE ORIGINAL' : '⚠️ TAMPER 1 BYTE'}
         </button>
       </div>
@@ -107,6 +125,8 @@ const Pillar1Playable: React.FC = () => {
 
 // Playable Component 2: Arrhenius Shelf-Life Kinetics & MKT Simulator
 const Pillar2Playable: React.FC = () => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [temp, setTemp] = useState(8.5);
   const [duration, setDuration] = useState(12);
 
@@ -122,9 +142,9 @@ const Pillar2Playable: React.FC = () => {
       {/* Sliders */}
       <div className="space-y-1.5">
         <div>
-          <div className="flex justify-between text-[10px] mb-0.5">
-            <span className="text-[var(--color-muted)]">STORAGE TEMPERATURE:</span>
-            <span className={`font-bold ${temp > 8 ? 'text-[var(--color-critical)]' : 'text-[#e8b14c]'}`}>
+          <div className="flex justify-between text-[11px] mb-0.5">
+            <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-semibold">STORAGE TEMPERATURE:</span>
+            <span className={`font-bold ${temp > 8 ? 'text-[var(--color-critical)]' : isLight ? 'text-[#8f7200]' : 'text-[#e8b14c]'}`}>
               {temp.toFixed(1)}°C {temp > 8 ? '(EXCURSION)' : '(WHO 2-8°C)'}
             </span>
           </div>
@@ -135,14 +155,16 @@ const Pillar2Playable: React.FC = () => {
             step="0.5"
             value={temp}
             onChange={(e) => setTemp(parseFloat(e.target.value))}
-            className="w-full h-1.5 bg-[#1f1f23] rounded appearance-none cursor-pointer accent-[#e8b14c]"
+            className={`w-full h-2 rounded appearance-none cursor-pointer ${
+              isLight ? 'bg-[#cbe4ca] accent-[#8f7200]' : 'bg-[#1f1f23] accent-[#e8b14c]'
+            }`}
           />
         </div>
 
         <div>
-          <div className="flex justify-between text-[10px] mb-0.5">
-            <span className="text-[var(--color-muted)]">TRANSIT EXPOSURE:</span>
-            <span className="text-[#021a18] dark:text-white font-bold">{duration} HOURS</span>
+          <div className="flex justify-between text-[11px] mb-0.5">
+            <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-semibold">TRANSIT EXPOSURE:</span>
+            <span className="text-[#033500] dark:text-white font-bold">{duration} HOURS</span>
           </div>
           <input
             type="range"
@@ -151,42 +173,48 @@ const Pillar2Playable: React.FC = () => {
             step="2"
             value={duration}
             onChange={(e) => setDuration(parseInt(e.target.value))}
-            className="w-full h-1.5 bg-black/10 dark:bg-[#1f1f23] rounded appearance-none cursor-pointer accent-[#8f7200]"
+            className={`w-full h-2 rounded appearance-none cursor-pointer ${
+              isLight ? 'bg-[#cbe4ca] accent-[#033500]' : 'bg-black/10 dark:bg-[#1f1f23] accent-[#8f7200]'
+            }`}
           />
         </div>
       </div>
 
       {/* Physics Calculation Display */}
-      <div className="p-2 rounded-lg bg-black/5 dark:bg-[#0b0c10] border border-black/10 dark:border-white/[0.08] space-y-1.5 text-[10px]">
+      <div className={`p-2.5 rounded-lg border space-y-1.5 text-[11px] ${
+        isLight ? 'bg-[#f0f7f0] border-[#a7d3a2]' : 'bg-black/5 dark:bg-[#0b0c10] border-black/10 dark:border-white/[0.08]'
+      }`}>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--color-muted)]">ARRHENIUS RATE MULTIPLIER (k/k₀):</span>
+          <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">ARRHENIUS RATE MULTIPLIER (k/k₀):</span>
           <span className="text-[#8f7200] font-bold">{kRel.toFixed(2)}× BASELINE</span>
         </div>
         <div>
           <div className="flex justify-between mb-1">
-            <span className="text-[var(--color-muted)]">REMAINING BATCH POTENCY:</span>
+            <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">REMAINING BATCH POTENCY:</span>
             <span
               className={`font-bold ${
-                potency > 92 ? 'text-[var(--color-pass)]' : potency > 80 ? 'text-[var(--color-warn)]' : 'text-[var(--color-critical)]'
+                potency > 92 ? (isLight ? 'text-[#033500]' : 'text-[var(--color-pass)]') : potency > 80 ? 'text-[var(--color-warn)]' : 'text-[var(--color-critical)]'
               }`}
             >
               {potency.toFixed(1)}%
             </span>
           </div>
-          <div className="h-1.5 w-full bg-black/10 dark:bg-[#1b1b20] rounded-full overflow-hidden">
+          <div className={`h-2 w-full rounded-full overflow-hidden ${isLight ? 'bg-[#cbe4ca]' : 'bg-black/10 dark:bg-[#1b1b20]'}`}>
             <div
               className={`h-full transition-all duration-300 rounded-full ${
-                potency > 92 ? 'bg-[var(--color-pass)]' : potency > 80 ? 'bg-[var(--color-warn)]' : 'bg-[var(--color-critical)]'
+                potency > 92 ? (isLight ? 'bg-[#033500]' : 'bg-[var(--color-pass)]') : potency > 80 ? 'bg-[var(--color-warn)]' : 'bg-[var(--color-critical)]'
               }`}
               style={{ width: `${potency}%` }}
             />
           </div>
         </div>
         <div
-          className={`p-1.5 rounded text-[10px] font-semibold flex items-center justify-between ${
+          className={`p-1.5 rounded text-[11px] font-bold flex items-center justify-between ${
             isExcursion
               ? 'bg-[var(--color-critical)]/15 text-[var(--color-critical)] border border-[var(--color-critical)]/30'
-              : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)] border border-[var(--color-pass)]/30'
+              : isLight
+                ? 'bg-[#d7edd5] text-[#033500] border border-[#033500]/30'
+                : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)] border border-[var(--color-pass)]/30'
           }`}
         >
           <span>{isExcursion ? '⚠️ CRITICAL MKT EXCURSION' : '✓ USP <1079> COMPLIANT'}</span>
@@ -199,6 +227,8 @@ const Pillar2Playable: React.FC = () => {
 
 // Playable Component 3: Polygon Amoy On-Chain Merkle Tree Verifier
 const Pillar3Playable: React.FC = () => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [selectedBatch, setSelectedBatch] = useState(1);
   const [isCorrupted, setIsCorrupted] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -223,9 +253,9 @@ const Pillar3Playable: React.FC = () => {
 
   return (
     <div className="space-y-2.5 font-mono text-xs select-none">
-      <div className="text-[10px] text-[var(--color-muted)] flex justify-between items-center">
-        <span>SELECT BATCH LEAF TO PROVE ON-CHAIN:</span>
-        <span className="text-[var(--color-pass)]">POLYGON AMOY #49281</span>
+      <div className="text-[11px] flex justify-between items-center">
+        <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-semibold">SELECT BATCH LEAF TO PROVE ON-CHAIN:</span>
+        <span className="text-[#033500] dark:text-[var(--color-pass)] font-bold">POLYGON AMOY #49281</span>
       </div>
 
       {/* 4 Leaf Selector */}
@@ -234,35 +264,44 @@ const Pillar3Playable: React.FC = () => {
           <button
             key={b.id}
             onClick={() => setSelectedBatch(b.id)}
-            className={`p-1 rounded text-center transition-all cursor-pointer ${
+            style={selectedBatch === b.id && isLight ? { color: '#ffffff' } : undefined}
+            className={`p-1.5 rounded text-center transition-all cursor-pointer ${
               selectedBatch === b.id
-                ? 'bg-[var(--color-pass)]/20 text-[var(--color-pass)] border border-[var(--color-pass)]/50 font-bold'
-                : 'bg-white/[0.03] text-neutral-400 hover:text-white border border-white/[0.06]'
+                ? isLight
+                  ? 'bg-[#033500] !text-white force-white border border-[#033500] font-bold shadow-sm'
+                  : 'bg-[var(--color-pass)]/20 text-[var(--color-pass)] border border-[var(--color-pass)]/50 font-bold'
+                : isLight
+                  ? 'bg-white text-[#033500] border border-[#a7d3a2] hover:bg-[#033500]/5'
+                  : 'bg-white/[0.03] text-neutral-400 hover:text-white border border-white/[0.06]'
             }`}
           >
-            <div className="text-[9px]">{b.label}</div>
-            <div className="text-[8px] text-[var(--color-muted)] truncate">{b.hash}</div>
+            <div className="text-[11px] font-bold">{b.label}</div>
+            <div className="text-[10px] opacity-80 truncate">{b.hash}</div>
           </button>
         ))}
       </div>
 
       {/* Merkle Proof Tree Path */}
-      <div className="p-2.5 rounded-lg bg-[#0b0c10] border border-white/[0.08] space-y-1.5 text-[10px]">
+      <div className={`p-2.5 rounded-lg border space-y-1.5 text-[11px] ${
+        isLight ? 'bg-[#f0f7f0] border-[#a7d3a2]' : 'bg-[#0b0c10] border-white/[0.08]'
+      }`}>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--color-muted)]">LEAF HASH (BATCH #{selectedBatch + 41}):</span>
-          <span className="text-white">{isCorrupted && selectedBatch === 1 ? '0xCORRUPT_LEAF_DATA' : batches[selectedBatch].hash}</span>
+          <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">LEAF HASH (BATCH #{selectedBatch + 41}):</span>
+          <span className="text-[#033500] dark:text-white font-bold">{isCorrupted && selectedBatch === 1 ? '0xCORRUPT_LEAF_DATA' : batches[selectedBatch].hash}</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--color-muted)]">POLYGON MERKLE ROOT:</span>
-          <span className={isCorrupted ? 'text-[var(--color-critical)] font-bold' : 'text-[var(--color-pass)] font-bold'}>
+          <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">POLYGON MERKLE ROOT:</span>
+          <span className={isCorrupted ? 'text-[var(--color-critical)] font-bold' : isLight ? 'text-[#033500] font-bold' : 'text-[var(--color-pass)] font-bold'}>
             {isCorrupted ? '0xBAD_ROOT_MISMATCH' : '0x8492f1b4029a1e0b5c77'}
           </span>
         </div>
         <div
-          className={`p-1.5 rounded font-semibold flex items-center justify-between ${
+          className={`p-1.5 rounded font-bold flex items-center justify-between ${
             isCorrupted
               ? 'bg-[var(--color-critical)]/15 text-[var(--color-critical)] border border-[var(--color-critical)]/30'
-              : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)] border border-[var(--color-pass)]/30'
+              : isLight
+                ? 'bg-[#d7edd5] text-[#033500] border border-[#033500]/30'
+                : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)] border border-[var(--color-pass)]/30'
           }`}
         >
           <span>{isCorrupted ? '✗ ROOT MISMATCH · FRAUD DETECTED' : '✓ MERKLE INCLUSION PROOF CONFIRMED'}</span>
@@ -275,16 +314,23 @@ const Pillar3Playable: React.FC = () => {
         <button
           onClick={handleVerify}
           disabled={isVerifying}
-          className="px-2.5 py-1.5 rounded-lg bg-[var(--color-pass)]/15 border border-[var(--color-pass)]/40 text-[var(--color-pass)] hover:bg-[var(--color-pass)]/25 text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+          style={isLight ? { color: '#ffffff' } : undefined}
+          className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+            isLight
+              ? 'bg-[#033500] !text-white force-white border border-[#033500] hover:bg-[#044a00] shadow-sm'
+              : 'bg-[var(--color-pass)]/15 border border-[var(--color-pass)]/40 text-[var(--color-pass)] hover:bg-[var(--color-pass)]/25'
+          }`}
         >
-          <ShieldCheck size={11} className={isVerifying ? 'animate-spin' : ''} />
+          <ShieldCheck size={12} className={isVerifying ? 'animate-spin' : ''} />
           {isVerifying ? 'VERIFYING...' : '🔍 VERIFY ZK INCLUSION'}
         </button>
         <button
           onClick={handleTamper}
-          className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+          className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
             isCorrupted
-              ? 'bg-white/10 text-white border border-white/20'
+              ? isLight
+                ? 'bg-[#033500]/10 text-[#033500] border border-[#033500]/30'
+                : 'bg-white/10 text-white border border-white/20'
               : 'bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/30 text-[var(--color-critical)] hover:bg-[var(--color-critical)]/20'
           }`}
         >
@@ -297,79 +343,94 @@ const Pillar3Playable: React.FC = () => {
 
 // Playable Component 4: River ML Streaming Anomaly Detection Sandbox
 const Pillar4Playable: React.FC = () => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [anomalyMode, setAnomalyMode] = useState<'normal' | 'spike' | 'compressor'>('normal');
 
   const modes = {
-    normal: { score: 0.05, leadTime: 'NO EXCURSION FORECAST', color: '#5bc98c', status: 'NOMINAL FLOW' },
-    spike: { score: 0.88, leadTime: '7.8 MIN ADVANCE WARNING', color: '#e8b14c', status: 'THERMAL SPIKE' },
-    compressor: { score: 0.95, leadTime: '12.4 MIN ADVANCE WARNING', color: '#e0574c', status: 'COMPRESSOR STALL' },
+    normal: { score: 0.05, leadTime: 'NO EXCURSION FORECAST', color: isLight ? '#033500' : '#5bc98c', status: 'NOMINAL FLOW' },
+    spike: { score: 0.88, leadTime: '7.8 MIN ADVANCE WARNING', color: '#8f7200', status: 'THERMAL SPIKE' },
+    compressor: { score: 0.95, leadTime: '12.4 MIN ADVANCE WARNING', color: '#b21919', status: 'COMPRESSOR STALL' },
   };
 
   const current = modes[anomalyMode];
 
   return (
     <div className="space-y-2.5 font-mono text-xs select-none">
-      <div className="flex items-center justify-between text-[10px]">
-        <span className="text-[var(--color-muted)]">INJECT STREAMING EVENT:</span>
-        <span className="text-[#9d7bff]">RIVER ONLINE ML</span>
+      <div className="flex items-center justify-between text-[11px]">
+        <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-semibold">INJECT STREAMING EVENT:</span>
+        <span className="text-[#033500] dark:text-[#9d7bff] font-bold">RIVER ONLINE ML</span>
       </div>
 
       {/* Event Trigger Buttons */}
       <div className="grid grid-cols-3 gap-1.5">
         <button
           onClick={() => setAnomalyMode('normal')}
-          className={`p-1 rounded text-center transition-all cursor-pointer ${
+          style={anomalyMode === 'normal' && isLight ? { color: '#ffffff' } : undefined}
+          className={`p-1.5 rounded text-center transition-all cursor-pointer ${
             anomalyMode === 'normal'
-              ? 'bg-[var(--color-pass)]/20 text-[var(--color-pass)] border border-[var(--color-pass)]/50 font-bold'
-              : 'bg-white/[0.03] text-neutral-400 hover:text-white border border-white/[0.06]'
+              ? isLight
+                ? 'bg-[#033500] !text-white force-white border border-[#033500] font-bold shadow-sm'
+                : 'bg-[var(--color-pass)]/20 text-[var(--color-pass)] border border-[var(--color-pass)]/50 font-bold'
+              : isLight
+                ? 'bg-white text-[#033500] border border-[#a7d3a2] hover:bg-[#033500]/5'
+                : 'bg-white/[0.03] text-neutral-400 hover:text-white border border-white/[0.06]'
           }`}
         >
-          <div className="text-[9px]">NORMAL</div>
-          <div className="text-[8px] text-[var(--color-muted)]">0.05 score</div>
+          <div className="text-[11px] font-bold">NORMAL</div>
+          <div className="text-[10px] opacity-80">0.05 score</div>
         </button>
         <button
           onClick={() => setAnomalyMode('spike')}
-          className={`p-1 rounded text-center transition-all cursor-pointer ${
+          style={anomalyMode === 'spike' ? { color: '#ffffff' } : undefined}
+          className={`p-1.5 rounded text-center transition-all cursor-pointer ${
             anomalyMode === 'spike'
-              ? 'bg-[#e8b14c]/20 text-[#e8b14c] border border-[#e8b14c]/50 font-bold'
-              : 'bg-white/[0.03] text-neutral-400 hover:text-white border border-white/[0.06]'
+              ? 'bg-[#8f7200] !text-white force-white border border-[#8f7200] font-bold shadow-sm'
+              : isLight
+                ? 'bg-white text-[#033500] border border-[#a7d3a2] hover:bg-[#033500]/5'
+                : 'bg-white/[0.03] text-neutral-400 hover:text-white border border-white/[0.06]'
           }`}
         >
-          <div className="text-[9px]">TEMP SPIKE</div>
-          <div className="text-[8px] text-[var(--color-muted)]">+4.8°C spike</div>
+          <div className="text-[11px] font-bold">TEMP SPIKE</div>
+          <div className="text-[10px] opacity-80">+4.8°C spike</div>
         </button>
         <button
           onClick={() => setAnomalyMode('compressor')}
-          className={`p-1 rounded text-center transition-all cursor-pointer ${
+          style={anomalyMode === 'compressor' ? { color: '#ffffff' } : undefined}
+          className={`p-1.5 rounded text-center transition-all cursor-pointer ${
             anomalyMode === 'compressor'
-              ? 'bg-[var(--color-critical)]/20 text-[var(--color-critical)] border border-[var(--color-critical)]/50 font-bold'
-              : 'bg-white/[0.03] text-neutral-400 hover:text-white border border-white/[0.06]'
+              ? 'bg-[#b21919] !text-white force-white border border-[#b21919] font-bold shadow-sm'
+              : isLight
+                ? 'bg-white text-[#033500] border border-[#a7d3a2] hover:bg-[#033500]/5'
+                : 'bg-white/[0.03] text-neutral-400 hover:text-white border border-white/[0.06]'
           }`}
         >
-          <div className="text-[9px]">CUT POWER</div>
-          <div className="text-[8px] text-[var(--color-muted)]">Motor stall</div>
+          <div className="text-[11px] font-bold">CUT POWER</div>
+          <div className="text-[10px] opacity-80">Motor stall</div>
         </button>
       </div>
 
       {/* Stream Status and Anomaly Score */}
-      <div className="p-2.5 rounded-lg bg-[#0b0c10] border border-white/[0.08] space-y-1.5 text-[10px]">
+      <div className={`p-2.5 rounded-lg border space-y-1.5 text-[11px] ${
+        isLight ? 'bg-[#f0f7f0] border-[#a7d3a2]' : 'bg-[#0b0c10] border-white/[0.08]'
+      }`}>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--color-muted)]">HALF-SPACE TREES ANOMALY SCORE:</span>
+          <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">HALF-SPACE TREES ANOMALY SCORE:</span>
           <span style={{ color: current.color }} className="font-bold">
             {(current.score * 100).toFixed(0)}%
           </span>
         </div>
-        <div className="h-1.5 w-full bg-[#1b1b20] rounded-full overflow-hidden">
+        <div className={`h-2 w-full rounded-full overflow-hidden ${isLight ? 'bg-[#cbe4ca]' : 'bg-[#1b1b20]'}`}>
           <div
             className="h-full transition-all duration-300 rounded-full"
             style={{ width: `${current.score * 100}%`, backgroundColor: current.color }}
           />
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-[var(--color-muted)]">EARLY WARNING ADVISORY:</span>
-          <span className="text-white font-semibold">{current.leadTime}</span>
+          <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">EARLY WARNING ADVISORY:</span>
+          <span className="text-[#033500] dark:text-white font-bold">{current.leadTime}</span>
         </div>
-        <div className="p-1.5 rounded text-[10px] font-semibold bg-[#9d7bff]/10 border border-[#9d7bff]/30 text-[#c4b5fd] flex items-center justify-between">
+        <div className="p-1.5 rounded text-[11px] font-bold bg-[#9d7bff]/10 border border-[#9d7bff]/30 text-[#033500] dark:text-[#c4b5fd] flex items-center justify-between">
           <span>🛡️ CORE LEDGER UNMUTATED</span>
           <span>ISOLATION RULE ENFORCED</span>
         </div>
@@ -463,6 +524,8 @@ const CARDS: ModuleCard[] = [
 ];
 
 export const SpiralGallery: React.FC = () => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const containerRef = useRef<HTMLDivElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
   const [activeCardIndex, setActiveCardIndex] = useState(0);
@@ -582,8 +645,8 @@ export const SpiralGallery: React.FC = () => {
                       activeCardIndex === idx
                         ? 'bg-[var(--color-accent)] shadow-[0_0_10px_var(--color-accent)]'
                         : activeCardIndex > idx
-                        ? 'bg-neutral-600'
-                        : 'bg-neutral-800 hover:bg-neutral-700'
+                        ? isLight ? 'bg-[#7dbd79]' : 'bg-neutral-600'
+                        : isLight ? 'bg-[#c5e4c3] hover:bg-[#a7d3a2]' : 'bg-neutral-800 hover:bg-neutral-700'
                     }`}
                     title={`View Pillar ${idx + 1}: ${card.title}`}
                   />
@@ -618,29 +681,36 @@ export const SpiralGallery: React.FC = () => {
           <div className="lg:col-span-7 flex flex-col items-center w-full lg:pt-[88px]">
 
             {/* Interactive Step Switcher Header */}
-            <div className="w-full max-w-[580px] flex items-center justify-between mb-3 border-b border-white/[0.08] pb-2 px-1">
+            <div className={`w-full max-w-[580px] flex items-center justify-between mb-3 border-b pb-2 px-1 ${
+              isLight ? 'border-black/10' : 'border-white/[0.08]'
+            }`}>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 {CARDS.map((card, idx) => (
                   <button
                     key={card.id}
                     onClick={() => handleStepClick(idx)}
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all duration-200 cursor-pointer ${
+                    style={activeCardIndex === idx && isLight ? { color: '#ffffff' } : undefined}
+                    className={`px-3 py-1.5 rounded-lg text-xs sm:text-[13px] font-mono transition-all duration-200 cursor-pointer font-bold ${
                       activeCardIndex === idx
-                        ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] border border-[var(--color-accent)]/40 font-bold shadow-[0_0_12px_rgba(125,249,196,0.12)]'
-                        : 'text-[var(--color-muted)] hover:text-white hover:bg-white/[0.04] border border-transparent'
+                        ? isLight
+                          ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
+                          : 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] border border-[var(--color-accent)]/40 shadow-[0_0_12px_rgba(125,249,196,0.12)]'
+                        : isLight
+                          ? 'text-[#2d552b] hover:text-[#033500] hover:bg-[#033500]/5 border border-transparent'
+                          : 'text-[var(--color-muted)] hover:text-white hover:bg-white/[0.04] border border-transparent'
                     }`}
                   >
                     0{idx + 1} {idx === 0 ? 'HARDWARE' : idx === 1 ? 'KINETICS' : idx === 2 ? 'ANCHORS' : 'ADVISORY'}
                   </button>
                 ))}
               </div>
-              <span className="font-mono text-xs text-[var(--color-muted)] hidden sm:inline">
+              <span className="font-mono text-xs font-bold text-[#2d552b] dark:text-[var(--color-muted)] hidden sm:inline">
                 {CARDS[activeCardIndex].footerRight}
               </span>
             </div>
 
             {/* Card Deck Stage with 3D perspective - Increased size */}
-            <div className="relative w-full max-w-[580px] h-[465px] [perspective:1200px]">
+            <div className="relative w-full max-w-[580px] h-[505px] [perspective:1200px]">
               {shouldReduceMotion ? (
                 // Reduced motion fallback
                 <StaticCard card={CARDS[activeCardIndex]} />
@@ -665,17 +735,23 @@ export const SpiralGallery: React.FC = () => {
             </div>
 
             {/* Quick Navigation Control Strip */}
-            <div className="w-full max-w-[580px] flex items-center justify-between pt-3 mt-1 border-t border-white/[0.08] text-xs font-mono">
+            <div className={`w-full max-w-[580px] flex items-center justify-between pt-3 mt-1 border-t text-xs font-mono ${
+              isLight ? 'border-black/10' : 'border-white/[0.08]'
+            }`}>
               <button
                 onClick={() => handleStepClick(Math.max(0, activeCardIndex - 1))}
                 disabled={activeCardIndex === 0}
-                className="px-3.5 py-1.5 rounded-lg border border-white/[0.08] bg-[var(--color-panel)] text-[var(--color-muted)] hover:text-white hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1.5"
+                className={`px-3.5 py-1.5 rounded-lg border font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isLight
+                    ? 'border-[#a7d3a2] bg-white text-[#033500] hover:border-[#033500] shadow-sm'
+                    : 'border-white/[0.08] bg-[var(--color-panel)] text-[var(--color-muted)] hover:text-white hover:border-white/20'
+                }`}
               >
                 ← PREV PILLAR
               </button>
-              <div className="text-[11px] text-[var(--color-muted)]">
+              <div className="text-xs font-semibold text-[#2d552b] dark:text-[var(--color-muted)]">
                 {activeCardIndex === 3 ? (
-                  <span className="text-[var(--color-accent)] font-semibold">
+                  <span className="text-[#033500] dark:text-[var(--color-accent)] font-bold">
                     SHUFFLE COMPLETE · SCROLL DOWN TO CONTINUE ↓
                   </span>
                 ) : (
@@ -685,7 +761,12 @@ export const SpiralGallery: React.FC = () => {
               <button
                 onClick={() => handleStepClick(Math.min(CARDS.length - 1, activeCardIndex + 1))}
                 disabled={activeCardIndex === CARDS.length - 1}
-                className="px-3.5 py-1.5 rounded-lg border border-[var(--color-accent)]/40 bg-[var(--color-panel)] text-[var(--color-accent)] hover:bg-[var(--color-accent)]/15 hover:border-[var(--color-accent)] disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+                style={isLight ? { color: '#ffffff' } : undefined}
+                className={`px-4 py-1.5 rounded-lg border font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1.5 shadow-sm ${
+                  isLight
+                    ? 'border-[#033500] bg-[#033500] !text-white force-white hover:bg-[#044a00]'
+                    : 'border-[var(--color-accent)]/40 bg-[var(--color-panel)] text-[var(--color-accent)] hover:bg-[var(--color-accent)]/15 hover:border-[var(--color-accent)]'
+                }`}
               >
                 NEXT PILLAR →
               </button>
@@ -709,6 +790,8 @@ interface StackedCardProps {
 }
 
 const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isActive, onSelect }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [cardMode, setCardMode] = useState<'specs' | 'lab'>('specs');
 
   // continuous diff between this card's index and spring-smoothed active float progress
@@ -795,8 +878,12 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
       onClick={onSelect}
       className={`absolute inset-0 p-6 sm:p-7 rounded-2xl border flex flex-col justify-between select-none glow-accent cursor-pointer transition-all duration-300 ${
         isActive
-          ? 'border-[var(--color-accent)]/50 ring-1 ring-[var(--color-accent)]/20 shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_35px_rgba(125,249,196,0.1)]'
-          : 'border-white/[0.08] shadow-[0_15px_40px_rgba(0,0,0,0.65)] hover:border-white/20'
+          ? isLight
+            ? 'border-[#033500] ring-2 ring-[#033500]/25 shadow-[0_20px_50px_rgba(3,53,0,0.14)]'
+            : 'border-[var(--color-accent)]/50 ring-1 ring-[var(--color-accent)]/20 shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_35px_rgba(125,249,196,0.1)]'
+          : isLight
+            ? 'border-[#a7d3a2] shadow-sm hover:border-[#033500]/60'
+            : 'border-white/[0.08] shadow-[0_15px_40px_rgba(0,0,0,0.65)] hover:border-white/20'
       }`}
       style={{
         x,
@@ -807,22 +894,22 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
         opacity,
         zIndex,
         pointerEvents,
-        backgroundColor: '#101116',
+        backgroundColor: isLight ? '#ffffff' : '#101116',
       }}
     >
       <div>
         {/* Top Tag & Status */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2 font-mono text-xs text-[var(--color-muted)]">
+          <div className="flex items-center gap-2 font-mono text-[13px] text-[#033500] dark:text-[var(--color-muted)] font-bold">
             {card.icon}
             <span className="tracking-wider">{card.tag}</span>
           </div>
           <span
-            className="font-mono text-[11px] px-2.5 py-0.5 rounded-md border font-semibold"
+            className="font-mono text-[13px] px-2.5 py-0.5 rounded-md border font-bold"
             style={{
-              color: card.accent,
-              borderColor: `${card.accent}40`,
-              backgroundColor: `${card.accent}15`,
+              color: isLight ? '#033500' : card.accent,
+              borderColor: isLight ? '#033500' : `${card.accent}40`,
+              backgroundColor: isLight ? '#d7edd5' : `${card.accent}15`,
             }}
           >
             {card.footerRight}
@@ -832,12 +919,12 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
         {/* Inner Content - Faded out while card is waiting in stack, blooms in as it reaches front */}
         <motion.div style={{ opacity: contentOpacity }}>
           {/* Title */}
-          <h3 className="card-title text-xl sm:text-2xl text-white mb-1.5 leading-snug tracking-tight">
+          <h3 className="card-title text-2xl sm:text-[25px] text-[#033500] dark:text-white font-extrabold mb-1.5 leading-snug tracking-tight">
             {card.title}
           </h3>
 
           {/* Subtitle */}
-          <p className="text-[var(--color-muted)] text-xs mb-3 leading-relaxed font-sans line-clamp-2">
+          <p className="text-[#164014] dark:text-[var(--color-muted)] text-[15px] mb-3.5 leading-relaxed font-sans line-clamp-2 font-medium">
             {card.subtitle}
           </p>
 
@@ -848,10 +935,15 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
                 e.stopPropagation();
                 setCardMode('specs');
               }}
-              className={`px-2.5 py-1 rounded text-[10px] font-mono transition-all cursor-pointer ${
+              style={cardMode === 'specs' && isLight ? { color: '#ffffff' } : undefined}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer font-bold ${
                 cardMode === 'specs'
-                  ? 'bg-white/10 text-white font-semibold border border-white/20'
-                  : 'text-[var(--color-muted)] hover:text-white border border-transparent'
+                  ? isLight
+                    ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
+                    : 'bg-white/10 text-white border border-white/20'
+                  : isLight
+                    ? 'text-[#033500] hover:bg-[#033500]/10 border border-[#a7d3a2]'
+                    : 'text-[var(--color-muted)] hover:text-white border border-transparent'
               }`}
             >
               ARCHITECTURE SPECS
@@ -861,31 +953,40 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
                 e.stopPropagation();
                 setCardMode('lab');
               }}
-              className={`px-2.5 py-1 rounded text-[10px] font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
+              style={cardMode === 'lab' && isLight ? { color: '#ffffff' } : undefined}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer font-bold ${
                 cardMode === 'lab'
-                  ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold border border-[var(--color-accent)]/40 shadow-[0_0_12px_rgba(125,249,196,0.15)]'
-                  : 'text-[var(--color-accent)]/80 hover:text-[var(--color-accent)] border border-[var(--color-accent)]/20 hover:bg-[var(--color-accent)]/10'
+                  ? isLight
+                    ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
+                    : 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/40 shadow-[0_0_12px_rgba(125,249,196,0.15)]'
+                  : isLight
+                    ? 'text-[#033500] hover:bg-[#033500]/10 border border-[#a7d3a2]'
+                    : 'text-[var(--color-accent)]/80 hover:text-[var(--color-accent)] border border-[var(--color-accent)]/20 hover:bg-[var(--color-accent)]/10'
               }`}
             >
-              <Play size={9} className="fill-[var(--color-accent)]" />
+              <Play size={11} className={isLight ? (cardMode === 'lab' ? 'fill-white text-white' : 'fill-[#033500] text-[#033500]') : 'fill-[var(--color-accent)]'} />
               🎮 PLAYABLE LAB // TEST LIVE
             </button>
           </div>
 
           {/* Either Specs List or Playable Lab */}
           {cardMode === 'specs' ? (
-            <div className="space-y-2.5 font-mono text-xs">
+            <div className="space-y-2.5 font-mono text-[14px]">
               {card.specs.map((spec, sIdx) => (
                 <div
                   key={sIdx}
-                  className="flex items-start gap-2.5 text-neutral-300 py-1.5 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]"
+                  className={`flex items-start gap-2.5 py-2.5 px-3.5 rounded-lg border transition-colors ${
+                    isLight
+                      ? 'bg-[#f4faf4] border-[#d0e5ce] text-[#033500]'
+                      : 'bg-white/[0.02] border-white/[0.04] text-neutral-300'
+                  }`}
                 >
                   <ChevronRight
-                    size={14}
+                    size={17}
                     className="shrink-0 mt-0.5"
-                    style={{ color: card.accent }}
+                    style={{ color: isLight ? '#033500' : card.accent }}
                   />
-                  <span className="leading-relaxed">{spec}</span>
+                  <span className="leading-relaxed font-semibold">{spec}</span>
                 </div>
               ))}
             </div>
@@ -903,10 +1004,12 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
       {/* Footer Rule & Metadata */}
       <motion.div
         style={{ opacity: contentOpacity }}
-        className="pt-3 border-t border-white/[0.08] flex items-center justify-between font-mono text-[11px] text-[var(--color-muted)]"
+        className={`pt-3 border-t flex items-center justify-between font-mono text-[13px] font-semibold ${
+          isLight ? 'border-[#a7d3a2] text-[#2d552b]' : 'border-white/[0.08] text-[var(--color-muted)]'
+        }`}
       >
         <span>{card.footerLeft}</span>
-        <span style={{ color: card.accent }} className="font-bold tracking-wide">
+        <span style={{ color: isLight ? '#033500' : card.accent }} className="font-bold tracking-wide">
           VERIFIED ARCHITECTURE
         </span>
       </motion.div>
@@ -915,33 +1018,41 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
 };
 
 const StaticCard: React.FC<{ card: ModuleCard }> = ({ card }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [cardMode, setCardMode] = useState<'specs' | 'lab'>('specs');
 
   return (
-    <div className="w-full h-full p-6 sm:p-7 rounded-2xl border border-white/[0.08] bg-[#101116] shadow-2xl flex flex-col justify-between select-none glow-accent">
+    <div
+      className={`w-full h-full p-6 sm:p-7 rounded-2xl border flex flex-col justify-between select-none glow-accent ${
+        isLight
+          ? 'border-[#033500] ring-1 ring-[#033500]/20 shadow-[0_20px_50px_rgba(3,53,0,0.12)] bg-white'
+          : 'border-white/[0.08] bg-[#101116] shadow-2xl'
+      }`}
+    >
       <div>
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2 font-mono text-xs text-[var(--color-muted)]">
+          <div className="flex items-center gap-2 font-mono text-[13px] text-[#033500] dark:text-[var(--color-muted)] font-bold">
             {card.icon}
             <span className="tracking-wider">{card.tag}</span>
           </div>
           <span
-            className="font-mono text-[11px] px-2.5 py-0.5 rounded-md border font-semibold"
+            className="font-mono text-[13px] px-2.5 py-0.5 rounded-md border font-bold"
             style={{
-              color: card.accent,
-              borderColor: `${card.accent}40`,
-              backgroundColor: `${card.accent}15`,
+              color: isLight ? '#033500' : card.accent,
+              borderColor: isLight ? '#033500' : `${card.accent}40`,
+              backgroundColor: isLight ? '#d7edd5' : `${card.accent}15`,
             }}
           >
             {card.footerRight}
           </span>
         </div>
 
-        <h3 className="card-title text-xl sm:text-2xl text-white mb-1.5 leading-snug tracking-tight">
+        <h3 className="card-title text-2xl sm:text-[25px] text-[#033500] dark:text-white font-extrabold mb-1.5 leading-snug tracking-tight">
           {card.title}
         </h3>
 
-        <p className="text-[var(--color-muted)] text-xs mb-3 leading-relaxed font-sans line-clamp-2">
+        <p className="text-[#164014] dark:text-[var(--color-muted)] text-[15px] mb-3.5 leading-relaxed font-sans line-clamp-2 font-medium">
           {card.subtitle}
         </p>
 
@@ -949,40 +1060,54 @@ const StaticCard: React.FC<{ card: ModuleCard }> = ({ card }) => {
         <div className="flex items-center gap-2 mb-3">
           <button
             onClick={() => setCardMode('specs')}
-            className={`px-2.5 py-1 rounded text-[10px] font-mono transition-all cursor-pointer ${
+            style={cardMode === 'specs' && isLight ? { color: '#ffffff' } : undefined}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer font-bold ${
               cardMode === 'specs'
-                ? 'bg-white/10 text-white font-semibold border border-white/20'
-                : 'text-[var(--color-muted)] hover:text-white border border-transparent'
+                ? isLight
+                  ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
+                  : 'bg-white/10 text-white font-semibold border border-white/20'
+                : isLight
+                  ? 'text-[#033500] hover:bg-[#033500]/10 border border-[#a7d3a2]'
+                  : 'text-[var(--color-muted)] hover:text-white border border-transparent'
             }`}
           >
             ARCHITECTURE SPECS
           </button>
           <button
             onClick={() => setCardMode('lab')}
-            className={`px-2.5 py-1 rounded text-[10px] font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
+            style={cardMode === 'lab' && isLight ? { color: '#ffffff' } : undefined}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer font-bold ${
               cardMode === 'lab'
-                ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold border border-[var(--color-accent)]/40 shadow-[0_0_12px_rgba(125,249,196,0.15)]'
-                : 'text-[var(--color-accent)]/80 hover:text-[var(--color-accent)] border border-[var(--color-accent)]/20 hover:bg-[var(--color-accent)]/10'
+                ? isLight
+                  ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
+                  : 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold border border-[var(--color-accent)]/40 shadow-[0_0_12px_rgba(125,249,196,0.15)]'
+                : isLight
+                  ? 'text-[#033500] hover:bg-[#033500]/10 border border-[#a7d3a2]'
+                  : 'text-[var(--color-accent)]/80 hover:text-[var(--color-accent)] border border-[var(--color-accent)]/20 hover:bg-[var(--color-accent)]/10'
             }`}
           >
-            <Play size={9} className="fill-[var(--color-accent)]" />
+            <Play size={11} className={isLight ? (cardMode === 'lab' ? 'fill-white text-white' : 'fill-[#033500] text-[#033500]') : 'fill-[var(--color-accent)]'} />
             🎮 PLAYABLE LAB // TEST LIVE
           </button>
         </div>
 
         {cardMode === 'specs' ? (
-          <div className="space-y-2.5 font-mono text-xs">
+          <div className="space-y-2.5 font-mono text-[14px]">
             {card.specs.map((spec, sIdx) => (
               <div
                 key={sIdx}
-                className="flex items-start gap-2.5 text-neutral-300 py-1.5 px-3 rounded-lg bg-white/[0.02] border border-white/[0.04]"
+                className={`flex items-start gap-2.5 py-2.5 px-3.5 rounded-lg border transition-colors ${
+                  isLight
+                    ? 'bg-[#f4faf4] border-[#d0e5ce] text-[#033500]'
+                    : 'bg-white/[0.02] border-white/[0.04] text-neutral-300'
+                }`}
               >
                 <ChevronRight
-                  size={14}
+                  size={17}
                   className="shrink-0 mt-0.5"
-                  style={{ color: card.accent }}
+                  style={{ color: isLight ? '#033500' : card.accent }}
                 />
-                <span className="leading-relaxed">{spec}</span>
+                <span className="leading-relaxed font-semibold">{spec}</span>
               </div>
             ))}
           </div>
@@ -996,9 +1121,11 @@ const StaticCard: React.FC<{ card: ModuleCard }> = ({ card }) => {
         )}
       </div>
 
-      <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between font-mono text-[11px] text-[var(--color-muted)]">
+      <div className={`pt-3 border-t flex items-center justify-between font-mono text-[13px] font-semibold ${
+        isLight ? 'border-[#a7d3a2] text-[#2d552b]' : 'border-white/[0.08] text-[var(--color-muted)]'
+      }`}>
         <span>{card.footerLeft}</span>
-        <span style={{ color: card.accent }} className="font-bold tracking-wide">
+        <span style={{ color: isLight ? '#033500' : card.accent }} className="font-bold tracking-wide">
           VERIFIED ARCHITECTURE
         </span>
       </div>

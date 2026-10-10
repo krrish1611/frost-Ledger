@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useReducedMotion } from 'framer-motion';
+import { useTheme } from '../../context/ThemeContext';
 
 const ASCII_RAMP = ' .:-=+*#%@';
 
@@ -22,6 +23,8 @@ export const AsciiImage: React.FC<AsciiImageProps> = ({
   width = 330,
   height = 330,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef<{
     currX: number;
@@ -370,17 +373,17 @@ export const AsciiImage: React.FC<AsciiImageProps> = ({
 
           if (isLight) {
             if (beamFactor > 0.45) {
-              ctx.fillStyle = '#00544b'; // Deep pine emerald sweep wavefront
+              ctx.fillStyle = '#022400'; // Deepest pine wavefront
             } else if (beamFactor > 0.15) {
-              ctx.fillStyle = '#008072'; // Vibrant success teal trail
+              ctx.fillStyle = '#033500'; // Primary brand pine green trail
             } else if (ratio > 0.65) {
-              ctx.fillStyle = '#00a896'; // Luminous emerald highlight
+              ctx.fillStyle = '#044a00'; // Crisp forest green highlight
             } else if (ratio > 0.42) {
-              ctx.fillStyle = '#a0e3d8'; // Seafoam sage
+              ctx.fillStyle = '#1b5e20'; // Emerald shade
             } else if (ratio > 0.22) {
-              ctx.fillStyle = '#d0fbf5'; // Pale ice aquamarine
+              ctx.fillStyle = '#4c8c4a'; // Muted sage
             } else {
-              ctx.fillStyle = '#eafbf8'; // Faint mist boundary
+              ctx.fillStyle = '#8ebc8a'; // Faint boundary
             }
           } else {
             if (beamFactor > 0.45) {
@@ -432,24 +435,32 @@ export const AsciiImage: React.FC<AsciiImageProps> = ({
 
   return (
     <div
-      className={`relative inline-flex flex-col justify-between w-full max-w-[355px] h-[435px] rounded-2xl border border-[var(--color-accent)]/25 bg-[#0c0d12]/95 p-3.5 shadow-[0_0_35px_rgba(125,249,196,0.1),0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden backdrop-blur-xl glow-accent group transition-all duration-300 hover:border-[var(--color-accent)]/40 hover:shadow-[0_0_45px_rgba(125,249,196,0.18),0_25px_60px_rgba(0,0,0,0.85)] ${className}`}
+      className={`relative inline-flex flex-col justify-between w-full max-w-[355px] h-[435px] rounded-2xl border ${
+        isLight
+          ? 'border-[#a7d3a2] bg-white shadow-[0_15px_45px_rgba(3,53,0,0.08)] hover:border-[#033500]/60'
+          : 'border-[var(--color-accent)]/25 bg-[#0c0d12]/95 shadow-[0_0_35px_rgba(125,249,196,0.1),0_20px_50px_rgba(0,0,0,0.8)] hover:border-[var(--color-accent)]/40 hover:shadow-[0_0_45px_rgba(125,249,196,0.18),0_25px_60px_rgba(0,0,0,0.85)]'
+      } p-3.5 overflow-hidden backdrop-blur-xl glow-accent group transition-all duration-300 ${className}`}
     >
       {/* 4 Precision Optic Corner Reticles */}
-      <div className="absolute top-2 left-2 w-2.5 h-2.5 border-t-2 border-l-2 border-[var(--color-accent)]/70 pointer-events-none transition-all duration-300 group-hover:border-[var(--color-accent)] group-hover:scale-105" />
-      <div className="absolute top-2 right-2 w-2.5 h-2.5 border-t-2 border-r-2 border-[var(--color-accent)]/70 pointer-events-none transition-all duration-300 group-hover:border-[var(--color-accent)] group-hover:scale-105" />
-      <div className="absolute bottom-2 left-2 w-2.5 h-2.5 border-b-2 border-l-2 border-[var(--color-accent)]/70 pointer-events-none transition-all duration-300 group-hover:border-[var(--color-accent)] group-hover:scale-105" />
-      <div className="absolute bottom-2 right-2 w-2.5 h-2.5 border-b-2 border-r-2 border-[var(--color-accent)]/70 pointer-events-none transition-all duration-300 group-hover:border-[var(--color-accent)] group-hover:scale-105" />
+      <div className={`absolute top-2 left-2 w-2.5 h-2.5 border-t-2 border-l-2 ${isLight ? 'border-[#033500]' : 'border-[var(--color-accent)]/70'} pointer-events-none transition-all duration-300 group-hover:scale-105`} />
+      <div className={`absolute top-2 right-2 w-2.5 h-2.5 border-t-2 border-r-2 ${isLight ? 'border-[#033500]' : 'border-[var(--color-accent)]/70'} pointer-events-none transition-all duration-300 group-hover:scale-105`} />
+      <div className={`absolute bottom-2 left-2 w-2.5 h-2.5 border-b-2 border-l-2 ${isLight ? 'border-[#033500]' : 'border-[var(--color-accent)]/70'} pointer-events-none transition-all duration-300 group-hover:scale-105`} />
+      <div className={`absolute bottom-2 right-2 w-2.5 h-2.5 border-b-2 border-r-2 ${isLight ? 'border-[#033500]' : 'border-[var(--color-accent)]/70'} pointer-events-none transition-all duration-300 group-hover:scale-105`} />
 
       {/* Top Header Strip */}
       <div className="flex items-center justify-between gap-2 mb-2.5 px-1">
-        <div className="font-mono text-[10px] text-[var(--color-accent)] bg-black/60 px-2.5 py-1 rounded-md border border-[var(--color-accent)]/30 flex items-center gap-2 backdrop-blur shadow-sm">
+        <div className={`font-mono text-[10px] ${
+          isLight ? 'text-[#033500] bg-[#d7edd5] border-[#033500]/30' : 'text-[var(--color-accent)] bg-black/60 border-[var(--color-accent)]/30'
+        } px-2.5 py-1 rounded-md border flex items-center gap-2 backdrop-blur shadow-sm`}>
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent)] opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-accent)]" />
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isLight ? 'bg-[#033500]' : 'bg-[var(--color-accent)]'} opacity-60`} />
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${isLight ? 'bg-[#033500]' : 'bg-[var(--color-accent)]'}`} />
           </span>
           <span className="font-bold tracking-wider">CRYPTOGRAPHIC_SEAL // ED25519</span>
         </div>
-        <div className="font-mono text-[9px] text-[var(--color-muted)] bg-black/60 px-2 py-1 rounded-md border hairline">
+        <div className={`font-mono text-[9px] ${
+          isLight ? 'text-[#2d552b] bg-[#f0f7f0] border-[#a7d3a2]' : 'text-[var(--color-muted)] bg-black/60 border hairline'
+        } px-2 py-1 rounded-md border`}>
           RFC 8785
         </div>
       </div>
@@ -463,11 +474,15 @@ export const AsciiImage: React.FC<AsciiImageProps> = ({
 
       {/* Bottom Footer Strip */}
       <div className="flex items-center justify-between gap-2 mt-2.5 px-1 font-mono text-[9px] text-[var(--color-muted)]">
-        <span className="bg-black/60 px-2 py-1 rounded-md border hairline text-neutral-400">
+        <span className={`${
+          isLight ? 'bg-[#f0f7f0] border-[#a7d3a2] text-[#2d552b]' : 'bg-black/60 border hairline text-neutral-400'
+        } px-2 py-1 rounded-md border`}>
           SHA-256 ROOTS
         </span>
-        <span className="text-[var(--color-accent)] bg-black/60 px-2 py-1 rounded-md border border-[var(--color-accent)]/30 flex items-center gap-1.5 font-semibold">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] shadow-[0_0_6px_var(--color-accent)]" />
+        <span className={`${
+          isLight ? 'text-[#033500] bg-[#d7edd5] border-[#033500]/30' : 'text-[var(--color-accent)] bg-black/60 border border-[var(--color-accent)]/30'
+        } px-2 py-1 rounded-md border flex items-center gap-1.5 font-semibold`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${isLight ? 'bg-[#033500]' : 'bg-[var(--color-accent)] shadow-[0_0_6px_var(--color-accent)]'}`} />
           HARDWARE LOCKED
         </span>
       </div>

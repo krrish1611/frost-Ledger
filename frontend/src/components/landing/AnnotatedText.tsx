@@ -12,9 +12,10 @@ export const AnnotatedText: React.FC<AnnotatedTextProps> = ({
   children,
   variant = 'underline',
   className = '',
-  strokeColor = 'var(--color-accent)',
+  strokeColor,
 }) => {
   const shouldReduceMotion = useReducedMotion();
+  const effectiveColor = strokeColor || (variant === 'circle' ? 'var(--color-circle-annotation, #4ade80)' : 'var(--color-accent)');
 
   if (variant === 'circle') {
     return (
@@ -29,12 +30,12 @@ export const AnnotatedText: React.FC<AnnotatedTextProps> = ({
         >
           <motion.path
             d="M50,4 C 80,4 97,12 97,20 C 97,30 74,36 50,36 C 26,36 3,30 3,20 C 3,12 22,4 50,5"
-            stroke={strokeColor}
-            strokeWidth="2.5"
+            stroke={effectiveColor}
+            strokeWidth="3.2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            initial={{ pathLength: shouldReduceMotion ? 1 : 0, opacity: shouldReduceMotion ? 0.9 : 0 }}
-            whileInView={{ pathLength: 1, opacity: 0.9 }}
+            initial={{ pathLength: shouldReduceMotion ? 1 : 0, opacity: shouldReduceMotion ? 0.95 : 0 }}
+            whileInView={{ pathLength: 1, opacity: 0.95 }}
             viewport={{ once: true, amount: 0.8 }}
             transition={{
               duration: shouldReduceMotion ? 0.01 : 0.8,
@@ -59,8 +60,8 @@ export const AnnotatedText: React.FC<AnnotatedTextProps> = ({
       >
         <motion.path
           d="M2,15 C 22,10 44,19 66,13 C 80,9 92,16 98,12"
-          stroke={strokeColor}
-          strokeWidth="2.5"
+          stroke={effectiveColor}
+          strokeWidth="2.8"
           strokeLinecap="round"
           initial={{ pathLength: shouldReduceMotion ? 1 : 0, opacity: shouldReduceMotion ? 0.9 : 0 }}
           whileInView={{ pathLength: 1, opacity: 0.9 }}
