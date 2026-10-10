@@ -111,9 +111,9 @@ html[data-theme="light"],
   /* Light green circle annotation for hero text */
   --color-circle-annotation: #4ade80;
 
-  /* Light Green Backlight Tokens for Light Theme (Subtle & Refined) */
-  --backlight-glow-card: 0 0 10px 1px rgba(74, 222, 128, 0.18), 0 2px 8px rgba(3, 53, 0, 0.05);
-  --backlight-glow-btn: 0 0 6px 1px rgba(74, 222, 128, 0.20);
+  /* Light Green Backlight Tokens for Light Theme (Adjusted: slight increase in glow) */
+  --backlight-glow-card: 0 0 14px 2px rgba(74, 222, 128, 0.28), 0 3px 10px rgba(3, 53, 0, 0.08);
+  --backlight-glow-btn: 0 0 10px 1.5px rgba(74, 222, 128, 0.32);
   --backlight-border-hover: #033500;
 
   /* FL Variables mapped for light theme */
@@ -706,12 +706,12 @@ html.light .glow-accent-strong:hover {
 /* Glow Effects */
 html.light .glow-accent {
   border-color: #033500 !important;
-  box-shadow: 0 2px 8px -2px rgba(3, 53, 0, 0.08) !important;
+  box-shadow: 0 3px 10px -2px rgba(3, 53, 0, 0.12) !important;
 }
 
 html.light .glow-accent-strong {
   border-color: #033500 !important;
-  box-shadow: 0 3px 10px -2px rgba(3, 53, 0, 0.12) !important;
+  box-shadow: 0 4px 14px -2px rgba(3, 53, 0, 0.18) !important;
 }
 
 html.light .card-title {
