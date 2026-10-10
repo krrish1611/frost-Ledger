@@ -73,8 +73,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: '1.1rem',
-                fontWeight: 700,
+                fontWeight: 800,
                 letterSpacing: '-0.02em',
+                color: 'var(--color-text)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.4rem',

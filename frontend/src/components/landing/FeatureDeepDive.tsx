@@ -102,7 +102,7 @@ const InteractiveScannerBar: React.FC<{
     >
       <BarTooltip item={item} isVisible={isHovered} mouseX={mouseX} />
       <div className="flex justify-between items-center text-[11px]">
-        <span className={`font-mono truncate max-w-[180px] sm:max-w-none transition-colors duration-200 ${isHovered ? 'text-white' : 'text-neutral-300'}`}>
+        <span className={`font-mono truncate max-w-[180px] sm:max-w-none transition-colors duration-200 ${isHovered ? 'text-[var(--color-accent)]' : 'text-[#021a18] dark:text-neutral-300'}`}>
           {item.name}
         </span>
         <div className="flex items-center gap-2">
@@ -110,7 +110,7 @@ const InteractiveScannerBar: React.FC<{
           <span
             className={`px-1.5 py-0.2 rounded text-[9px] font-bold transition-all duration-200 ${
               isAlert
-                ? 'bg-[var(--color-critical)]/20 text-[var(--color-critical)] border border-[var(--color-critical)]/40 shadow-[0_0_8px_rgba(224,87,76,0.3)]'
+                ? 'bg-[var(--color-critical)]/20 text-[var(--color-critical)] border border-[var(--color-critical)]/40 shadow-[0_0_8px_rgba(178,25,25,0.3)]'
                 : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)]'
             } ${isHovered ? 'scale-110' : ''}`}
           >
@@ -118,10 +118,10 @@ const InteractiveScannerBar: React.FC<{
           </span>
         </div>
       </div>
-      <div className={`h-1.5 w-full bg-[#1c1c20] rounded-full overflow-hidden relative cursor-pointer ${isHovered ? 'h-2.5' : ''} transition-all duration-200`}>
+      <div className={`h-1.5 w-full bg-black/10 dark:bg-[#1c1c20] rounded-full overflow-hidden relative cursor-pointer ${isHovered ? 'h-2.5' : ''} transition-all duration-200`}>
         <motion.div
           className={`h-full rounded-full origin-left transition-all duration-300 ${
-            isAlert ? 'bg-[var(--color-critical)] shadow-[0_0_8px_#e0574c]' : 'bg-[var(--color-accent)]'
+            isAlert ? 'bg-[var(--color-critical)] shadow-[0_0_8px_#b21919]' : 'bg-[var(--color-accent)]'
           }`}
           style={{ width: `${item.val * 100}%` }}
         />
@@ -165,7 +165,7 @@ const InteractiveRiskBar: React.FC<{
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex justify-between items-center text-[11px]">
-        <span className={`font-mono transition-colors duration-200 ${isHovered ? 'text-[var(--color-accent)]' : 'text-white'}`}>
+        <span className={`font-mono transition-colors duration-200 ${isHovered ? 'text-[var(--color-accent)]' : 'text-[#021a18] dark:text-white'}`}>
           {feat.name}
         </span>
         <span className="text-[var(--color-accent)] font-bold">
@@ -183,7 +183,7 @@ const InteractiveRiskBar: React.FC<{
           step="0.01"
           value={interactiveWeight}
           onChange={(e) => onWeightChange(parseFloat(e.target.value))}
-          className="w-full h-1 bg-[#1b1b20] rounded appearance-none cursor-pointer accent-[var(--color-accent)]"
+          className="w-full h-1 bg-black/10 dark:bg-[#1b1b20] rounded appearance-none cursor-pointer accent-[var(--color-accent)]"
         />
       </div>
     </div>
@@ -281,7 +281,7 @@ export const FeatureDeepDive: React.FC = () => {
           <Sparkles size={12} />
           TELEMETRY ANALYSIS // FAULT DIAGNOSTICS
         </div>
-        <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white">
+        <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-[#021a18] dark:text-white">
           Real-Time Cold Chain Diagnostics
         </h2>
         <p className="text-[var(--color-muted)] text-base sm:text-lg font-sans">
@@ -662,7 +662,7 @@ export const FeatureDeepDive: React.FC = () => {
             </div>
 
             {/* Dynamic Composite Risk Score Meter */}
-            <div className="mt-3 p-2.5 rounded-lg bg-[#0b0c10] border border-white/[0.08] space-y-1.5">
+            <div className="mt-3 p-2.5 rounded-lg bg-black/5 dark:bg-[#0b0c10] border border-black/10 dark:border-white/[0.08] space-y-1.5">
               <div className="flex justify-between items-center text-[10px] font-mono">
                 <span className="text-[var(--color-muted)]">COMPOSITE ANOMALY RISK:</span>
                 <span
@@ -670,20 +670,20 @@ export const FeatureDeepDive: React.FC = () => {
                     compositeScore > 65
                       ? 'text-[var(--color-critical)]'
                       : compositeScore > 35
-                      ? 'text-[#e8b14c]'
+                      ? 'text-[var(--color-warn)]'
                       : 'text-[var(--color-pass)]'
                   }`}
                 >
                   {compositeScore}% {compositeScore > 65 ? '(CRITICAL EXCURSION)' : compositeScore > 35 ? '(ELEVATED RISK)' : '(LOW RISK / SAFE)'}
                 </span>
               </div>
-              <div className="h-1.5 w-full bg-[#1b1b20] rounded-full overflow-hidden">
+              <div className="h-1.5 w-full bg-black/10 dark:bg-[#1b1b20] rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-300 rounded-full ${
                     compositeScore > 65
-                      ? 'bg-[var(--color-critical)] shadow-[0_0_8px_#e0574c]'
+                      ? 'bg-[var(--color-critical)] shadow-[0_0_8px_#b21919]'
                       : compositeScore > 35
-                      ? 'bg-[#e8b14c]'
+                      ? 'bg-[var(--color-warn)]'
                       : 'bg-[var(--color-pass)]'
                   }`}
                   style={{ width: `${compositeScore}%` }}

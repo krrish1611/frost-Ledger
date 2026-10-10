@@ -60,7 +60,7 @@ export const TraceStatusCard: React.FC = () => {
   return (
     <div className="w-full max-w-xl mx-auto rounded-lg border hairline bg-[var(--color-panel)] overflow-hidden shadow-2xl relative font-mono text-xs">
       {/* Top Cybernetic Flight-Board Header */}
-      <div className="bg-[#151518] border-b hairline px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+      <div className="bg-[var(--color-panel-elevated)] border-b hairline px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-critical)] animate-pulse" />
           <span className="text-[var(--color-text)] font-semibold tracking-wider font-display text-[13px]">
@@ -73,12 +73,12 @@ export const TraceStatusCard: React.FC = () => {
 
         <div className="flex items-center gap-2">
           {hasHitAnomaly ? (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[#e0574c]/50 bg-[#e0574c]/10 text-[var(--color-critical)] font-bold text-[11px] shadow-[0_0_12px_rgba(224,87,76,0.4)]">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[#b21919]/50 bg-[#fbe0e0] text-[#b21919] font-bold text-[11px] shadow-[0_0_12px_rgba(178,25,25,0.25)]">
               <ShieldAlert size={12} />
               EXCURSION : THRESHOLD BREACH
             </div>
           ) : isPostResolution ? (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[#5bc98c]/50 bg-[#5bc98c]/10 text-[var(--color-pass)] font-bold text-[11px] shadow-[0_0_12px_rgba(91,201,140,0.4)]">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[#a0e3d8] bg-[#d0fbf5] text-[#008072] font-bold text-[11px] shadow-[0_0_12px_rgba(0,128,114,0.2)]">
               <CheckCircle2 size={12} />
               ANCHORED : HASH CHAIN VERIFIED
             </div>
@@ -95,7 +95,7 @@ export const TraceStatusCard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 border-b hairline bg-[var(--color-bg)]/80 p-3 gap-2 text-[11px]">
         <div>
           <div className="text-[var(--color-muted)] text-[9px] uppercase tracking-wider">Target Profile</div>
-          <div className="text-white font-semibold mt-0.5">WHO_VACCINE_TYPE_2A</div>
+          <div className="text-[var(--color-text)] font-semibold mt-0.5">WHO_VACCINE_TYPE_2A</div>
         </div>
         <div>
           <div className="text-[var(--color-muted)] text-[9px] uppercase tracking-wider">Sampling Interval</div>
@@ -109,7 +109,7 @@ export const TraceStatusCard: React.FC = () => {
                 ? 'text-[var(--color-critical)]'
                 : isPostResolution
                 ? 'text-[var(--color-pass)]'
-                : 'text-white'
+                : 'text-[var(--color-text)]'
             }`}
           >
             {hasHitAnomaly ? '88.4% (CRITICAL)' : isPostResolution ? '1.2% (NORMAL)' : `${STEP_ANOMALY_SCORES[currentStep]}.0%`}
@@ -117,7 +117,7 @@ export const TraceStatusCard: React.FC = () => {
         </div>
         <div>
           <div className="text-[var(--color-muted)] text-[9px] uppercase tracking-wider">Blockchain Anchor</div>
-          <div className="text-white font-semibold mt-0.5 flex items-center gap-1">
+          <div className="text-[var(--color-text)] font-semibold mt-0.5 flex items-center gap-1">
             <GitFork size={11} className="text-[var(--color-accent)]" />
             {isPostResolution ? 'AMOY: #49281.OK' : 'SYNCING'}
           </div>
@@ -125,7 +125,7 @@ export const TraceStatusCard: React.FC = () => {
       </div>
 
       {/* Playable Trace Debugger Controller */}
-      <div className="px-3 py-1.5 bg-[#101014] border-b hairline flex items-center justify-between flex-wrap gap-1.5 text-[10px]">
+      <div className="px-3 py-1.5 bg-[var(--color-panel-elevated)] border-b hairline flex items-center justify-between flex-wrap gap-1.5 text-[10px]">
         <div className="flex items-center gap-1.5">
           <span className="text-[var(--color-muted)] flex items-center gap-1">
             <Play size={9} className="fill-[var(--color-accent)] text-[var(--color-accent)]" />
@@ -183,19 +183,19 @@ export const TraceStatusCard: React.FC = () => {
           const scoreValue = isAnomalyStep && isPostResolution ? 1 : score;
 
           let badgeColor = 'text-[var(--color-muted)] border-transparent bg-transparent';
-          let barBg = 'bg-[#1f1f23]';
+          let barBg = 'bg-[var(--color-muted)]/30';
 
           if (isAnomalyStep && hasHitAnomaly) {
-            badgeColor = 'text-[var(--color-critical)] border-[#e0574c]/50 bg-[#e0574c]/15 shadow-[0_0_10px_#e0574c]';
+            badgeColor = 'text-[var(--color-critical)] border-[#b21919]/50 bg-[#fbe0e0] font-bold shadow-[0_0_10px_rgba(178,25,25,0.25)]';
             barBg = 'bg-[var(--color-critical)]';
           } else if (isAnomalyStep && isPostResolution) {
-            badgeColor = 'text-[var(--color-pass)] border-[#5bc98c]/40 bg-[#5bc98c]/10';
+            badgeColor = 'text-[var(--color-pass)] border-[#a0e3d8] bg-[#d0fbf5] font-bold';
             barBg = 'bg-[var(--color-pass)]';
           } else if (isPassed || isCurrent) {
             badgeColor = isCurrent
-              ? 'text-[var(--color-accent)] border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10'
-              : 'text-neutral-300 border-transparent bg-white/5';
-            barBg = isPassed ? 'bg-[var(--color-accent)]/60' : 'bg-[var(--color-accent)]';
+              ? 'text-[var(--color-accent)] border-[var(--color-accent)]/40 bg-[var(--color-accent)]/15 font-bold shadow-[0_0_8px_rgba(0,128,114,0.15)]'
+              : 'text-[var(--color-text)] border-transparent bg-black/5 dark:bg-white/5 font-medium';
+            barBg = isPassed ? 'bg-[var(--color-accent)]/70' : 'bg-[var(--color-accent)]';
           }
 
           return (
@@ -207,10 +207,10 @@ export const TraceStatusCard: React.FC = () => {
                 if (idx < 7) setIsResolved(false);
               }}
               title="Click step to jump & inspect"
-              className={`flex items-center justify-between px-2.5 py-1 rounded border text-[11px] transition-colors duration-150 cursor-pointer hover:border-white/20 ${badgeColor}`}
+              className={`flex items-center justify-between px-2.5 py-1.5 rounded border text-[11px] transition-colors duration-150 cursor-pointer hover:border-[var(--color-accent)]/50 ${badgeColor}`}
             >
               <div className="flex items-center gap-2.5 w-1/2 min-w-[170px]">
-                <span className="text-[var(--color-muted)] font-mono">
+                <span className="text-[var(--color-muted)] font-mono font-bold">
                   {idx.toString().padStart(2, '0')}
                 </span>
                 <span className="truncate">{STEP_LABELS[idx]}</span>
@@ -218,7 +218,7 @@ export const TraceStatusCard: React.FC = () => {
 
               {/* Anomaly Bar Gauge */}
               <div className="flex-1 mx-3 hidden sm:flex items-center gap-1.5">
-                <div className="h-1.5 w-full bg-[#1b1b1f] rounded-full overflow-hidden flex">
+                <div className="h-2 w-full bg-black/10 dark:bg-[#1b1b1f] rounded-full overflow-hidden flex border border-black/5 dark:border-transparent">
                   <div
                     className={`h-full transition-all duration-200 ${barBg}`}
                     style={{ width: `${Math.min(100, Math.max(8, scoreValue))}%` }}
@@ -248,7 +248,7 @@ export const TraceStatusCard: React.FC = () => {
       </div>
 
       {/* Terminal Footer Status Message */}
-      <div className="px-4 py-2 bg-[#0c0c0e] border-t hairline flex items-center justify-between text-[10px] text-[var(--color-muted)]">
+      <div className="px-4 py-2 bg-[var(--color-panel-elevated)] border-t hairline flex items-center justify-between text-[10px] text-[var(--color-muted)]">
         <div className="flex items-center gap-1.5">
           <Cpu size={12} className="text-[var(--color-accent)]" />
           <span>

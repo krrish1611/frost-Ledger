@@ -48,10 +48,13 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
     let particles: Particle[] = [];
     const mouse = { x: -9999, y: -9999, active: false };
 
+    const isLightNow = () => document.documentElement.classList.contains('light');
+
     const initParticles = () => {
       const width = Math.min(container.clientWidth || 1000, 1200);
       const height = 160;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const isLight = isLightNow();
 
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
@@ -66,8 +69,8 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
       const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
       if (!offCtx) return;
 
-      const fontSize = Math.min(92, Math.floor(width / (text.length * 0.62)));
-      offCtx.font = `700 ${fontSize}px "Space Grotesk", sans-serif`;
+      const fontSize = Math.min(96, Math.floor(width / (text.length * 0.60)));
+      offCtx.font = `800 ${fontSize}px "Space Grotesk", sans-serif`;
       offCtx.fillStyle = '#ffffff';
       offCtx.textAlign = 'center';
       offCtx.textBaseline = 'middle';
@@ -75,22 +78,23 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
 
       const imgData = offCtx.getImageData(0, 0, width, height);
       const data = imgData.data;
-      const step = 4; // Sample every 4 pixels for optimal density and 60fps
+      // In light mode, use a tighter 2px sampling grid for a solid, razor-sharp letterform
+      const step = isLight ? 2 : 4;
       particles = [];
 
       for (let y = 0; y < height; y += step) {
         for (let x = 0; x < width; x += step) {
           const idx = (y * width + x) * 4;
-          if (data[idx + 3] > 128) {
+          if (data[idx + 3] > 120) {
             // Register particle at home coordinate (hx, hy)
             particles.push({
-              x: x + (Math.random() - 0.5) * 10,
-              y: y + (Math.random() - 0.5) * 10,
+              x: x + (Math.random() - 0.5) * 8,
+              y: y + (Math.random() - 0.5) * 8,
               vx: 0,
               vy: 0,
               hx: x,
               hy: y,
-              size: 1.4,
+              size: isLight ? 2.4 : 1.4,
             });
           }
         }
@@ -110,9 +114,19 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
       mouse.active = false;
     };
 
+    const onThemeChange = () => {
+      initParticles();
+    };
+
+    const observer = new MutationObserver(() => {
+      initParticles();
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+
     window.addEventListener('mousemove', onPointerMove);
     window.addEventListener('mouseleave', onPointerLeave);
     window.addEventListener('resize', initParticles);
+    window.addEventListener('frostledger-theme-change', onThemeChange);
 
     const radius = 80;
 
@@ -121,8 +135,9 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
       const height = canvas.height / (window.devicePixelRatio || 1);
 
       ctx.clearRect(0, 0, width, height);
-      const isLight = document.documentElement.classList.contains('light');
-      ctx.fillStyle = isLight ? '#008072' : '#7df9c4';
+      const isLight = isLightNow();
+      // In light mode use pitch obsidian forest (#021a18) with 19.5:1 contrast against light background
+      ctx.fillStyle = isLight ? '#021a18' : '#7df9c4';
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
@@ -134,7 +149,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
           const dist = Math.hypot(dx, dy);
 
           if (dist < radius && dist > 0.001) {
-            const force = (1 - dist / radius) * 7.5;
+            const force = (1 - dist / radius) * 8.0;
             const angle = Math.atan2(dy, dx);
             p.vx += Math.cos(angle) * force;
             p.vy += Math.sin(angle) * force;
@@ -142,19 +157,20 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
         }
 
         // Spring-to-Home Force
-        p.vx += (p.hx - p.x) * 0.08;
-        p.vy += (p.hy - p.y) * 0.08;
+        p.vx += (p.hx - p.x) * 0.09;
+        p.vy += (p.hy - p.y) * 0.09;
 
         // Friction / Damping
-        p.vx *= 0.84;
-        p.vy *= 0.84;
+        p.vx *= 0.82;
+        p.vy *= 0.82;
 
         // Update position
         p.x += p.vx;
         p.y += p.vy;
 
-        // Render particle
-        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+        // Render particle with solid dimension
+        const pSize = p.size;
+        ctx.fillRect(p.x - pSize / 2, p.y - pSize / 2, pSize, pSize);
       }
 
       animId = requestAnimationFrame(loop);
@@ -164,16 +180,18 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
 
     return () => {
       cancelAnimationFrame(animId);
+      observer.disconnect();
       window.removeEventListener('mousemove', onPointerMove);
       window.removeEventListener('mouseleave', onPointerLeave);
       window.removeEventListener('resize', initParticles);
+      window.removeEventListener('frostledger-theme-change', onThemeChange);
     };
   }, [isMobile, shouldReduceMotion, text]);
 
   if (isMobile || shouldReduceMotion) {
     return (
       <div className={`text-center py-2 select-none ${className}`}>
-        <h1 className="font-display font-extrabold tracking-tight text-5xl sm:text-7xl md:text-8xl text-white drop-shadow-[0_0_35px_rgba(125,249,196,0.35)]">
+        <h1 className="font-display font-extrabold tracking-tight text-5xl sm:text-7xl md:text-8xl text-[#021a18] dark:text-white drop-shadow-[0_2px_12px_rgba(0,128,114,0.18)] dark:drop-shadow-[0_0_35px_rgba(125,249,196,0.35)]">
           {text}
         </h1>
       </div>

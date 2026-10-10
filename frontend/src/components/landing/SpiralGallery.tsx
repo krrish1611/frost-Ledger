@@ -142,7 +142,7 @@ const Pillar2Playable: React.FC = () => {
         <div>
           <div className="flex justify-between text-[10px] mb-0.5">
             <span className="text-[var(--color-muted)]">TRANSIT EXPOSURE:</span>
-            <span className="text-white font-bold">{duration} HOURS</span>
+            <span className="text-[#021a18] dark:text-white font-bold">{duration} HOURS</span>
           </div>
           <input
             type="range"
@@ -151,32 +151,32 @@ const Pillar2Playable: React.FC = () => {
             step="2"
             value={duration}
             onChange={(e) => setDuration(parseInt(e.target.value))}
-            className="w-full h-1.5 bg-[#1f1f23] rounded appearance-none cursor-pointer accent-[#e8b14c]"
+            className="w-full h-1.5 bg-black/10 dark:bg-[#1f1f23] rounded appearance-none cursor-pointer accent-[#8f7200]"
           />
         </div>
       </div>
 
       {/* Physics Calculation Display */}
-      <div className="p-2 rounded-lg bg-[#0b0c10] border border-white/[0.08] space-y-1.5 text-[10px]">
+      <div className="p-2 rounded-lg bg-black/5 dark:bg-[#0b0c10] border border-black/10 dark:border-white/[0.08] space-y-1.5 text-[10px]">
         <div className="flex justify-between items-center">
           <span className="text-[var(--color-muted)]">ARRHENIUS RATE MULTIPLIER (k/k₀):</span>
-          <span className="text-[#e8b14c] font-bold">{kRel.toFixed(2)}× BASELINE</span>
+          <span className="text-[#8f7200] font-bold">{kRel.toFixed(2)}× BASELINE</span>
         </div>
         <div>
           <div className="flex justify-between mb-1">
             <span className="text-[var(--color-muted)]">REMAINING BATCH POTENCY:</span>
             <span
               className={`font-bold ${
-                potency > 92 ? 'text-[var(--color-pass)]' : potency > 80 ? 'text-[#e8b14c]' : 'text-[var(--color-critical)]'
+                potency > 92 ? 'text-[var(--color-pass)]' : potency > 80 ? 'text-[var(--color-warn)]' : 'text-[var(--color-critical)]'
               }`}
             >
               {potency.toFixed(1)}%
             </span>
           </div>
-          <div className="h-1.5 w-full bg-[#1b1b20] rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-black/10 dark:bg-[#1b1b20] rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-300 rounded-full ${
-                potency > 92 ? 'bg-[var(--color-pass)]' : potency > 80 ? 'bg-[#e8b14c]' : 'bg-[var(--color-critical)]'
+                potency > 92 ? 'bg-[var(--color-pass)]' : potency > 80 ? 'bg-[var(--color-warn)]' : 'bg-[var(--color-critical)]'
               }`}
               style={{ width: `${potency}%` }}
             />
@@ -560,7 +560,7 @@ export const SpiralGallery: React.FC = () => {
               ARCHITECTURE // 4 CORE PILLARS
             </div>
 
-            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#021a18] dark:text-white leading-tight">
               The Four Pillars of FrostLedger
             </h2>
 

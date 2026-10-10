@@ -23,8 +23,12 @@ import {
   MOCK_SHIPMENTS,
   generateTelemetryHistory,
 } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 
 export const ShipmentDetailView: React.FC = () => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [selectedShipmentId, setSelectedShipmentId] = useState<string>(
     MOCK_SHIPMENTS[0].shipment_id
   );
@@ -262,45 +266,50 @@ export const ShipmentDetailView: React.FC = () => {
 
         <div style={{ height: '320px', width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={telemetryData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1F1F23" />
-              <XAxis dataKey="timestamp" stroke="#8A8A92" fontSize={11} fontFamily="Geist Mono" />
-              <YAxis domain={[-2, 20]} stroke="#8A8A92" fontSize={11} fontFamily="Geist Mono" unit="°C" />
+            <LineChart data={telemetryData} margin={{ top: 12, right: 75, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={isLight ? '#72c4b7' : '#1F1F23'} opacity={isLight ? 0.55 : 1} />
+              <XAxis dataKey="timestamp" stroke={isLight ? '#021a18' : '#8A8A92'} fontSize={11} fontFamily="Geist Mono" strokeWidth={isLight ? 1.5 : 1} />
+              <YAxis domain={[-2, 20]} stroke={isLight ? '#021a18' : '#8A8A92'} fontSize={11} fontFamily="Geist Mono" unit="°C" strokeWidth={isLight ? 1.5 : 1} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#111113',
-                  border: '1px solid #1F1F23',
-                  borderRadius: '4px',
+                  backgroundColor: isLight ? '#ffffff' : '#111113',
+                  border: isLight ? '1.5px solid #008072' : '1px solid #1F1F23',
+                  borderRadius: '6px',
+                  color: isLight ? '#021a18' : '#e8e8e8',
                   fontFamily: 'Geist Mono',
                   fontSize: '12px',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
                 }}
               />
               <ReferenceLine
                 y={shipment.temp_max_c}
-                stroke="#E0574C"
+                stroke={isLight ? '#b21919' : '#E0574C'}
                 strokeDasharray="4 4"
-                label={{ value: `Max: ${shipment.temp_max_c}°C`, fill: '#FFA29A', fontSize: 10, position: 'right' }}
+                strokeWidth={isLight ? 2.5 : 1}
+                label={{ value: `Max: ${shipment.temp_max_c}°C`, fill: isLight ? '#b21919' : '#FFA29A', fontSize: 11, fontWeight: 800, position: 'right' }}
               />
               <ReferenceLine
                 y={shipment.temp_min_c}
-                stroke="#7DF9C4"
+                stroke={isLight ? '#004d44' : '#7DF9C4'}
                 strokeDasharray="4 4"
-                label={{ value: `Min: ${shipment.temp_min_c}°C`, fill: '#7DF9C4', fontSize: 10, position: 'right' }}
+                strokeWidth={isLight ? 2.5 : 1}
+                label={{ value: `Min: ${shipment.temp_min_c}°C`, fill: isLight ? '#004d44' : '#7DF9C4', fontSize: 11, fontWeight: 800, position: 'right' }}
               />
               <Line
                 type="monotone"
                 dataKey="temperature"
-                stroke="#7DF9C4"
-                strokeWidth={2}
+                stroke={isLight ? '#004d44' : '#7DF9C4'}
+                strokeWidth={isLight ? 3.5 : 2}
                 dot={false}
                 name="Temperature (°C)"
               />
               <Area
                 type="monotone"
                 dataKey="humidity"
-                fill="rgba(91, 201, 140, 0.08)"
-                stroke="#5BC98C"
-                strokeWidth={1}
+                fill={isLight ? 'rgba(0, 102, 91, 0.16)' : 'rgba(91, 201, 140, 0.08)'}
+                stroke={isLight ? '#00665b' : '#5BC98C'}
+                strokeWidth={isLight ? 2 : 1}
                 name="Humidity (%)"
               />
             </LineChart>
