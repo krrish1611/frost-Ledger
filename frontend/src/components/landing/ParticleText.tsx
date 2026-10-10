@@ -69,8 +69,8 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
       const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
       if (!offCtx) return;
 
-      const fontSize = Math.min(96, Math.floor(width / (text.length * 0.60)));
-      offCtx.font = `800 ${fontSize}px "Space Grotesk", sans-serif`;
+      const fontSize = Math.min(92, Math.floor(width / (text.length * 0.62)));
+      offCtx.font = `700 ${fontSize}px "Space Grotesk", sans-serif`;
       offCtx.fillStyle = '#ffffff';
       offCtx.textAlign = 'center';
       offCtx.textBaseline = 'middle';
@@ -78,23 +78,23 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
 
       const imgData = offCtx.getImageData(0, 0, width, height);
       const data = imgData.data;
-      // In light mode, use a tighter 2px sampling grid for a solid, razor-sharp letterform
-      const step = isLight ? 2 : 4;
+      // Sample every 4px to produce the authentic LED dot-matrix raster in both light and dark modes
+      const step = 4;
       particles = [];
 
       for (let y = 0; y < height; y += step) {
         for (let x = 0; x < width; x += step) {
           const idx = (y * width + x) * 4;
-          if (data[idx + 3] > 120) {
+          if (data[idx + 3] > 100) {
             // Register particle at home coordinate (hx, hy)
             particles.push({
-              x: x + (Math.random() - 0.5) * 8,
-              y: y + (Math.random() - 0.5) * 8,
+              x: x + (Math.random() - 0.5) * 6,
+              y: y + (Math.random() - 0.5) * 6,
               vx: 0,
               vy: 0,
               hx: x,
               hy: y,
-              size: isLight ? 2.4 : 1.4,
+              size: isLight ? 2.6 : 1.8,
             });
           }
         }
@@ -168,9 +168,14 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
         p.x += p.vx;
         p.y += p.vy;
 
-        // Render particle with solid dimension
+        // Render square matrix dot with crisp pixel alignment
         const pSize = p.size;
-        ctx.fillRect(p.x - pSize / 2, p.y - pSize / 2, pSize, pSize);
+        ctx.fillRect(
+          Math.round(p.x - pSize / 2),
+          Math.round(p.y - pSize / 2),
+          pSize,
+          pSize
+        );
       }
 
       animId = requestAnimationFrame(loop);

@@ -157,7 +157,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
       {/* 4. HERO SECTION */}
       <section className="relative min-h-[calc(100vh-64px)] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-16 overflow-hidden">
         {/* Full-screen Monospace AsciiReveal Interactive Background */}
-        <div className="absolute inset-0 opacity-40 pointer-events-none">
+        <div className="absolute inset-0 opacity-65 dark:opacity-40 pointer-events-none">
           <AsciiReveal cellSize={18} interactiveRadius={180} />
         </div>
 

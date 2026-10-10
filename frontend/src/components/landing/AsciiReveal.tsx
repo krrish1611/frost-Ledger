@@ -85,7 +85,7 @@ export const AsciiReveal: React.FC<AsciiRevealProps> = ({
           const key = `${c},${r}`;
 
           // Ambient baseline sine wave pulse
-          const wave = 0.22 + 0.12 * Math.sin(x * 0.03 + y * 0.025 + timeVal);
+          const wave = 0.28 + 0.18 * Math.sin(x * 0.03 + y * 0.025 + timeVal);
 
           // Pointer interaction with decaying heatmap
           let heat = (heatMap.get(key) || 0) * 0.92;
@@ -119,17 +119,17 @@ export const AsciiReveal: React.FC<AsciiRevealProps> = ({
           const tColor = Math.min(1, Math.pow(combined, 1.4));
           let red: number, green: number, blue: number;
           if (isLight) {
-            // Light mode: Seafoam (#a0e3d8: 160, 227, 216) to Deep Success Teal (#008072: 0, 128, 114)
-            red = Math.floor(160 + tColor * (0 - 160));
-            green = Math.floor(227 + tColor * (128 - 227));
-            blue = Math.floor(216 + tColor * (114 - 216));
+            // Light mode: Forest sage baseline (#2d5528: 45, 85, 40) to deep pine green (#033500: 3, 53, 0)
+            red = Math.floor(45 + tColor * (3 - 45));
+            green = Math.floor(85 + tColor * (53 - 85));
+            blue = Math.floor(40 + tColor * (0 - 40));
           } else {
             // Dark mode: Dark baseline (#3a3a40: 58, 58, 64) to Mint (#7DF9C4: 125, 249, 196)
             red = Math.floor(58 + tColor * (125 - 58));
             green = Math.floor(58 + tColor * (249 - 58));
             blue = Math.floor(64 + tColor * (196 - 64));
           }
-          const alpha = isLight ? 0.35 + combined * 0.65 : 0.25 + combined * 0.75;
+          const alpha = isLight ? 0.30 + combined * 0.60 : 0.25 + combined * 0.75;
 
           ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha.toFixed(2)})`;
           ctx.fillText(char, x, y);
