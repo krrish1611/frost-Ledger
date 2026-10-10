@@ -7,8 +7,12 @@ import {
   MOCK_PROFILES,
   MOCK_AUDIT_LOGS,
 } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 
 export const AdminManagementView: React.FC = () => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [activeTab, setActiveTab] = useState<'profiles' | 'devices' | 'audit'>('profiles');
   const [devices, setDevices] = useState<DeviceFleetItem[]>(MOCK_DEVICES);
   const [profiles, setProfiles] = useState<ProductProfileItem[]>(MOCK_PROFILES);
@@ -97,36 +101,81 @@ export const AdminManagementView: React.FC = () => {
           gap: '12px',
         }}
       >
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
-            className="fl-button"
+            className={`fl-button ${isLight && activeTab === 'profiles' ? 'force-white' : ''}`}
             onClick={() => setActiveTab('profiles')}
             style={{
-              background: activeTab === 'profiles' ? 'rgba(125, 249, 196, 0.15)' : 'transparent',
-              borderColor: activeTab === 'profiles' ? 'var(--fl-mint)' : 'var(--fl-hairline)',
-              color: activeTab === 'profiles' ? 'var(--fl-mint)' : 'var(--fl-muted)',
+              background:
+                activeTab === 'profiles'
+                  ? isLight
+                    ? '#033500'
+                    : 'rgba(125, 249, 196, 0.15)'
+                  : isLight
+                  ? '#ffffff'
+                  : 'transparent',
+              borderColor: isLight ? '#033500' : activeTab === 'profiles' ? 'var(--fl-mint)' : 'var(--fl-hairline)',
+              color:
+                activeTab === 'profiles'
+                  ? isLight
+                    ? '#ffffff'
+                    : 'var(--fl-mint)'
+                  : isLight
+                  ? '#033500'
+                  : 'var(--fl-muted)',
+              fontWeight: activeTab === 'profiles' ? 600 : 500,
             }}
           >
             Digital Product Profiles ({profiles.length})
           </button>
           <button
-            className="fl-button"
+            className={`fl-button ${isLight && activeTab === 'devices' ? 'force-white' : ''}`}
             onClick={() => setActiveTab('devices')}
             style={{
-              background: activeTab === 'devices' ? 'rgba(125, 249, 196, 0.15)' : 'transparent',
-              borderColor: activeTab === 'devices' ? 'var(--fl-mint)' : 'var(--fl-hairline)',
-              color: activeTab === 'devices' ? 'var(--fl-mint)' : 'var(--fl-muted)',
+              background:
+                activeTab === 'devices'
+                  ? isLight
+                    ? '#033500'
+                    : 'rgba(125, 249, 196, 0.15)'
+                  : isLight
+                  ? '#ffffff'
+                  : 'transparent',
+              borderColor: isLight ? '#033500' : activeTab === 'devices' ? 'var(--fl-mint)' : 'var(--fl-hairline)',
+              color:
+                activeTab === 'devices'
+                  ? isLight
+                    ? '#ffffff'
+                    : 'var(--fl-mint)'
+                  : isLight
+                  ? '#033500'
+                  : 'var(--fl-muted)',
+              fontWeight: activeTab === 'devices' ? 600 : 500,
             }}
           >
             Ed25519 Fleet Devices ({devices.length})
           </button>
           <button
-            className="fl-button"
+            className={`fl-button ${isLight && activeTab === 'audit' ? 'force-white' : ''}`}
             onClick={() => setActiveTab('audit')}
             style={{
-              background: activeTab === 'audit' ? 'rgba(125, 249, 196, 0.15)' : 'transparent',
-              borderColor: activeTab === 'audit' ? 'var(--fl-mint)' : 'var(--fl-hairline)',
-              color: activeTab === 'audit' ? 'var(--fl-mint)' : 'var(--fl-muted)',
+              background:
+                activeTab === 'audit'
+                  ? isLight
+                    ? '#033500'
+                    : 'rgba(125, 249, 196, 0.15)'
+                  : isLight
+                  ? '#ffffff'
+                  : 'transparent',
+              borderColor: isLight ? '#033500' : activeTab === 'audit' ? 'var(--fl-mint)' : 'var(--fl-hairline)',
+              color:
+                activeTab === 'audit'
+                  ? isLight
+                    ? '#ffffff'
+                    : 'var(--fl-mint)'
+                  : isLight
+                  ? '#033500'
+                  : 'var(--fl-muted)',
+              fontWeight: activeTab === 'audit' ? 600 : 500,
             }}
           >
             Tamper-Proof Audit Log ({auditLogs.length})
@@ -135,13 +184,14 @@ export const AdminManagementView: React.FC = () => {
 
         {activeTab === 'profiles' && (
           <button
-            className="fl-button"
+            className={`fl-button ${isLight ? 'force-white' : ''}`}
             onClick={() => setShowProfileModal(true)}
             style={{
-              background: 'var(--fl-mint)',
-              color: 'var(--fl-bg-primary)',
-              borderColor: 'var(--fl-mint)',
+              background: isLight ? '#033500' : 'var(--fl-mint)',
+              color: isLight ? '#ffffff' : '#0a0a0b',
+              borderColor: isLight ? '#033500' : 'var(--fl-mint)',
               fontWeight: 600,
+              boxShadow: isLight ? '0 2px 8px rgba(3, 53, 0, 0.25)' : undefined,
             }}
           >
             + Register New Profile Version
@@ -153,8 +203,10 @@ export const AdminManagementView: React.FC = () => {
       {activeTab === 'profiles' && (
         <div className="fl-card">
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '16px', fontWeight: 600 }}>Immutable Product Quality Profiles</div>
-            <div style={{ fontSize: '13px', color: 'var(--fl-muted)', marginTop: '2px' }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: isLight ? '#033500' : 'var(--color-text)' }}>
+              Immutable Product Quality Profiles
+            </div>
+            <div style={{ fontSize: '13px', color: isLight ? '#2d552b' : 'var(--fl-muted)', marginTop: '2px' }}>
               Cryptographically hashed temperature corridors, USP &lt;1160&gt; activation energies,
               and cumulative excursion limits.
             </div>
@@ -177,8 +229,8 @@ export const AdminManagementView: React.FC = () => {
                 {profiles.map((p) => (
                   <tr key={p.profile_id}>
                     <td>
-                      <div style={{ fontWeight: 600, color: 'var(--fl-text)' }}>{p.name}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--fl-muted)' }}>{p.profile_id}</div>
+                      <div style={{ fontWeight: 600, color: isLight ? '#033500' : 'var(--fl-text)' }}>{p.name}</div>
+                      <div style={{ fontSize: '11px', color: isLight ? '#2d552b' : 'var(--fl-muted)' }}>{p.profile_id}</div>
                     </td>
                     <td>
                       <span
@@ -186,28 +238,33 @@ export const AdminManagementView: React.FC = () => {
                           textTransform: 'uppercase',
                           fontFamily: 'var(--fl-font-mono)',
                           fontSize: '11px',
-                          padding: '2px 6px',
+                          padding: '3px 8px',
                           borderRadius: '4px',
-                          background: 'rgba(255, 255, 255, 0.05)',
+                          background: isLight ? '#d7edd5' : 'rgba(255, 255, 255, 0.05)',
+                          color: isLight ? '#033500' : 'inherit',
+                          border: isLight ? '1px solid #033500' : 'none',
+                          fontWeight: 600,
                         }}
                       >
                         {p.cargo_type}
                       </span>
                     </td>
-                    <td style={{ color: 'var(--fl-mint)', fontWeight: 600 }}>
+                    <td style={{ color: isLight ? '#033500' : 'var(--fl-mint)', fontWeight: 600 }}>
                       {p.temp_min_c.toFixed(1)}°C to {p.temp_max_c.toFixed(1)}°C
                     </td>
-                    <td>{(p.max_excursion_seconds / 60).toFixed(0)} mins</td>
-                    <td>{p.mkt_activation_energy_kj.toFixed(2)} kJ/mol</td>
+                    <td style={{ color: isLight ? '#033500' : 'inherit' }}>{(p.max_excursion_seconds / 60).toFixed(0)} mins</td>
+                    <td style={{ color: isLight ? '#033500' : 'inherit' }}>{p.mkt_activation_energy_kj.toFixed(2)} kJ/mol</td>
                     <td>
                       <span
                         style={{
                           fontFamily: 'var(--fl-font-mono)',
-                          background: 'rgba(125, 249, 196, 0.1)',
-                          color: 'var(--fl-mint)',
+                          background: isLight ? '#d7edd5' : 'rgba(125, 249, 196, 0.1)',
+                          color: isLight ? '#033500' : 'var(--fl-mint)',
                           padding: '2px 8px',
                           borderRadius: '4px',
                           fontSize: '11px',
+                          border: isLight ? '1px solid #033500' : 'none',
+                          fontWeight: 600,
                         }}
                       >
                         v{p.version}
@@ -217,7 +274,7 @@ export const AdminManagementView: React.FC = () => {
                       style={{
                         fontFamily: 'var(--fl-font-mono)',
                         fontSize: '11px',
-                        color: 'var(--fl-muted)',
+                        color: isLight ? '#2d552b' : 'var(--fl-muted)',
                       }}
                     >
                       {p.profile_hash.substring(0, 16)}...
@@ -234,8 +291,10 @@ export const AdminManagementView: React.FC = () => {
       {activeTab === 'devices' && (
         <div className="fl-card">
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '16px', fontWeight: 600 }}>Ed25519 IoT Device Fleet</div>
-            <div style={{ fontSize: '13px', color: 'var(--fl-muted)', marginTop: '2px' }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: isLight ? '#033500' : 'var(--color-text)' }}>
+              Ed25519 IoT Device Fleet
+            </div>
+            <div style={{ fontSize: '13px', color: isLight ? '#2d552b' : 'var(--fl-muted)', marginTop: '2px' }}>
               Hardware cryptographic identity keys. Inbound telemetry batches are rejected if signed
               by a revoked device key.
             </div>
@@ -257,17 +316,17 @@ export const AdminManagementView: React.FC = () => {
               <tbody>
                 {devices.map((d) => (
                   <tr key={d.device_id}>
-                    <td style={{ fontWeight: 600, color: 'var(--fl-text)' }}>{d.device_id}</td>
+                    <td style={{ fontWeight: 600, color: isLight ? '#033500' : 'var(--fl-text)' }}>{d.device_id}</td>
                     <td
                       style={{
                         fontFamily: 'var(--fl-font-mono)',
                         fontSize: '11px',
-                        color: 'var(--fl-muted)',
+                        color: isLight ? '#2d552b' : 'var(--fl-muted)',
                       }}
                     >
                       {d.public_key.substring(0, 24)}...
                     </td>
-                    <td style={{ fontFamily: 'var(--fl-font-mono)', fontSize: '12px' }}>
+                    <td style={{ fontFamily: 'var(--fl-font-mono)', fontSize: '12px', color: isLight ? '#033500' : 'inherit' }}>
                       {d.firmware_version}
                     </td>
                     <td>
@@ -275,9 +334,15 @@ export const AdminManagementView: React.FC = () => {
                         style={{
                           color:
                             d.battery_pct > 50
-                              ? 'var(--fl-mint)'
+                              ? isLight
+                                ? '#033500'
+                                : 'var(--fl-mint)'
                               : d.battery_pct > 20
-                              ? 'var(--fl-warning)'
+                              ? isLight
+                                ? '#8f7200'
+                                : 'var(--fl-warning)'
+                              : isLight
+                              ? '#b21919'
                               : 'var(--fl-danger)',
                           fontFamily: 'var(--fl-font-mono)',
                           fontWeight: 600,
@@ -286,7 +351,7 @@ export const AdminManagementView: React.FC = () => {
                         {d.battery_pct}%
                       </span>
                     </td>
-                    <td style={{ fontSize: '12px', color: 'var(--fl-muted)' }}>{d.last_heartbeat}</td>
+                    <td style={{ fontSize: '12px', color: isLight ? '#2d552b' : 'var(--fl-muted)' }}>{d.last_heartbeat}</td>
                     <td>
                       <span
                         style={{
@@ -297,11 +362,28 @@ export const AdminManagementView: React.FC = () => {
                           fontWeight: 600,
                           background:
                             d.status === 'active'
-                              ? 'rgba(125, 249, 196, 0.15)'
+                              ? isLight
+                                ? '#d7edd5'
+                                : 'rgba(125, 249, 196, 0.15)'
+                              : isLight
+                              ? '#fbe0e0'
                               : 'rgba(248, 113, 113, 0.15)',
-                          color: d.status === 'active' ? 'var(--fl-mint)' : 'var(--fl-danger)',
+                          color:
+                            d.status === 'active'
+                              ? isLight
+                                ? '#033500'
+                                : 'var(--fl-mint)'
+                              : isLight
+                              ? '#b21919'
+                              : 'var(--fl-danger)',
                           border: `1px solid ${
-                            d.status === 'active' ? 'rgba(125, 249, 196, 0.3)' : 'rgba(248, 113, 113, 0.3)'
+                            d.status === 'active'
+                              ? isLight
+                                ? '#033500'
+                                : 'rgba(125, 249, 196, 0.3)'
+                              : isLight
+                              ? '#b21919'
+                              : 'rgba(248, 113, 113, 0.3)'
                           }`,
                         }}
                       >
@@ -314,17 +396,18 @@ export const AdminManagementView: React.FC = () => {
                           className="fl-button"
                           onClick={() => setRevokeTarget(d)}
                           style={{
-                            background: 'rgba(248, 113, 113, 0.1)',
-                            borderColor: 'rgba(248, 113, 113, 0.4)',
-                            color: 'var(--fl-danger)',
+                            background: isLight ? '#fbe0e0' : 'rgba(248, 113, 113, 0.1)',
+                            borderColor: isLight ? '#b21919' : 'rgba(248, 113, 113, 0.4)',
+                            color: isLight ? '#b21919' : 'var(--fl-danger)',
                             padding: '4px 10px',
                             fontSize: '11px',
+                            fontWeight: 600,
                           }}
                         >
                           Revoke Key
                         </button>
                       ) : (
-                        <span style={{ fontSize: '11px', color: 'var(--fl-muted)' }}>Revoked</span>
+                        <span style={{ fontSize: '11px', color: isLight ? '#2d552b' : 'var(--fl-muted)' }}>Revoked</span>
                       )}
                     </td>
                   </tr>
@@ -339,8 +422,10 @@ export const AdminManagementView: React.FC = () => {
       {activeTab === 'audit' && (
         <div className="fl-card">
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ fontSize: '16px', fontWeight: 600 }}>PostgreSQL Immutable Audit Log</div>
-            <div style={{ fontSize: '13px', color: 'var(--fl-muted)', marginTop: '2px' }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: isLight ? '#033500' : 'var(--color-text)' }}>
+              PostgreSQL Immutable Audit Log
+            </div>
+            <div style={{ fontSize: '13px', color: isLight ? '#2d552b' : 'var(--fl-muted)', marginTop: '2px' }}>
               Trigger-enforced append-only record tracking all cryptographic verifications, blockchain
               anchors, profile revisions, and security events.
             </div>
@@ -365,39 +450,41 @@ export const AdminManagementView: React.FC = () => {
                       style={{
                         fontFamily: 'var(--fl-font-mono)',
                         fontSize: '11px',
-                        color: 'var(--fl-muted)',
+                        color: isLight ? '#2d552b' : 'var(--fl-muted)',
                       }}
                     >
                       {l.timestamp}
                     </td>
-                    <td style={{ fontWeight: 600, fontSize: '12px' }}>{l.actor}</td>
+                    <td style={{ fontWeight: 600, fontSize: '12px', color: isLight ? '#033500' : 'inherit' }}>{l.actor}</td>
                     <td>
                       <span
                         style={{
                           fontFamily: 'var(--fl-font-mono)',
                           fontSize: '11px',
-                          padding: '2px 8px',
+                          padding: '3px 8px',
                           borderRadius: '4px',
-                          background: 'rgba(56, 189, 248, 0.15)',
-                          color: 'var(--fl-cyan)',
+                          background: isLight ? '#d7edd5' : 'rgba(56, 189, 248, 0.15)',
+                          color: isLight ? '#033500' : 'var(--fl-cyan)',
+                          border: isLight ? '1px solid #033500' : 'none',
+                          fontWeight: 600,
                         }}
                       >
                         {l.action}
                       </span>
                     </td>
-                    <td style={{ fontFamily: 'var(--fl-font-mono)', fontSize: '12px' }}>
+                    <td style={{ fontFamily: 'var(--fl-font-mono)', fontSize: '12px', color: isLight ? '#033500' : 'inherit' }}>
                       {l.target_table}
                     </td>
                     <td
                       style={{
                         fontFamily: 'var(--fl-font-mono)',
                         fontSize: '11px',
-                        color: 'var(--fl-muted)',
+                        color: isLight ? '#2d552b' : 'var(--fl-muted)',
                       }}
                     >
                       {l.record_id}
                     </td>
-                    <td style={{ fontSize: '12px', color: 'var(--fl-text)', lineHeight: 1.4 }}>
+                    <td style={{ fontSize: '12px', color: isLight ? '#033500' : 'var(--fl-text)', lineHeight: 1.4 }}>
                       {l.details}
                     </td>
                   </tr>
@@ -417,7 +504,7 @@ export const AdminManagementView: React.FC = () => {
             left: 0,
             width: '100vw',
             height: '100vh',
-            background: 'rgba(0, 0, 0, 0.8)',
+            background: 'rgba(0, 0, 0, 0.75)',
             backdropFilter: 'blur(4px)',
             display: 'flex',
             alignItems: 'center',
@@ -430,31 +517,37 @@ export const AdminManagementView: React.FC = () => {
             style={{
               maxWidth: '460px',
               width: '90%',
-              border: '1px solid var(--fl-danger)',
-              boxShadow: '0 8px 32px rgba(248, 113, 113, 0.2)',
+              background: isLight ? '#ffffff' : undefined,
+              border: '1.5px solid var(--fl-danger)',
+              boxShadow: '0 8px 32px rgba(248, 113, 113, 0.25)',
             }}
           >
             <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--fl-danger)' }}>
               Confirm Device Key Revocation
             </div>
-            <div style={{ fontSize: '13px', color: 'var(--fl-muted)', margin: '12px 0 16px', lineHeight: 1.5 }}>
+            <div style={{ fontSize: '13px', color: isLight ? '#2d552b' : 'var(--fl-muted)', margin: '12px 0 16px', lineHeight: 1.5 }}>
               Are you sure you want to revoke signing authorization for device{' '}
-              <strong style={{ color: 'var(--fl-text)' }}>{revokeTarget.device_id}</strong>?
+              <strong style={{ color: isLight ? '#033500' : 'var(--fl-text)' }}>{revokeTarget.device_id}</strong>?
               <br />
               All subsequent inbound telemetry batches signed with this Ed25519 key will be
               permanently rejected by the cryptographic ingestion gateway.
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button className="fl-button" onClick={() => setRevokeTarget(null)}>
+              <button
+                className="fl-button"
+                onClick={() => setRevokeTarget(null)}
+                style={isLight ? { background: '#ffffff', color: '#033500', borderColor: '#033500' } : undefined}
+              >
                 Cancel
               </button>
               <button
-                className="fl-button"
+                className="fl-button force-white"
                 onClick={() => handleRevokeDevice(revokeTarget.device_id)}
                 style={{
                   background: 'var(--fl-danger)',
-                  color: '#fff',
+                  color: '#ffffff',
                   borderColor: 'var(--fl-danger)',
+                  fontWeight: 600,
                 }}
               >
                 Confirm Revocation
@@ -473,7 +566,7 @@ export const AdminManagementView: React.FC = () => {
             left: 0,
             width: '100vw',
             height: '100vh',
-            background: 'rgba(0, 0, 0, 0.8)',
+            background: 'rgba(0, 0, 0, 0.75)',
             backdropFilter: 'blur(4px)',
             display: 'flex',
             alignItems: 'center',
@@ -487,21 +580,22 @@ export const AdminManagementView: React.FC = () => {
             style={{
               maxWidth: '520px',
               width: '90%',
-              border: '1px solid var(--fl-mint)',
-              boxShadow: '0 8px 32px rgba(125, 249, 196, 0.1)',
+              background: isLight ? '#ffffff' : 'var(--fl-bg-primary)',
+              border: isLight ? '1.5px solid #033500' : '1px solid var(--fl-mint)',
+              boxShadow: isLight ? '0 12px 36px rgba(3, 53, 0, 0.2)' : '0 8px 32px rgba(125, 249, 196, 0.1)',
             }}
           >
-            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--fl-mint)', marginBottom: '4px' }}>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: isLight ? '#033500' : 'var(--fl-mint)', marginBottom: '4px' }}>
               Register Immutable Product Profile
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--fl-muted)', marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', color: isLight ? '#2d552b' : 'var(--fl-muted)', marginBottom: '16px' }}>
               Profiles are cryptographically hashed and versioned. Once committed, thresholds cannot be
               tampered with.
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ fontSize: '12px', color: 'var(--fl-muted)', display: 'block', marginBottom: '4px' }}>
+                <label style={{ fontSize: '12px', color: isLight ? '#2d552b' : 'var(--fl-muted)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
                   Product Name
                 </label>
                 <input
@@ -514,16 +608,16 @@ export const AdminManagementView: React.FC = () => {
                     width: '100%',
                     padding: '8px 12px',
                     borderRadius: '6px',
-                    border: '1px solid var(--fl-hairline)',
-                    background: 'var(--fl-bg-secondary)',
-                    color: 'var(--fl-text)',
+                    border: isLight ? '1px solid #033500' : '1px solid var(--fl-hairline)',
+                    background: isLight ? '#ffffff' : 'var(--fl-bg-secondary)',
+                    color: isLight ? '#033500' : 'var(--fl-text)',
                   }}
                 />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', color: 'var(--fl-muted)', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '12px', color: isLight ? '#2d552b' : 'var(--fl-muted)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
                     Cargo Type
                   </label>
                   <select
@@ -533,9 +627,9 @@ export const AdminManagementView: React.FC = () => {
                       width: '100%',
                       padding: '8px 12px',
                       borderRadius: '6px',
-                      border: '1px solid var(--fl-hairline)',
-                      background: 'var(--fl-bg-secondary)',
-                      color: 'var(--fl-text)',
+                      border: isLight ? '1px solid #033500' : '1px solid var(--fl-hairline)',
+                      background: isLight ? '#ffffff' : 'var(--fl-bg-secondary)',
+                      color: isLight ? '#033500' : 'var(--fl-text)',
                     }}
                   >
                     <option value="vaccine">Vaccine</option>
@@ -546,7 +640,7 @@ export const AdminManagementView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '12px', color: 'var(--fl-muted)', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '12px', color: isLight ? '#2d552b' : 'var(--fl-muted)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
                     Activation Energy (Ea kJ/mol)
                   </label>
                   <input
@@ -558,9 +652,9 @@ export const AdminManagementView: React.FC = () => {
                       width: '100%',
                       padding: '8px 12px',
                       borderRadius: '6px',
-                      border: '1px solid var(--fl-hairline)',
-                      background: 'var(--fl-bg-secondary)',
-                      color: 'var(--fl-text)',
+                      border: isLight ? '1px solid #033500' : '1px solid var(--fl-hairline)',
+                      background: isLight ? '#ffffff' : 'var(--fl-bg-secondary)',
+                      color: isLight ? '#033500' : 'var(--fl-text)',
                     }}
                   />
                 </div>
@@ -568,7 +662,7 @@ export const AdminManagementView: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ fontSize: '12px', color: 'var(--fl-muted)', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '12px', color: isLight ? '#2d552b' : 'var(--fl-muted)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
                     Min Temp (°C)
                   </label>
                   <input
@@ -580,15 +674,15 @@ export const AdminManagementView: React.FC = () => {
                       width: '100%',
                       padding: '8px 12px',
                       borderRadius: '6px',
-                      border: '1px solid var(--fl-hairline)',
-                      background: 'var(--fl-bg-secondary)',
-                      color: 'var(--fl-text)',
+                      border: isLight ? '1px solid #033500' : '1px solid var(--fl-hairline)',
+                      background: isLight ? '#ffffff' : 'var(--fl-bg-secondary)',
+                      color: isLight ? '#033500' : 'var(--fl-text)',
                     }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '12px', color: 'var(--fl-muted)', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '12px', color: isLight ? '#2d552b' : 'var(--fl-muted)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
                     Max Temp (°C)
                   </label>
                   <input
@@ -600,16 +694,16 @@ export const AdminManagementView: React.FC = () => {
                       width: '100%',
                       padding: '8px 12px',
                       borderRadius: '6px',
-                      border: '1px solid var(--fl-hairline)',
-                      background: 'var(--fl-bg-secondary)',
-                      color: 'var(--fl-text)',
+                      border: isLight ? '1px solid #033500' : '1px solid var(--fl-hairline)',
+                      background: isLight ? '#ffffff' : 'var(--fl-bg-secondary)',
+                      color: isLight ? '#033500' : 'var(--fl-text)',
                     }}
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: 'var(--fl-muted)', display: 'block', marginBottom: '4px' }}>
+                <label style={{ fontSize: '12px', color: isLight ? '#2d552b' : 'var(--fl-muted)', display: 'block', marginBottom: '4px', fontWeight: 600 }}>
                   Max Cumulative Excursion (seconds)
                 </label>
                 <input
@@ -620,29 +714,35 @@ export const AdminManagementView: React.FC = () => {
                     width: '100%',
                     padding: '8px 12px',
                     borderRadius: '6px',
-                    border: '1px solid var(--fl-hairline)',
-                    background: 'var(--fl-bg-secondary)',
-                    color: 'var(--fl-text)',
+                    border: isLight ? '1px solid #033500' : '1px solid var(--fl-hairline)',
+                    background: isLight ? '#ffffff' : 'var(--fl-bg-secondary)',
+                    color: isLight ? '#033500' : 'var(--fl-text)',
                   }}
                 />
               </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '20px' }}>
-              <button type="button" className="fl-button" onClick={() => setShowProfileModal(false)}>
+              <button
+                type="button"
+                className="fl-button"
+                onClick={() => setShowProfileModal(false)}
+                style={isLight ? { background: '#ffffff', color: '#033500', borderColor: '#033500' } : undefined}
+              >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="fl-button"
+                className={`fl-button ${isLight ? 'force-white' : ''}`}
                 style={{
-                  background: 'var(--fl-mint)',
-                  color: 'var(--fl-bg-primary)',
-                  borderColor: 'var(--fl-mint)',
+                  background: isLight ? '#033500' : 'var(--fl-mint)',
+                  color: isLight ? '#ffffff' : '#0a0a0b',
+                  borderColor: isLight ? '#033500' : 'var(--fl-mint)',
                   fontWeight: 600,
+                  boxShadow: isLight ? '0 2px 8px rgba(3, 53, 0, 0.25)' : undefined,
                 }}
               >
-                Register & Hash Profile
+                Register &amp; Hash Profile
               </button>
             </div>
           </form>

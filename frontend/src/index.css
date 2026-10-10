@@ -60,6 +60,7 @@
   --radius-lg: 8px;
 
   /* Legacy FL Variables (mapped to design tokens) */
+  --fl-bg-primary: #0a0a0b;
   --fl-mint: #7df9c4;
   --fl-cyan: #38bdf8;
   --fl-danger: #e0574c;
@@ -116,6 +117,7 @@ html[data-theme="light"],
   --backlight-border-hover: #033500;
 
   /* FL Variables mapped for light theme */
+  --fl-bg-primary: #ffffff;
   --fl-mint: #033500;
   --fl-cyan: #033500;
   --fl-danger: #b21919;
@@ -160,6 +162,43 @@ html[data-theme="light"],
   border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.fl-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+.fl-table th {
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 600;
+}
+.fl-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+.fl-table tbody tr:hover td {
+  background: var(--color-panel-elevated);
+}
+
+html.light .fl-table th {
+  color: #2d552b !important;
+  border-bottom: 1px solid #033500 !important;
+}
+html.light .fl-table td {
+  border-bottom: 1px solid rgba(3, 53, 0, 0.15) !important;
+  color: #033500 !important;
+}
+html.light .fl-table tbody tr:hover td {
+  background: #eaf5ea !important;
 }
 
 html {
