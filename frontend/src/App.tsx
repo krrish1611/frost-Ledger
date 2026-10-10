@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { supabase } from './lib/supabase';
 import { AtmosphereCanvas } from './components/AtmosphereCanvas';
 import { Navbar, ActiveTab, UserRole } from './components/Navbar';
 import { ShipmentDetailView } from './components/ShipmentDetailView';
@@ -12,6 +14,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'landing' | 'dashboard'>('landing');
   const [activeTab, setActiveTab] = useState<ActiveTab>('shipments');
   const [userRole, setUserRole] = useState<UserRole>('operator');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [selectedShipment, setSelectedShipment] = useState<ShipmentSummary>(MOCK_SHIPMENTS[0]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -22,9 +25,61 @@ export default function App() {
     }, 4000);
   };
 
+  useEffect(() => {
+    // 1. Initial Session Check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const u = session?.user ?? null;
+      setCurrentUser(u);
+      if (u) {
+        supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', u.id)
+          .single()
+          .then(({ data }) => {
+            if (data?.role) {
+              setUserRole(data.role as UserRole);
+            }
+          });
+      }
+    });
+
+    // 2. Real-time Auth State Change Listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const u = session?.user ?? null;
+      setCurrentUser(u);
+      if (u) {
+        supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', u.id)
+          .single()
+          .then(({ data }) => {
+            if (data?.role) {
+              setUserRole(data.role as UserRole);
+            }
+          });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setCurrentUser(null);
+    showToast('Signed out from Supabase session');
+  };
+
   if (viewMode === 'landing') {
     return (
       <LandingView
+        currentUser={currentUser}
+        onSignOut={handleSignOut}
         onEnterDashboard={(role) => {
           if (role) setUserRole(role);
           setViewMode('dashboard');
@@ -46,6 +101,8 @@ export default function App() {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           currentRole={userRole}
+          currentUser={currentUser}
+          onSignOut={handleSignOut}
           onRoleChange={(r: UserRole) => {
             setUserRole(r);
             showToast(`Switched active role to ${r.toUpperCase()}`);
@@ -87,12 +144,12 @@ export default function App() {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontWeight: 600, color: 'var(--fl-text)' }}>FrostLedger</span>
-            <span>· Cold Chain Integrity &amp; Tamper Detection System v3.1</span>
+            <span>&bull; Cold Chain Integrity &amp; Tamper Detection System v3.1</span>
           </div>
 
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <span>Polygon Amoy: 0x9727...ed37</span>
-            <span>PostgreSQL Immutable Triggers</span>
+            <span>Supabase PostgreSQL + Trigger Layer</span>
             <span className="fl-badge fl-badge-ai">AI Advisory Layer Active</span>
           </div>
         </footer>

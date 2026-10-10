@@ -16,9 +16,15 @@ import { AuthModal } from './AuthModal';
 
 interface LandingViewProps {
   onEnterDashboard: (role?: 'operator' | 'admin' | 'receiver' | 'auditor') => void;
+  currentUser?: { email?: string; id?: string } | null;
+  onSignOut?: () => void;
 }
 
-export const LandingView: React.FC<LandingViewProps> = ({ onEnterDashboard }) => {
+export const LandingView: React.FC<LandingViewProps> = ({
+  onEnterDashboard,
+  currentUser,
+  onSignOut,
+}) => {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
@@ -92,24 +98,47 @@ export const LandingView: React.FC<LandingViewProps> = ({ onEnterDashboard }) =>
           </nav>
 
           {/* Action CTAs: Login, Sign In & Dashboard Buttons */}
+          {/* Action CTAs: Login, Sign In & Dashboard Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Login Button */}
-            <button
-              onClick={() => openAuth('login')}
-              className="px-3 py-1.5 rounded border hairline hover:border-[var(--color-accent)] text-xs font-mono text-neutral-300 hover:text-white bg-[#111113] hover:bg-[#18181c] transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <LogIn size={13} className="text-[var(--color-accent)]" />
-              <span>Login</span>
-            </button>
+            {currentUser ? (
+              <>
+                <div className="px-3 py-1.5 rounded border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 text-xs font-mono text-[var(--color-accent)] flex items-center gap-1.5">
+                  <UserCheck size={13} />
+                  <span className="max-w-[140px] truncate" title={currentUser.email}>
+                    {currentUser.email}
+                  </span>
+                </div>
+                {onSignOut && (
+                  <button
+                    onClick={onSignOut}
+                    className="px-2.5 py-1.5 rounded border hairline hover:border-red-500/50 text-xs font-mono text-neutral-400 hover:text-red-400 bg-[#111113] hover:bg-[#18181c] transition-all cursor-pointer"
+                    title="Sign Out"
+                  >
+                    Logout
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Login Button */}
+                <button
+                  onClick={() => openAuth('login')}
+                  className="px-3 py-1.5 rounded border hairline hover:border-[var(--color-accent)] text-xs font-mono text-neutral-300 hover:text-white bg-[#111113] hover:bg-[#18181c] transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <LogIn size={13} className="text-[var(--color-accent)]" />
+                  <span>Login</span>
+                </button>
 
-            {/* Sign In / Register Button */}
-            <button
-              onClick={() => openAuth('signup')}
-              className="hidden sm:inline-flex px-3 py-1.5 rounded border border-[var(--color-accent)]/40 hover:border-[var(--color-accent)] text-xs font-mono text-[var(--color-accent)] bg-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/20 transition-all items-center gap-1.5 cursor-pointer"
-            >
-              <UserCheck size={13} />
-              <span>Sign In</span>
-            </button>
+                {/* Sign In / Register Button */}
+                <button
+                  onClick={() => openAuth('signup')}
+                  className="hidden sm:inline-flex px-3 py-1.5 rounded border border-[var(--color-accent)]/40 hover:border-[var(--color-accent)] text-xs font-mono text-[var(--color-accent)] bg-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/20 transition-all items-center gap-1.5 cursor-pointer"
+                >
+                  <UserCheck size={13} />
+                  <span>Register</span>
+                </button>
+              </>
+            )}
 
             {/* Launch Dashboard Primary Button */}
             <button

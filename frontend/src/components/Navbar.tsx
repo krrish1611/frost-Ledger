@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Radio, Activity, Cpu, Layers } from 'lucide-react';
+import { Shield, Radio, Activity, Cpu, Layers, LogOut, User as UserIcon } from 'lucide-react';
 
 export type ActiveTab = 'shipments' | 'verify' | 'ai-intelligence' | 'admin';
 export type UserRole = 'operator' | 'receiver' | 'auditor' | 'admin';
@@ -10,6 +10,8 @@ interface NavbarProps {
   currentRole: UserRole;
   onRoleChange: (role: UserRole) => void;
   onReturnToLanding?: () => void;
+  currentUser?: { email?: string; id?: string } | null;
+  onSignOut?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -18,6 +20,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentRole,
   onRoleChange,
   onReturnToLanding,
+  currentUser,
+  onSignOut,
 }) => {
   return (
     <header
@@ -142,8 +146,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </nav>
 
-        {/* Role Switcher & System Telemetry Pill */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {/* Role Switcher, Supabase User & System Telemetry Pill */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <div
             className="data"
             style={{
@@ -183,6 +187,62 @@ export const Navbar: React.FC<NavbarProps> = ({
               <option value="admin">Admin</option>
             </select>
           </div>
+
+          {/* Supabase Authenticated User Status or Guest Pill */}
+          {currentUser ? (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.25rem 0.65rem',
+                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(125, 249, 196, 0.08)',
+                border: '1px solid rgba(125, 249, 196, 0.25)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+                color: 'var(--color-accent)',
+              }}
+            >
+              <UserIcon size={12} />
+              <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={currentUser.email}>
+                {currentUser.email}
+              </span>
+              {onSignOut && (
+                <button
+                  onClick={onSignOut}
+                  title="Sign out from Supabase session"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--color-muted)',
+                    cursor: 'pointer',
+                    padding: '2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#ff6b6b')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-muted)')}
+                >
+                  <LogOut size={13} />
+                </button>
+              )}
+            </div>
+          ) : (
+            <div
+              style={{
+                padding: '0.3rem 0.6rem',
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--color-panel)',
+                border: '1px solid var(--color-border)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '10px',
+                color: 'var(--color-muted)',
+              }}
+            >
+              DEMO / GUEST
+            </div>
+          )}
         </div>
       </div>
     </header>
