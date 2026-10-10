@@ -119,10 +119,10 @@ export const AsciiReveal: React.FC<AsciiRevealProps> = ({
           const tColor = Math.min(1, Math.pow(combined, 1.4));
           let red: number, green: number, blue: number;
           if (isLight) {
-            // Light mode: soft lavender slate (#a397ba: 163, 151, 186) to electric violet (#7c3aed: 124, 58, 237)
-            red = Math.floor(163 + tColor * (124 - 163));
-            green = Math.floor(151 + tColor * (58 - 151));
-            blue = Math.floor(186 + tColor * (237 - 186));
+            // Light mode: cool slate (#94a3b8: 148, 163, 184) to Deep Cryo-Cobalt (#0284c7: 2, 132, 199)
+            red = Math.floor(148 + tColor * (2 - 148));
+            green = Math.floor(163 + tColor * (132 - 163));
+            blue = Math.floor(184 + tColor * (199 - 184));
           } else {
             // Dark mode: Dark baseline (#3a3a40: 58, 58, 64) to Mint (#7DF9C4: 125, 249, 196)
             red = Math.floor(58 + tColor * (125 - 58));

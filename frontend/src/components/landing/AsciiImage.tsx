@@ -370,17 +370,17 @@ export const AsciiImage: React.FC<AsciiImageProps> = ({
 
           if (isLight) {
             if (beamFactor > 0.45) {
-              ctx.fillStyle = '#6d28d9'; // Deep royal violet sweep wavefront
+              ctx.fillStyle = '#0369a1'; // Deep oceanic sapphire wavefront
             } else if (beamFactor > 0.15) {
-              ctx.fillStyle = '#7c3aed'; // Vibrant electric purple trail
+              ctx.fillStyle = '#0284c7'; // Vibrant cryo-cobalt trail
             } else if (ratio > 0.65) {
-              ctx.fillStyle = '#8b5cf6'; // Luminous purple highlight
+              ctx.fillStyle = '#0ea5e9'; // Luminous electric cyan highlight
             } else if (ratio > 0.42) {
-              ctx.fillStyle = '#a78bfa'; // Soft lavender
+              ctx.fillStyle = '#38bdf8'; // Soft sky blue
             } else if (ratio > 0.22) {
-              ctx.fillStyle = '#c4b5fd'; // Pale lilac
+              ctx.fillStyle = '#7dd3fc'; // Pale ice
             } else {
-              ctx.fillStyle = '#ddd6fe'; // Faint lavender boundary
+              ctx.fillStyle = '#bae6fd'; // Faint frost boundary
             }
           } else {
             if (beamFactor > 0.45) {

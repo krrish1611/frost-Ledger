@@ -59,11 +59,11 @@ export const AtmosphereCanvas: React.FC = () => {
 
           const isLight = document.documentElement.classList.contains('light');
           if (isLight) {
-            // Radiant light purple & electric violet plasma on porcelain
-            data[idx] = Math.floor(248 - m * (248 - 124));
-            data[idx + 1] = Math.floor(246 - m * (246 - 58));
-            data[idx + 2] = Math.floor(252 - m * (252 - 237));
-            data[idx + 3] = Math.floor(m * 135);
+            // Vibrant Deep Cryo-Cobalt & Electric Sapphire plasma on ice white
+            data[idx] = Math.floor(248 - m * (248 - 2));
+            data[idx + 1] = Math.floor(250 - m * (250 - 132));
+            data[idx + 2] = Math.floor(252 - m * (252 - 199));
+            data[idx + 3] = Math.floor(m * 145);
           } else {
             // Electric mint (#7DF9C4 -> r: 125, g: 249, b: 196) on dark (#0A0A0B)
             data[idx] = Math.floor(10 + m * (125 - 10));

@@ -53,30 +53,30 @@
   --radius-lg: 8px;
 }
 
-/* Light Theme Variables: Crisp porcelain canvas with ethereal light purple / electric violet palette */
+/* Light Theme: Crisp Ice-White Canvas with Deep Cryo-Cobalt & Electric Sapphire Accents */
 html.light,
 html[data-theme="light"],
 :root[data-theme="light"],
 .light {
-  --color-bg: #f8f6fc;
+  --color-bg: #f8fafc;
   --color-panel: #ffffff;
-  --color-panel-elevated: #f2edf8;
-  --color-border: #dfd6eb;
-  --color-border-hover: #c4b5de;
-  --color-text: #1a1226;
-  --color-text-dim: #453c56;
-  --color-muted: #796e8e;
-  --color-accent: #7c3aed;
-  --color-accent-subtle: rgba(124, 58, 237, 0.08);
-  --color-accent-glow: rgba(124, 58, 237, 0.2);
+  --color-panel-elevated: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-hover: #94a3b8;
+  --color-text: #0f172a;
+  --color-text-dim: #334155;
+  --color-muted: #64748b;
+  --color-accent: #0284c7;
+  --color-accent-subtle: rgba(2, 132, 199, 0.09);
+  --color-accent-glow: rgba(2, 132, 199, 0.25);
   --color-warn: #d97706;
-  --color-warn-subtle: rgba(217, 119, 6, 0.08);
+  --color-warn-subtle: rgba(217, 119, 6, 0.09);
   --color-critical: #e11d48;
-  --color-critical-subtle: rgba(225, 29, 72, 0.08);
+  --color-critical-subtle: rgba(225, 29, 72, 0.09);
   --color-pass: #059669;
-  --color-pass-subtle: rgba(5, 150, 105, 0.08);
-  --color-ai-badge: #7c3aed;
-  --color-ai-badge-bg: rgba(124, 58, 237, 0.09);
+  --color-pass-subtle: rgba(5, 150, 105, 0.09);
+  --color-ai-badge: #0284c7;
+  --color-ai-badge-bg: rgba(2, 132, 199, 0.1);
 }
 
 html {
@@ -379,7 +379,7 @@ html.light body {
 html.light .panel {
   background: var(--color-panel) !important;
   border-color: var(--color-border) !important;
-  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.05);
+  box-shadow: 0 4px 20px rgba(2, 132, 199, 0.06);
 }
 
 html.light .panel-elevated {
@@ -444,13 +444,13 @@ html.light .text-neutral-500 {
 
 /* Glow Effects */
 html.light .glow-accent {
-  border-color: rgba(124, 58, 237, 0.35) !important;
-  box-shadow: 0 4px 20px -4px rgba(124, 58, 237, 0.18), inset 0 0 14px -6px rgba(124, 58, 237, 0.08) !important;
+  border-color: rgba(2, 132, 199, 0.4) !important;
+  box-shadow: 0 4px 20px -4px rgba(2, 132, 199, 0.22), inset 0 0 14px -6px rgba(2, 132, 199, 0.08) !important;
 }
 
 html.light .glow-accent-strong {
-  border-color: rgba(124, 58, 237, 0.55) !important;
-  box-shadow: 0 8px 30px -4px rgba(124, 58, 237, 0.28), inset 0 0 18px -6px rgba(124, 58, 237, 0.12) !important;
+  border-color: rgba(2, 132, 199, 0.6) !important;
+  box-shadow: 0 8px 30px -4px rgba(2, 132, 199, 0.32), inset 0 0 18px -6px rgba(2, 132, 199, 0.12) !important;
 }
 
 html.light .card-title {
@@ -463,13 +463,13 @@ html.light .btn-accent,
 html.light button.bg-\[var\(--color-accent\)\] {
   background: var(--color-accent) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3) !important;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35) !important;
 }
 
 html.light .btn-accent:hover,
 html.light button.bg-\[var\(--color-accent\)\]:hover {
-  background: #6d28d9 !important;
-  box-shadow: 0 6px 22px rgba(124, 58, 237, 0.45) !important;
+  background: #0369a1 !important;
+  box-shadow: 0 6px 22px rgba(2, 132, 199, 0.5) !important;
 }
 
 html.light .btn-outline {
@@ -501,11 +501,11 @@ html.light input:focus,
 html.light select:focus,
 html.light textarea:focus {
   border-color: var(--color-accent) !important;
-  box-shadow: 0 0 12px rgba(124, 58, 237, 0.2) !important;
+  box-shadow: 0 0 12px rgba(2, 132, 199, 0.25) !important;
 }
 
 html.light .bg-\[\#0a0a0b\]\/85 {
-  background-color: rgba(246, 242, 252, 0.88) !important;
+  background-color: rgba(241, 245, 249, 0.9) !important;
 }
 
 /* Table rows */
@@ -515,7 +515,7 @@ html.light .telemetry-table th {
 }
 
 html.light .telemetry-table td {
-  border-bottom: 1px solid rgba(223, 214, 235, 0.6) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
 }
 
 html.light .telemetry-table tr:hover td {

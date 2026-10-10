@@ -122,7 +122,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
 
       ctx.clearRect(0, 0, width, height);
       const isLight = document.documentElement.classList.contains('light');
-      ctx.fillStyle = isLight ? '#7c3aed' : '#7df9c4';
+      ctx.fillStyle = isLight ? '#0284c7' : '#7df9c4';
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
