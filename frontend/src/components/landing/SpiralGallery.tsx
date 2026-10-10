@@ -46,10 +46,11 @@ const Pillar1Playable: React.FC = () => {
                 setSampleType(type);
                 setIsTampered(false);
               }}
+              style={isLight ? (sampleType === type ? { color: '#ffffff' } : { color: '#033500' }) : undefined}
               className={`px-2.5 py-1 rounded text-[10.5px] uppercase transition-all cursor-pointer font-bold ${
                 sampleType === type
                   ? isLight
-                    ? 'bg-[#033500] text-white border border-[#033500]'
+                    ? 'bg-[#033500] !text-white force-white border border-[#033500]'
                     : 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/40 font-bold'
                   : isLight
                     ? 'text-[#033500] bg-white border border-[#a7d3a2] hover:bg-[#033500]/5'
@@ -264,7 +265,7 @@ const Pillar3Playable: React.FC = () => {
           <button
             key={b.id}
             onClick={() => setSelectedBatch(b.id)}
-            style={selectedBatch === b.id && isLight ? { color: '#ffffff' } : undefined}
+            style={isLight ? (selectedBatch === b.id ? { color: '#ffffff' } : { color: '#033500' }) : undefined}
             className={`p-1.5 rounded text-center transition-all cursor-pointer ${
               selectedBatch === b.id
                 ? isLight
@@ -366,7 +367,7 @@ const Pillar4Playable: React.FC = () => {
       <div className="grid grid-cols-3 gap-1.5">
         <button
           onClick={() => setAnomalyMode('normal')}
-          style={anomalyMode === 'normal' && isLight ? { color: '#ffffff' } : undefined}
+          style={isLight ? (anomalyMode === 'normal' ? { color: '#ffffff' } : { color: '#033500' }) : undefined}
           className={`p-1.5 rounded text-center transition-all cursor-pointer ${
             anomalyMode === 'normal'
               ? isLight
@@ -382,7 +383,7 @@ const Pillar4Playable: React.FC = () => {
         </button>
         <button
           onClick={() => setAnomalyMode('spike')}
-          style={anomalyMode === 'spike' ? { color: '#ffffff' } : undefined}
+          style={isLight ? (anomalyMode === 'spike' ? { color: '#ffffff' } : { color: '#033500' }) : (anomalyMode === 'spike' ? { color: '#ffffff' } : undefined)}
           className={`p-1.5 rounded text-center transition-all cursor-pointer ${
             anomalyMode === 'spike'
               ? 'bg-[#8f7200] !text-white force-white border border-[#8f7200] font-bold shadow-sm'
@@ -396,7 +397,7 @@ const Pillar4Playable: React.FC = () => {
         </button>
         <button
           onClick={() => setAnomalyMode('compressor')}
-          style={anomalyMode === 'compressor' ? { color: '#ffffff' } : undefined}
+          style={isLight ? (anomalyMode === 'compressor' ? { color: '#ffffff' } : { color: '#033500' }) : (anomalyMode === 'compressor' ? { color: '#ffffff' } : undefined)}
           className={`p-1.5 rounded text-center transition-all cursor-pointer ${
             anomalyMode === 'compressor'
               ? 'bg-[#b21919] !text-white force-white border border-[#b21919] font-bold shadow-sm'
@@ -689,14 +690,14 @@ export const SpiralGallery: React.FC = () => {
                   <button
                     key={card.id}
                     onClick={() => handleStepClick(idx)}
-                    style={activeCardIndex === idx && isLight ? { color: '#ffffff' } : undefined}
+                    style={isLight ? (activeCardIndex === idx ? { color: '#ffffff' } : { color: '#033500' }) : undefined}
                     className={`px-3 py-1.5 rounded-lg text-xs sm:text-[13px] font-mono transition-all duration-200 cursor-pointer font-bold ${
                       activeCardIndex === idx
                         ? isLight
                           ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
                           : 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] border border-[var(--color-accent)]/40 shadow-[0_0_12px_rgba(125,249,196,0.12)]'
                         : isLight
-                          ? 'text-[#2d552b] hover:text-[#033500] hover:bg-[#033500]/5 border border-transparent'
+                          ? 'text-[#033500] bg-white border border-[#a7d3a2]/50 hover:border-[#033500] hover:bg-[#033500]/10 shadow-xs'
                           : 'text-[var(--color-muted)] hover:text-white hover:bg-white/[0.04] border border-transparent'
                     }`}
                   >
@@ -704,7 +705,7 @@ export const SpiralGallery: React.FC = () => {
                   </button>
                 ))}
               </div>
-              <span className="font-mono text-xs font-bold text-[#2d552b] dark:text-[var(--color-muted)] hidden sm:inline">
+              <span className="font-mono text-xs font-bold text-[#033500] dark:text-[var(--color-muted)] hidden sm:inline">
                 {CARDS[activeCardIndex].footerRight}
               </span>
             </div>
@@ -935,17 +936,18 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
                 e.stopPropagation();
                 setCardMode('specs');
               }}
-              style={cardMode === 'specs' && isLight ? { color: '#ffffff' } : undefined}
+              style={isLight ? (cardMode === 'specs' ? { color: '#ffffff' } : { color: '#033500' }) : undefined}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer font-bold ${
                 cardMode === 'specs'
                   ? isLight
                     ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
                     : 'bg-white/10 text-white border border-white/20'
                   : isLight
-                    ? 'text-[#033500] hover:bg-[#033500]/10 border border-[#a7d3a2]'
+                    ? 'text-[#033500] bg-white hover:bg-[#033500]/10 border border-[#a7d3a2]'
                     : 'text-[var(--color-muted)] hover:text-white border border-transparent'
               }`}
             >
+              <Cpu size={11} className={isLight ? (cardMode === 'specs' ? 'text-white' : 'text-[#033500]') : ''} />
               ARCHITECTURE SPECS
             </button>
             <button
@@ -953,14 +955,14 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
                 e.stopPropagation();
                 setCardMode('lab');
               }}
-              style={cardMode === 'lab' && isLight ? { color: '#ffffff' } : undefined}
+              style={isLight ? (cardMode === 'lab' ? { color: '#ffffff' } : { color: '#033500' }) : undefined}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer font-bold ${
                 cardMode === 'lab'
                   ? isLight
                     ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
                     : 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border border-[var(--color-accent)]/40 shadow-[0_0_12px_rgba(125,249,196,0.15)]'
                   : isLight
-                    ? 'text-[#033500] hover:bg-[#033500]/10 border border-[#a7d3a2]'
+                    ? 'text-[#033500] bg-white hover:bg-[#033500]/10 border border-[#a7d3a2]'
                     : 'text-[var(--color-accent)]/80 hover:text-[var(--color-accent)] border border-[var(--color-accent)]/20 hover:bg-[var(--color-accent)]/10'
               }`}
             >
@@ -1060,14 +1062,14 @@ const StaticCard: React.FC<{ card: ModuleCard }> = ({ card }) => {
         <div className="flex items-center gap-2 mb-3">
           <button
             onClick={() => setCardMode('specs')}
-            style={cardMode === 'specs' && isLight ? { color: '#ffffff' } : undefined}
+            style={isLight ? (cardMode === 'specs' ? { color: '#ffffff' } : { color: '#033500' }) : undefined}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer font-bold ${
               cardMode === 'specs'
                 ? isLight
                   ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
                   : 'bg-white/10 text-white font-semibold border border-white/20'
                 : isLight
-                  ? 'text-[#033500] hover:bg-[#033500]/10 border border-[#a7d3a2]'
+                  ? 'text-[#033500] bg-white hover:bg-[#033500]/10 border border-[#a7d3a2]'
                   : 'text-[var(--color-muted)] hover:text-white border border-transparent'
             }`}
           >
@@ -1075,14 +1077,14 @@ const StaticCard: React.FC<{ card: ModuleCard }> = ({ card }) => {
           </button>
           <button
             onClick={() => setCardMode('lab')}
-            style={cardMode === 'lab' && isLight ? { color: '#ffffff' } : undefined}
+            style={isLight ? (cardMode === 'lab' ? { color: '#ffffff' } : { color: '#033500' }) : undefined}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer font-bold ${
               cardMode === 'lab'
                 ? isLight
                   ? 'bg-[#033500] !text-white force-white border border-[#033500] shadow-sm'
                   : 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] font-semibold border border-[var(--color-accent)]/40 shadow-[0_0_12px_rgba(125,249,196,0.15)]'
                 : isLight
-                  ? 'text-[#033500] hover:bg-[#033500]/10 border border-[#a7d3a2]'
+                  ? 'text-[#033500] bg-white hover:bg-[#033500]/10 border border-[#a7d3a2]'
                   : 'text-[var(--color-accent)]/80 hover:text-[var(--color-accent)] border border-[var(--color-accent)]/20 hover:bg-[var(--color-accent)]/10'
             }`}
           >

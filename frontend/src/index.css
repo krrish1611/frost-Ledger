@@ -529,26 +529,14 @@ html.light [class*="border-white/[0.12]"] {
 }
 
 /* Text Adaptations */
-html.light .text-white {
+html.light .text-white:not(.force-white):not(.btn-accent) {
   color: var(--color-text) !important;
 }
 
-/* Contrast Protection: White text on dark green, accent, or status surfaces MUST stay pure white */
-html.light [class*="bg-[#033500]"],
-html.light [class*="bg-[#033500]"] *,
-html.light [class*="bg-[#022400]"],
-html.light [class*="bg-[#022400]"] *,
-html.light [class*="bg-[#044a00]"],
-html.light [class*="bg-[#044a00]"] *,
-html.light [class*="bg-[#8f7200]"],
-html.light [class*="bg-[#8f7200]"] *,
-html.light [class*="bg-[#b21919]"],
-html.light [class*="bg-[#b21919]"] *,
-html.light .btn-accent,
-html.light .btn-accent *,
-html.light .force-white,
-html.light .force-white * {
-  color: #ffffff !important;
+/* Neutral text adaptations for light background legibility */
+html.light .text-neutral-100,
+html.light .text-neutral-200 {
+  color: var(--color-text) !important;
 }
 
 html.light .text-neutral-300,
@@ -558,6 +546,25 @@ html.light .text-neutral-400 {
 
 html.light .text-neutral-500 {
   color: var(--color-muted) !important;
+}
+
+/* Pure white text protection for dark surfaces, accent buttons, and active pills */
+html.light .force-white,
+html.light .force-white *,
+html.light .btn-accent,
+html.light .btn-accent *,
+html.light .bg-\[\#033500\].force-white,
+html.light .bg-\[\#033500\].force-white *,
+html.light .bg-\[\#022400\].force-white,
+html.light .bg-\[\#044a00\].force-white,
+html.light .bg-\[\#8f7200\].force-white,
+html.light .bg-\[\#b21919\].force-white,
+html.light .bg-\[\#033500\] .text-white,
+html.light .bg-\[\#022400\] .text-white,
+html.light .bg-\[\#044a00\] .text-white,
+html.light .bg-\[\#8f7200\] .text-white,
+html.light .bg-\[\#b21919\] .text-white {
+  color: #ffffff !important;
 }
 
 /* Card & Panel Overrides */

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, useReducedMotion, AnimatePresence, useInView } from 'framer-motion';
 import { Terminal, ArrowRight, Shield, RefreshCw } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FooterQuoteProps {
   onOpenAuth?: (mode: 'login' | 'signup') => void;
@@ -60,7 +61,7 @@ const useTypewriter = (text: string, speed: number = 35, startDelay: number = 0,
 };
 
 // Interactive Live Terminal
-const LiveTerminal: React.FC<{ shouldReduceMotion: boolean | null }> = ({ shouldReduceMotion }) => {
+const LiveTerminal: React.FC<{ shouldReduceMotion: boolean | null; isLight: boolean }> = ({ shouldReduceMotion, isLight }) => {
   const [visibleLines, setVisibleLines] = useState<number[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const terminalRef = useRef<HTMLDivElement>(null);
@@ -89,19 +90,32 @@ const LiveTerminal: React.FC<{ shouldReduceMotion: boolean | null }> = ({ should
   }, [isInView]);
 
   return (
-    <div ref={terminalRef} className="rounded-lg border border-white/[0.06] bg-[#0a0a0c] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-      <div className="flex items-center justify-between px-3 py-2 bg-[#111114] border-b border-white/[0.06]">
+    <div
+      ref={terminalRef}
+      className={`rounded-xl border overflow-hidden shadow-xl ${
+        isLight ? 'bg-white border-[#033500]' : 'border-white/[0.06] bg-[#0a0a0c]'
+      }`}
+    >
+      <div
+        className={`flex items-center justify-between px-3 py-2 border-b ${
+          isLight ? 'bg-[#eaf5ea] border-[#033500]/20' : 'bg-[#111114] border-white/[0.06]'
+        }`}
+      >
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#e0574c]/80" />
-          <span className="w-2 h-2 rounded-full bg-[#e8b14c]/80" />
-          <span className="w-2 h-2 rounded-full bg-[#5bc98c]/80" />
-          <span className="ml-2 text-[10px] font-mono text-[var(--color-muted)]">
+          <span className="w-2 h-2 rounded-full bg-[#b21919]" />
+          <span className="w-2 h-2 rounded-full bg-[#8f7200]" />
+          <span className="w-2 h-2 rounded-full bg-[#033500]" />
+          <span className={`ml-2 text-[10px] font-mono ${isLight ? 'text-[#2d552b] font-bold' : 'text-[var(--color-muted)]'}`}>
             frostledger-verify.sh
           </span>
         </div>
         <motion.button
           onClick={runSequence}
-          className="flex items-center gap-1 px-2 py-0.5 rounded border border-white/[0.08] text-[9px] font-mono text-[var(--color-muted)] hover:text-[var(--color-accent)] hover:border-[var(--color-accent)]/30 cursor-pointer transition-colors"
+          className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-mono cursor-pointer transition-colors ${
+            isLight
+              ? 'border-[#033500]/30 text-[#033500] hover:bg-[#033500]/10 font-bold'
+              : 'border-white/[0.08] text-[var(--color-muted)] hover:text-[var(--color-accent)] hover:border-[var(--color-accent)]/30'
+          }`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           disabled={isRunning}
@@ -110,17 +124,25 @@ const LiveTerminal: React.FC<{ shouldReduceMotion: boolean | null }> = ({ should
           {isRunning ? 'RUNNING' : 'RE-RUN'}
         </motion.button>
       </div>
-      <div className="p-3 font-mono text-[11px] space-y-0.5 min-h-[120px]">
+      <div className="p-3 font-mono text-[11px] space-y-1 min-h-[120px]">
         <AnimatePresence mode="popLayout">
           {visibleLines.map((lineIdx) => {
             const line = TERMINAL_LINES[lineIdx];
+            const textColor = isLight
+              ? line.color
+                ? line.color.includes('critical') || line.color.includes('danger')
+                  ? '#b21919'
+                  : '#033500'
+                : '#164014'
+              : line.color || '#a0a0a8';
             return (
               <motion.div
                 key={lineIdx}
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.2 }}
-                style={{ color: line.color || '#a0a0a8' }}
+                style={{ color: textColor }}
+                className={isLight ? 'font-semibold' : ''}
               >
                 {line.cmd}
               </motion.div>
@@ -130,7 +152,7 @@ const LiveTerminal: React.FC<{ shouldReduceMotion: boolean | null }> = ({ should
         {/* Blinking cursor */}
         {isRunning && (
           <motion.span
-            className="inline-block w-2 h-3.5 bg-[var(--color-accent)]"
+            className={`inline-block w-2 h-3.5 ${isLight ? 'bg-[#033500]' : 'bg-[var(--color-accent)]'}`}
             animate={{ opacity: [1, 0] }}
             transition={{ duration: 0.6, repeat: Infinity }}
           />
@@ -141,6 +163,8 @@ const LiveTerminal: React.FC<{ shouldReduceMotion: boolean | null }> = ({ should
 };
 
 export const FooterQuote: React.FC<FooterQuoteProps> = ({ onOpenAuth, onLaunchDashboard }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const shouldReduceMotion = useReducedMotion();
   const [quoteIndex, setQuoteIndex] = useState(0);
   const quote = QUOTES[quoteIndex];
@@ -166,12 +190,21 @@ export const FooterQuote: React.FC<FooterQuoteProps> = ({ onOpenAuth, onLaunchDa
   }, [isInView, shouldReduceMotion, nextQuote, quoteIndex]);
 
   return (
-    <footer ref={containerRef} className="w-full bg-[#080809] border-t hairline relative overflow-hidden font-mono py-16">
+    <footer
+      ref={containerRef}
+      className={`w-full border-t relative overflow-hidden font-mono py-16 ${
+        isLight ? 'bg-[#f5faf5] border-[#033500]/20' : 'bg-[#080809] hairline'
+      }`}
+    >
       {/* Subtle gradient pulse */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[120px]"
-          style={{ background: 'radial-gradient(circle, rgba(125,249,196,0.04), transparent 70%)' }}
+          style={{
+            background: isLight
+              ? 'radial-gradient(circle, rgba(3,53,0,0.06), transparent 70%)'
+              : 'radial-gradient(circle, rgba(125,249,196,0.04), transparent 70%)',
+          }}
           animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.95, 1.05, 0.95] }}
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -182,15 +215,29 @@ export const FooterQuote: React.FC<FooterQuoteProps> = ({ onOpenAuth, onLaunchDa
           {/* Left Column: Quote Terminal */}
           <div>
             {/* Dijkstra Terminal Blockquote with Typewriter */}
-            <div className="rounded-xl border border-white/[0.06] bg-[#0d0d0f] p-6 text-xs text-neutral-300 shadow-xl">
-              <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/[0.06] text-[11px] text-[var(--color-muted)]">
+            <div
+              className={`rounded-xl border p-6 text-xs shadow-xl ${
+                isLight
+                  ? 'bg-white border-[#033500] text-[#033500]'
+                  : 'border-white/[0.06] bg-[#0d0d0f] text-neutral-300'
+              }`}
+            >
+              <div
+                className={`flex items-center justify-between pb-2 mb-3 border-b text-[11px] ${
+                  isLight ? 'border-[#033500]/20 text-[#2d552b]' : 'border-white/[0.06] text-[var(--color-muted)]'
+                }`}
+              >
                 <div className="flex items-center gap-2">
-                  <Terminal size={14} className="text-[var(--color-accent)]" />
-                  <span>$ cat principles.txt</span>
+                  <Terminal size={14} className={isLight ? 'text-[#033500]' : 'text-[var(--color-accent)]'} />
+                  <span className="font-bold">$ cat principles.txt</span>
                 </div>
                 <motion.button
                   onClick={nextQuote}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded border border-white/[0.08] text-[9px] text-[var(--color-muted)] hover:text-[var(--color-accent)] hover:border-[var(--color-accent)]/30 cursor-pointer transition-colors"
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] cursor-pointer transition-colors ${
+                    isLight
+                      ? 'border-[#033500]/30 text-[#033500] hover:bg-[#033500]/10 font-bold'
+                      : 'border-white/[0.08] text-[var(--color-muted)] hover:text-[var(--color-accent)] hover:border-[var(--color-accent)]/30'
+                  }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -200,16 +247,23 @@ export const FooterQuote: React.FC<FooterQuoteProps> = ({ onOpenAuth, onLaunchDa
               </div>
 
               <div className="min-h-[60px]">
-                <p className="italic text-sm text-neutral-200 leading-relaxed font-mono">
-                  &ldquo;{displayText}
+                <p
+                  className={`italic text-sm leading-relaxed font-mono ${
+                    isLight ? 'text-[#033500] font-bold' : 'text-neutral-200'
+                  }`}
+                  style={isLight ? { color: '#033500' } : undefined}
+                >
+                  “{displayText}
                   {!isComplete && (
                     <motion.span
-                      className="inline-block w-0.5 h-4 bg-[var(--color-accent)] ml-0.5 align-middle"
+                      className={`inline-block w-0.5 h-4 ml-0.5 align-middle ${
+                        isLight ? 'bg-[#033500]' : 'bg-[var(--color-accent)]'
+                      }`}
                       animate={{ opacity: [1, 0] }}
                       transition={{ duration: 0.5, repeat: Infinity }}
                     />
                   )}
-                  {isComplete && '&rdquo;'}
+                  {isComplete && '”'}
                 </p>
               </div>
 
@@ -221,7 +275,9 @@ export const FooterQuote: React.FC<FooterQuoteProps> = ({ onOpenAuth, onLaunchDa
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="mt-2 text-right text-[11px] text-[var(--color-accent)]"
+                    className={`mt-2 text-right text-[11px] font-bold ${
+                      isLight ? 'text-[#033500]' : 'text-[var(--color-accent)]'
+                    }`}
                   >
                     — {quote.author}
                   </motion.div>
@@ -229,15 +285,23 @@ export const FooterQuote: React.FC<FooterQuoteProps> = ({ onOpenAuth, onLaunchDa
               </AnimatePresence>
 
               {/* Quote navigation dots */}
-              <div className="flex items-center justify-center gap-2 mt-4 pt-3 border-t border-white/[0.06]">
+              <div
+                className={`flex items-center justify-center gap-2 mt-4 pt-3 border-t ${
+                  isLight ? 'border-[#033500]/20' : 'border-white/[0.06]'
+                }`}
+              >
                 {QUOTES.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setQuoteIndex(idx)}
                     className={`w-1.5 h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                       quoteIndex === idx
-                        ? 'bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)] w-4'
-                        : 'bg-neutral-700 hover:bg-neutral-500'
+                        ? isLight
+                          ? 'bg-[#033500] shadow-[0_0_8px_#033500] w-4'
+                          : 'bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)] w-4'
+                        : isLight
+                          ? 'bg-[#033500]/25 hover:bg-[#033500]/50'
+                          : 'bg-neutral-700 hover:bg-neutral-500'
                     }`}
                   />
                 ))}
@@ -247,15 +311,19 @@ export const FooterQuote: React.FC<FooterQuoteProps> = ({ onOpenAuth, onLaunchDa
 
           {/* Right Column: Live Verification Terminal */}
           <div className="space-y-4">
-            <LiveTerminal shouldReduceMotion={shouldReduceMotion} />
+            <LiveTerminal shouldReduceMotion={shouldReduceMotion} isLight={isLight} />
 
             {/* CTA Buttons */}
             <div className="flex items-center gap-3">
               {onLaunchDashboard && (
                 <motion.button
                   onClick={onLaunchDashboard}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--color-accent)] text-[#0a0a0b] font-bold text-xs font-mono flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(125,249,196,0.3)] hover:bg-[#6febb5] transition-all cursor-pointer"
-                  whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(125,249,196,0.45)' }}
+                  className={`flex-1 px-4 py-2.5 rounded-lg font-bold text-xs font-mono flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${
+                    isLight
+                      ? 'bg-[#033500] text-white force-white hover:bg-[#022400]'
+                      : 'bg-[var(--color-accent)] text-[#0a0a0b] hover:bg-[#6febb5]'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <Shield size={14} />
@@ -266,7 +334,11 @@ export const FooterQuote: React.FC<FooterQuoteProps> = ({ onOpenAuth, onLaunchDa
               {onOpenAuth && (
                 <motion.button
                   onClick={() => onOpenAuth('login')}
-                  className="px-4 py-2.5 rounded-lg border border-white/[0.12] bg-[#111113]/80 text-white font-mono text-xs flex items-center justify-center gap-2 hover:border-[var(--color-accent)]/40 transition-all cursor-pointer"
+                  className={`px-4 py-2.5 rounded-lg border font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    isLight
+                      ? 'border-[#033500] bg-white text-[#033500] hover:bg-[#033500]/5 font-bold shadow-sm'
+                      : 'border-white/[0.12] bg-[#111113]/80 text-white hover:border-[var(--color-accent)]/40'
+                  }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -277,10 +349,15 @@ export const FooterQuote: React.FC<FooterQuoteProps> = ({ onOpenAuth, onLaunchDa
           </div>
         </div>
 
-        <div className="mt-12 text-center text-xs text-[var(--color-muted)] font-mono border-t border-white/[0.06] pt-6">
+        <div
+          className={`mt-12 text-center text-xs font-mono border-t pt-6 ${
+            isLight ? 'text-[#2d552b] border-[#033500]/20 font-medium' : 'text-[var(--color-muted)] border-white/[0.06]'
+          }`}
+        >
           © {new Date().getFullYear()} FrostLedger · Cold Chain Cryptographic Verification · Polygon Amoy L2
         </div>
       </div>
     </footer>
   );
 };
+
