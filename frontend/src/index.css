@@ -45,10 +45,10 @@
   /* Light green circle annotation for hero text */
   --color-circle-annotation: #7df9c4;
 
-  /* Universal Light Green Backlight Tokens */
-  --backlight-glow-card: 0 0 25px 3px rgba(125, 249, 196, 0.42), 0 0 50px 8px rgba(125, 249, 196, 0.18);
-  --backlight-glow-btn: 0 0 18px 2px rgba(125, 249, 196, 0.55), 0 0 32px 5px rgba(125, 249, 196, 0.22);
-  --backlight-border-hover: rgba(125, 249, 196, 0.65);
+  /* Universal Light Green Backlight Tokens (Subtle & Refined) */
+  --backlight-glow-card: 0 0 12px 1px rgba(125, 249, 196, 0.16), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --backlight-glow-btn: 0 0 7px 1px rgba(125, 249, 196, 0.20);
+  --backlight-border-hover: rgba(125, 249, 196, 0.35);
 
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-sans: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -111,9 +111,9 @@ html[data-theme="light"],
   /* Light green circle annotation for hero text */
   --color-circle-annotation: #4ade80;
 
-  /* Light Green Backlight Tokens for Light Theme */
-  --backlight-glow-card: 0 0 26px 4px rgba(74, 222, 128, 0.55), 0 0 55px 10px rgba(74, 222, 128, 0.22), 0 6px 22px -2px rgba(3, 53, 0, 0.12);
-  --backlight-glow-btn: 0 0 18px 3px rgba(74, 222, 128, 0.65), 0 0 35px 6px rgba(74, 222, 128, 0.28);
+  /* Light Green Backlight Tokens for Light Theme (Subtle & Refined) */
+  --backlight-glow-card: 0 0 10px 1px rgba(74, 222, 128, 0.18), 0 2px 8px rgba(3, 53, 0, 0.05);
+  --backlight-glow-btn: 0 0 6px 1px rgba(74, 222, 128, 0.20);
   --backlight-border-hover: #033500;
 
   /* FL Variables mapped for light theme */
@@ -303,13 +303,13 @@ body {
 }
 
 .glow-accent {
-  border-color: color-mix(in oklab, var(--color-accent) 34%, transparent);
-  box-shadow: 0 0 22px -10px var(--color-accent), inset 0 0 18px -14px var(--color-accent);
+  border-color: color-mix(in oklab, var(--color-accent) 25%, transparent);
+  box-shadow: 0 0 12px -6px var(--color-accent);
 }
 
 .glow-accent-strong {
-  border-color: color-mix(in oklab, var(--color-accent) 55%, transparent);
-  box-shadow: 0 0 34px -10px var(--color-accent), inset 0 0 22px -14px var(--color-accent);
+  border-color: color-mix(in oklab, var(--color-accent) 40%, transparent);
+  box-shadow: 0 0 16px -4px var(--color-accent);
 }
 
 .card-title {
@@ -706,12 +706,12 @@ html.light .glow-accent-strong:hover {
 /* Glow Effects */
 html.light .glow-accent {
   border-color: #033500 !important;
-  box-shadow: 0 4px 20px -4px rgba(3, 53, 0, 0.25), inset 0 0 14px -6px rgba(3, 53, 0, 0.1) !important;
+  box-shadow: 0 2px 8px -2px rgba(3, 53, 0, 0.08) !important;
 }
 
 html.light .glow-accent-strong {
   border-color: #033500 !important;
-  box-shadow: 0 8px 30px -4px rgba(3, 53, 0, 0.35), inset 0 0 18px -6px rgba(3, 53, 0, 0.15) !important;
+  box-shadow: 0 3px 10px -2px rgba(3, 53, 0, 0.12) !important;
 }
 
 html.light .card-title {
@@ -725,7 +725,7 @@ html.light .btn-accent,
 html.light button.bg-\[var\(--color-accent\)\] {
   background: #033500 !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 18px rgba(3, 53, 0, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(3, 53, 0, 0.15) !important;
 }
 
 html.light .btn-accent:hover,
