@@ -1,0 +1,27 @@
+{
+  "name": "frostledger-monorepo",
+  "version": "1.0.0",
+  "description": "Blockchain-Enabled IoT Cold Chain Storage & Tamper Detection System",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "backend",
+    "worker",
+    "contracts",
+    "frontend",
+    "simulator"
+  ],
+  "scripts": {
+    "bootstrap": "npm install",
+    "build": "npm run --workspaces --if-present build",
+    "typecheck": "npm run --workspaces --if-present typecheck",
+    "lint": "npm run --workspaces --if-present lint",
+    "test": "npm run --workspaces --if-present test",
+    "ci": "node scripts/ci.js",
+    "seed": "npm run seed --workspace=backend",
+    "migrate": "npm run migrate --workspace=backend"
+  },
+  "devDependencies": {
+    "typescript": "5.7.3"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@frostledger/simulator",
+  "version": "1.0.0",
+  "description": "Device Simulator CLI for FrostLedger",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@frostledger/shared": "file:../shared"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.1",
+    "tsx": "4.19.2",
+    "typescript": "5.7.3",
+    "vitest": "3.0.5"
+  }
+}
