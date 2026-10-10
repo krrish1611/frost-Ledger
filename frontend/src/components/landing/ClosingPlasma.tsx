@@ -77,11 +77,20 @@ export const ClosingPlasma: React.FC<ClosingPlasmaProps> = ({
           // Power curve for cybernetic high-contrast plasma
           const glow = Math.pow(norm, 2.4);
 
-          // Color interpolation: #0a0a0b (10, 10, 11) to #7df9c4 (125, 249, 196)
-          data[idx] = Math.floor(10 + glow * (125 - 10));
-          data[idx + 1] = Math.floor(10 + glow * (249 - 10));
-          data[idx + 2] = Math.floor(11 + glow * (196 - 11));
-          data[idx + 3] = 255;
+          const isLight = document.documentElement.classList.contains('light');
+          if (isLight) {
+            // Light mode: porcelain (#f8f6fc: 248, 246, 252) to electric purple/violet (#8b5cf6: 139, 92, 246)
+            data[idx] = Math.floor(248 - glow * (248 - 139));
+            data[idx + 1] = Math.floor(246 - glow * (246 - 92));
+            data[idx + 2] = Math.floor(252 - glow * (252 - 246));
+            data[idx + 3] = 255;
+          } else {
+            // Dark mode: #0a0a0b (10, 10, 11) to #7df9c4 (125, 249, 196)
+            data[idx] = Math.floor(10 + glow * (125 - 10));
+            data[idx + 1] = Math.floor(10 + glow * (249 - 10));
+            data[idx + 2] = Math.floor(11 + glow * (196 - 11));
+            data[idx + 3] = 255;
+          }
 
           idx += 4;
         }

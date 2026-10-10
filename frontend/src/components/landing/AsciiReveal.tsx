@@ -115,13 +115,21 @@ export const AsciiReveal: React.FC<AsciiRevealProps> = ({
           // Skip completely empty glyphs to optimize paint
           if (char === ' ') continue;
 
-          // Color interpolation: Dark baseline (#3a3a40) to Mint (#7DF9C4)
-          // R: 58 -> 125, G: 58 -> 249, B: 64 -> 196
+          const isLight = document.documentElement.classList.contains('light');
           const tColor = Math.min(1, Math.pow(combined, 1.4));
-          const red = Math.floor(58 + tColor * (125 - 58));
-          const green = Math.floor(58 + tColor * (249 - 58));
-          const blue = Math.floor(64 + tColor * (196 - 64));
-          const alpha = 0.25 + combined * 0.75;
+          let red: number, green: number, blue: number;
+          if (isLight) {
+            // Light mode: soft lavender slate (#a397ba: 163, 151, 186) to electric violet (#7c3aed: 124, 58, 237)
+            red = Math.floor(163 + tColor * (124 - 163));
+            green = Math.floor(151 + tColor * (58 - 151));
+            blue = Math.floor(186 + tColor * (237 - 186));
+          } else {
+            // Dark mode: Dark baseline (#3a3a40: 58, 58, 64) to Mint (#7DF9C4: 125, 249, 196)
+            red = Math.floor(58 + tColor * (125 - 58));
+            green = Math.floor(58 + tColor * (249 - 58));
+            blue = Math.floor(64 + tColor * (196 - 64));
+          }
+          const alpha = isLight ? 0.35 + combined * 0.65 : 0.25 + combined * 0.75;
 
           ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha.toFixed(2)})`;
           ctx.fillText(char, x, y);

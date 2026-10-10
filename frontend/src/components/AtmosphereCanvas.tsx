@@ -57,11 +57,20 @@ export const AtmosphereCanvas: React.FC = () => {
           // Scaled intensity [0, 1]
           const m = Math.pow(Math.max(0, (v + 4) / 8), 2.5) * 0.45;
 
-          // Electric mint (#7DF9C4 -> r: 125, g: 249, b: 196) on dark (#0A0A0B)
-          data[idx] = Math.floor(10 + m * (125 - 10));
-          data[idx + 1] = Math.floor(10 + m * (249 - 10));
-          data[idx + 2] = Math.floor(11 + m * (196 - 11));
-          data[idx + 3] = Math.floor(m * 180);
+          const isLight = document.documentElement.classList.contains('light');
+          if (isLight) {
+            // Radiant light purple & electric violet plasma on porcelain
+            data[idx] = Math.floor(248 - m * (248 - 124));
+            data[idx + 1] = Math.floor(246 - m * (246 - 58));
+            data[idx + 2] = Math.floor(252 - m * (252 - 237));
+            data[idx + 3] = Math.floor(m * 135);
+          } else {
+            // Electric mint (#7DF9C4 -> r: 125, g: 249, b: 196) on dark (#0A0A0B)
+            data[idx] = Math.floor(10 + m * (125 - 10));
+            data[idx + 1] = Math.floor(10 + m * (249 - 10));
+            data[idx + 2] = Math.floor(11 + m * (196 - 11));
+            data[idx + 3] = Math.floor(m * 180);
+          }
         }
       }
 

@@ -13,6 +13,7 @@ import { SpiralGallery } from './SpiralGallery';
 import { ClosingNotes } from './ClosingNotes';
 import { FooterQuote } from './FooterQuote';
 import { AuthModal } from './AuthModal';
+import { ThemeToggle } from '../ThemeToggle';
 
 interface LandingViewProps {
   onEnterDashboard: (role?: 'operator' | 'admin' | 'receiver' | 'auditor') => void;
@@ -97,9 +98,10 @@ export const LandingView: React.FC<LandingViewProps> = ({
             </button>
           </nav>
 
-          {/* Action CTAs: Login, Sign In & Dashboard Buttons */}
-          {/* Action CTAs: Login, Sign In & Dashboard Buttons */}
+          {/* Action CTAs: Theme Toggle, Login, Sign In & Dashboard Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Light / Dark Mode Toggle */}
+            <ThemeToggle />
             {currentUser ? (
               <>
                 <div className="px-3 py-1.5 rounded border border-[var(--color-accent)]/30 bg-[var(--color-accent)]/10 text-xs font-mono text-[var(--color-accent)] flex items-center gap-1.5">

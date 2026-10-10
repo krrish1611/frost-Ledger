@@ -366,18 +366,36 @@ export const AsciiImage: React.FC<AsciiImageProps> = ({
 
           // Smooth holographic color grading
           const ratio = finalVal / 255;
-          if (beamFactor > 0.45) {
-            ctx.fillStyle = '#ffffff'; // Radiant sweep wavefront
-          } else if (beamFactor > 0.15) {
-            ctx.fillStyle = '#b6ffdf'; // Soft glowing mint trail
-          } else if (ratio > 0.65) {
-            ctx.fillStyle = '#7df9c4'; // Vibrant mint highlight
-          } else if (ratio > 0.42) {
-            ctx.fillStyle = '#5bc98c'; // Emerald
-          } else if (ratio > 0.22) {
-            ctx.fillStyle = '#9ca3af'; // Cyber gray
+          const isLight = document.documentElement.classList.contains('light');
+
+          if (isLight) {
+            if (beamFactor > 0.45) {
+              ctx.fillStyle = '#6d28d9'; // Deep royal violet sweep wavefront
+            } else if (beamFactor > 0.15) {
+              ctx.fillStyle = '#7c3aed'; // Vibrant electric purple trail
+            } else if (ratio > 0.65) {
+              ctx.fillStyle = '#8b5cf6'; // Luminous purple highlight
+            } else if (ratio > 0.42) {
+              ctx.fillStyle = '#a78bfa'; // Soft lavender
+            } else if (ratio > 0.22) {
+              ctx.fillStyle = '#c4b5fd'; // Pale lilac
+            } else {
+              ctx.fillStyle = '#ddd6fe'; // Faint lavender boundary
+            }
           } else {
-            ctx.fillStyle = '#374151'; // Dark matrix hairline
+            if (beamFactor > 0.45) {
+              ctx.fillStyle = '#ffffff'; // Radiant sweep wavefront
+            } else if (beamFactor > 0.15) {
+              ctx.fillStyle = '#b6ffdf'; // Soft glowing mint trail
+            } else if (ratio > 0.65) {
+              ctx.fillStyle = '#7df9c4'; // Vibrant mint highlight
+            } else if (ratio > 0.42) {
+              ctx.fillStyle = '#5bc98c'; // Emerald
+            } else if (ratio > 0.22) {
+              ctx.fillStyle = '#9ca3af'; // Cyber gray
+            } else {
+              ctx.fillStyle = '#374151'; // Dark matrix hairline
+            }
           }
 
           ctx.fillText(char, x, y);

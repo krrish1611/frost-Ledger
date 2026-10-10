@@ -1,5 +1,6 @@
 import React from 'react';
 import { Shield, Radio, Activity, Cpu, Layers, LogOut, User as UserIcon } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 export type ActiveTab = 'shipments' | 'verify' | 'ai-intelligence' | 'admin';
 export type UserRole = 'operator' | 'receiver' | 'auditor' | 'admin';
@@ -146,8 +147,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </nav>
 
-        {/* Role Switcher, Supabase User & System Telemetry Pill */}
+        {/* Role Switcher, Theme Toggle, Supabase User & System Telemetry Pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <ThemeToggle />
           <div
             className="data"
             style={{

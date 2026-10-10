@@ -53,9 +53,40 @@
   --radius-lg: 8px;
 }
 
+/* Light Theme Variables: Crisp porcelain canvas with ethereal light purple / electric violet palette */
+html.light,
+html[data-theme="light"],
+:root[data-theme="light"],
+.light {
+  --color-bg: #f8f6fc;
+  --color-panel: #ffffff;
+  --color-panel-elevated: #f2edf8;
+  --color-border: #dfd6eb;
+  --color-border-hover: #c4b5de;
+  --color-text: #1a1226;
+  --color-text-dim: #453c56;
+  --color-muted: #796e8e;
+  --color-accent: #7c3aed;
+  --color-accent-subtle: rgba(124, 58, 237, 0.08);
+  --color-accent-glow: rgba(124, 58, 237, 0.2);
+  --color-warn: #d97706;
+  --color-warn-subtle: rgba(217, 119, 6, 0.08);
+  --color-critical: #e11d48;
+  --color-critical-subtle: rgba(225, 29, 72, 0.08);
+  --color-pass: #059669;
+  --color-pass-subtle: rgba(5, 150, 105, 0.08);
+  --color-ai-badge: #7c3aed;
+  --color-ai-badge-bg: rgba(124, 58, 237, 0.09);
+}
+
 html {
   background-color: var(--color-bg);
   color-scheme: dark;
+}
+
+html.light {
+  background-color: var(--color-bg);
+  color-scheme: light;
 }
 
 body {
@@ -334,3 +365,160 @@ input:focus, select:focus, textarea:focus {
 .telemetry-table tr:hover td {
   background: var(--color-panel-elevated);
 }
+
+/* ========================================================
+   LIGHT MODE: THEMATIC & COMPONENT OVERRIDES
+   ======================================================== */
+
+html.light body {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
+}
+
+/* Panels and Containers */
+html.light .panel {
+  background: var(--color-panel) !important;
+  border-color: var(--color-border) !important;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.05);
+}
+
+html.light .panel-elevated {
+  background: var(--color-panel-elevated) !important;
+  border-color: var(--color-border-hover) !important;
+}
+
+/* Background Card Replacements */
+html.light [class*="bg-[#0a0a0b]"],
+html.light [class*="bg-[#0c0c0e]"],
+html.light [class*="bg-[#080809]"],
+html.light [class*="bg-[#0a0a0c]"],
+html.light [class*="bg-[#0d0d0f]"],
+html.light [class*="bg-[#0d0e12]"],
+html.light [class*="bg-[#0b0c10]"],
+html.light [class*="bg-[#0b0b0d]"],
+html.light [class*="bg-[#101116]"],
+html.light [class*="bg-[#111113]"],
+html.light [class*="bg-[#111114]"],
+html.light [class*="bg-[#121214]"],
+html.light [class*="bg-[#131316]"],
+html.light [class*="bg-[#18181c]"] {
+  background-color: var(--color-panel) !important;
+  border-color: var(--color-border);
+}
+
+html.light [class*="bg-[#151518]"],
+html.light [class*="bg-[#161619]"],
+html.light [class*="bg-[#1a1a1e]"],
+html.light [class*="bg-[#1a1a1f]"],
+html.light [class*="bg-[#1b1b1f]"],
+html.light [class*="bg-[#1b1b20]"],
+html.light [class*="bg-[#1c1c20]"],
+html.light [class*="bg-[#1f1f23]"],
+html.light [class*="bg-[#101014]"] {
+  background-color: var(--color-panel-elevated) !important;
+}
+
+/* Borders & Dividers */
+html.light .hairline,
+html.light [class*="border-[#1f1f23]"],
+html.light [class*="border-[#232328]"],
+html.light [class*="border-white/[0.06]"],
+html.light [class*="border-white/[0.08]"],
+html.light [class*="border-white/[0.12]"] {
+  border-color: var(--color-border) !important;
+}
+
+/* Text Adaptations */
+html.light .text-white {
+  color: var(--color-text) !important;
+}
+
+html.light .text-neutral-300,
+html.light .text-neutral-400 {
+  color: var(--color-text-dim) !important;
+}
+
+html.light .text-neutral-500 {
+  color: var(--color-muted) !important;
+}
+
+/* Glow Effects */
+html.light .glow-accent {
+  border-color: rgba(124, 58, 237, 0.35) !important;
+  box-shadow: 0 4px 20px -4px rgba(124, 58, 237, 0.18), inset 0 0 14px -6px rgba(124, 58, 237, 0.08) !important;
+}
+
+html.light .glow-accent-strong {
+  border-color: rgba(124, 58, 237, 0.55) !important;
+  box-shadow: 0 8px 30px -4px rgba(124, 58, 237, 0.28), inset 0 0 18px -6px rgba(124, 58, 237, 0.12) !important;
+}
+
+html.light .card-title {
+  color: var(--color-accent) !important;
+  text-shadow: none !important;
+}
+
+/* Buttons */
+html.light .btn-accent,
+html.light button.bg-\[var\(--color-accent\)\] {
+  background: var(--color-accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3) !important;
+}
+
+html.light .btn-accent:hover,
+html.light button.bg-\[var\(--color-accent\)\]:hover {
+  background: #6d28d9 !important;
+  box-shadow: 0 6px 22px rgba(124, 58, 237, 0.45) !important;
+}
+
+html.light .btn-outline {
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+html.light .btn-outline:hover {
+  border-color: var(--color-accent) !important;
+  color: var(--color-accent) !important;
+  background: var(--color-accent-subtle) !important;
+}
+
+html.light .btn-ghost:hover {
+  background: var(--color-panel-elevated) !important;
+  color: var(--color-text) !important;
+}
+
+/* Forms & Modals */
+html.light input,
+html.light select,
+html.light textarea {
+  background-color: #ffffff !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+html.light input:focus,
+html.light select:focus,
+html.light textarea:focus {
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.2) !important;
+}
+
+html.light .bg-\[\#0a0a0b\]\/85 {
+  background-color: rgba(246, 242, 252, 0.88) !important;
+}
+
+/* Table rows */
+html.light .telemetry-table th {
+  border-bottom: 1px solid var(--color-border) !important;
+  color: var(--color-muted) !important;
+}
+
+html.light .telemetry-table td {
+  border-bottom: 1px solid rgba(223, 214, 235, 0.6) !important;
+}
+
+html.light .telemetry-table tr:hover td {
+  background: var(--color-panel-elevated) !important;
+}
+
