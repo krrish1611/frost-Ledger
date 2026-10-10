@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
@@ -11,7 +12,8 @@ from models.rules import RuleDetector
 class ShipmentLearner:
     """
     Per-shipment online learning instance.
-    Maintains isolated ML model state and streaming detectors for a single shipment.
+    Maintains isolated ML model state, streaming detectors, and specialized cargo model
+    (Vaccines vs Produce) for a single shipment.
     """
 
     def __init__(
@@ -25,20 +27,31 @@ class ShipmentLearner:
         self.warmup_samples = warmup_samples
         self.sample_count = 0
         self.last_batch_id: Optional[str] = None
+        self._last_reading: Optional[Dict[str, Any]] = None
 
-        temp_min = self.profile.get("temp_min_c")
-        temp_max = self.profile.get("temp_max_c")
-        hum_min = self.profile.get("humidity_min_pct", 20.0)
-        hum_max = self.profile.get("humidity_max_pct", 80.0)
+        cargo = str(self.profile.get("cargo_type", "vaccine")).lower()
+        self.cargo_type = "produce" if any(k in cargo for k in ["produce", "fruit", "veg", "berry", "apple"]) else "vaccine"
+
+        # Determine corridor defaults based on cargo domain
+        if self.cargo_type == "produce":
+            temp_min = self.profile.get("temp_min_c", 0.0)
+            temp_max = self.profile.get("temp_max_c", 4.0)
+            hum_min = self.profile.get("humidity_min_pct", 80.0)
+            hum_max = self.profile.get("humidity_max_pct", 95.0)
+        else: # vaccine / biologics
+            temp_min = self.profile.get("temp_min_c", 2.0)
+            temp_max = self.profile.get("temp_max_c", 8.0)
+            hum_min = self.profile.get("humidity_min_pct", 20.0)
+            hum_max = self.profile.get("humidity_max_pct", 80.0)
 
         # Detectors
         self.temp_cusum = EwmaCusumDetector(
             feature_name="temperature",
             target_min=temp_min,
             target_max=temp_max,
-            alpha=0.1,
-            k_multiplier=0.5,
-            h_multiplier=4.0,
+            alpha=0.15 if self.cargo_type == "vaccine" else 0.10,
+            k_multiplier=0.4 if self.cargo_type == "vaccine" else 0.5,
+            h_multiplier=3.0 if self.cargo_type == "vaccine" else 4.0,
         )
         self.hum_cusum = EwmaCusumDetector(
             feature_name="humidity",
@@ -57,6 +70,26 @@ class ShipmentLearner:
         )
         self.rules = RuleDetector(flat_window_size=5)
 
+        # Load specialized trained cargo model
+        self.cargo_model = None
+        trained_dir = os.path.join(os.path.dirname(__file__), "models", "trained")
+        model_file = "produce_model.joblib" if self.cargo_type == "produce" else "vaccine_model.joblib"
+        model_path = os.path.join(trained_dir, model_file)
+        if os.path.exists(model_path):
+            try:
+                import joblib
+                self.cargo_model = joblib.load(model_path)
+            except Exception:
+                self.cargo_model = None
+
+        if self.cargo_model is None:
+            if self.cargo_type == "produce":
+                from models.cargo_models import ProduceColdChainModel
+                self.cargo_model = ProduceColdChainModel()
+            else:
+                from models.cargo_models import VaccineColdChainModel
+                self.cargo_model = VaccineColdChainModel()
+
     @property
     def warmup_status(self) -> str:
         return "warming_up" if self.sample_count <= self.warmup_samples else "active"
@@ -68,7 +101,7 @@ class ShipmentLearner:
         events: Optional[List[Dict[str, Any]]] = None,
     ) -> List[Dict[str, Any]]:
         """
-        Ingests a single sensor reading and evaluates all advisory models.
+        Ingests a single sensor reading and evaluates both streaming and specialized cargo models.
         Returns newly generated AI insights (if any).
         """
         self.sample_count += 1
@@ -102,12 +135,11 @@ class ShipmentLearner:
                 elif "shock" in ev_type and float(ev.get("magnitude", 0.0)) > 2.5:
                     is_high_shock_event = True
 
-        # Weight determination
         sample_weight = 1.0
         if is_known_door_open:
-            sample_weight = 0.05 # Downweight during planned door opening
+            sample_weight = 0.05
         elif is_high_shock_event:
-            sample_weight = 0.20 # Downweight during rough transit shock
+            sample_weight = 0.20
 
         # 1. Update EWMA + CUSUM
         temp_drift, temp_score, temp_sev, temp_exp = self.temp_cusum.update(temp, weight=sample_weight)
@@ -127,6 +159,15 @@ class ShipmentLearner:
 
         # 4. Rules
         flat_spoof, flat_score, flat_sev, flat_exp = self.rules.check_flat_copied(temp, humidity)
+
+        # 5. Specialized Cargo Model Prediction (Vaccines vs Produce)
+        cargo_anomaly = False
+        cargo_score = 0.0
+        cargo_exp = ""
+        if self.cargo_model and getattr(self.cargo_model, "is_fitted", False):
+            feat_arr = self.cargo_model.extract_features(reading, prev_reading=self._last_reading)
+            cargo_anomaly, cargo_score, cargo_exp = self.cargo_model.predict_anomaly(feat_arr)
+        self._last_reading = reading
 
         insights: List[Dict[str, Any]] = []
 
@@ -152,15 +193,15 @@ class ShipmentLearner:
                 "label": ADVISORY_LABEL,
             }
 
-        # During warm-up phase, we train models but suppress warning/critical insights
+        # During warm-up phase, suppress alerts
         if current_status == "warming_up":
             return insights
 
-        # If known door open, suppress temporary temperature spike warnings
+        # If known door open, suppress temporary alerts
         if is_known_door_open:
             return insights
 
-        # Priority 1: Check Flat / Copied Readings (Spoofing / Freeze)
+        # Priority 1: Check Flat / Copied Readings
         if flat_spoof:
             insights.append(
                 create_insight("spoofing", flat_score, flat_sev, flat_exp, "rule_flat_detector")
@@ -188,15 +229,20 @@ class ShipmentLearner:
                 create_insight("anomaly", hst_score, hst_sev, hst_exp, "half_space_trees_detector")
             )
 
+        # Priority 5: Specialized Domain Cargo Model Alert (Vaccine or Produce)
+        if cargo_anomaly:
+            sev = "critical" if cargo_score >= 0.85 else "warning"
+            insights.append(
+                create_insight("anomaly", cargo_score, sev, cargo_exp, f"{self.cargo_type}_coldchain_model")
+            )
+
         return insights
 
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Serializes complete learner state for database checkpointing.
-        """
         return {
             "shipment_id": self.shipment_id,
             "profile": self.profile,
+            "cargo_type": self.cargo_type,
             "warmup_samples": self.warmup_samples,
             "sample_count": self.sample_count,
             "last_batch_id": self.last_batch_id,
@@ -209,9 +255,6 @@ class ShipmentLearner:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ShipmentLearner":
-        """
-        Restores learner state from serialized checkpoint dictionary.
-        """
         inst = cls(
             shipment_id=data["shipment_id"],
             profile=data.get("profile", {}),

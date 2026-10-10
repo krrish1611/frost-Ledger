@@ -1,0 +1,45 @@
+{
+  "trained_at": "2026-10-10T20:25:37.965118+00:00",
+  "models": {
+    "vaccine_biologics": {
+      "cargo_type": "vaccine",
+      "target_corridor": "2.0\u00b0C to 8.0\u00b0C",
+      "critical_rules": "Immediate failure at <= 0.0\u00b0C (WHO adjuvant coagulation rule)",
+      "kinetics": "Arrhenius Ea = 83.14 kJ/mol",
+      "accuracy": 0.998,
+      "precision": 0.9929,
+      "recall": 1.0,
+      "f1_score": 0.9964,
+      "features": [
+        "temperature",
+        "temp_rate_of_change",
+        "freeze_risk_score",
+        "heat_excursion_score",
+        "shock_magnitude_g",
+        "arrhenius_kinetic_factor",
+        "speed_kmh"
+      ],
+      "artifact_path": "D:\\FROSTLEDGER\\ai-service\\models\\trained\\vaccine_model.joblib"
+    },
+    "fresh_produce": {
+      "cargo_type": "produce",
+      "target_corridor": "0.0\u00b0C to 4.0\u00b0C (Berries/Apples)",
+      "critical_rules": "Transpiration moisture deficit (RH < 78%), Condensation dew point mold (RH > 95%), Bruising shock > 1.8g",
+      "kinetics": "Respiration Q10 = 2.2",
+      "accuracy": 0.958,
+      "precision": 0.8772,
+      "recall": 1.0,
+      "f1_score": 0.9346,
+      "features": [
+        "temperature",
+        "humidity",
+        "vpd_transpiration_deficit_kpa",
+        "condensation_mold_risk",
+        "bruising_shock_g",
+        "respiration_decay_factor",
+        "temp_rate_of_change"
+      ],
+      "artifact_path": "D:\\FROSTLEDGER\\ai-service\\models\\trained\\produce_model.joblib"
+    }
+  }
+}

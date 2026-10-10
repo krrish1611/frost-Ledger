@@ -236,6 +236,40 @@ def get_evaluations(limit: int = 50):
         evaluations=items,
     )
 
+import json
+
+@app.get("/models/cargo")
+def get_cargo_models_metadata():
+    """
+    Returns metadata, training metrics, and biological constraints for both
+    specialized AI models: Vaccine/Biologics and Fresh Produce (Fruits & Vegetables).
+    """
+    trained_dir = os.path.join(os.path.dirname(__file__), "models", "trained")
+    summary_path = os.path.join(trained_dir, "training_summary.json")
+    if os.path.exists(summary_path):
+        with open(summary_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            data["label"] = ADVISORY_LABEL
+            return data
+    return {
+        "status": "not_trained",
+        "message": "Run /train/cargo or python train_cargo_models.py to train models.",
+        "label": ADVISORY_LABEL,
+    }
+
+@app.post("/train/cargo")
+def trigger_cargo_models_training():
+    """
+    Triggers separate retraining for both Vaccine and Produce AI models.
+    """
+    from train_cargo_models import train_and_evaluate
+    summary = train_and_evaluate()
+    return {
+        "status": "completed",
+        "label": ADVISORY_LABEL,
+        "summary": summary,
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=AI_SERVICE_PORT, reload=True)
