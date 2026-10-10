@@ -72,14 +72,14 @@ const Pillar1Playable: React.FC = () => {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">ED25519 HARDWARE SIG</span>
-          <span className={isTampered ? 'text-[var(--color-critical)] font-bold' : isLight ? 'text-[#033500] font-bold' : 'text-[var(--color-accent)] font-semibold'}>
+          <span className={isTampered ? (isLight ? 'text-[#b21919] font-bold' : 'text-[var(--color-critical)] font-bold') : isLight ? 'text-[#033500] font-bold' : 'text-[var(--color-accent)] font-semibold'}>
             {isTampered ? '0xINVALID_SIG_MISMATCH' : current.sig}
           </span>
         </div>
         <div
           className={`p-1.5 rounded text-[11px] font-bold flex items-center justify-between transition-colors ${
             isTampered
-              ? 'bg-[var(--color-critical)]/15 text-[var(--color-critical)] border border-[var(--color-critical)]/30'
+              ? isLight ? 'bg-[#fcecec] text-[#b21919] border border-[#b21919]/30' : 'bg-[var(--color-critical)]/15 text-[var(--color-critical)] border border-[var(--color-critical)]/30'
               : isLight
                 ? 'bg-[#d7edd5] text-[#033500] border border-[#033500]/30'
                 : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)] border border-[var(--color-pass)]/30'
@@ -112,7 +112,7 @@ const Pillar1Playable: React.FC = () => {
               ? isLight
                 ? 'bg-[#033500]/10 text-[#033500] border border-[#033500]/30'
                 : 'bg-white/10 text-white border border-white/20'
-              : 'bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/30 text-[var(--color-critical)] hover:bg-[var(--color-critical)]/20'
+              : isLight ? 'bg-[#fcecec] border border-[#b21919]/30 text-[#b21919] hover:bg-[#b21919]/10' : 'bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/30 text-[var(--color-critical)] hover:bg-[var(--color-critical)]/20'
           }`}
         >
           <ShieldAlert size={12} />
@@ -144,7 +144,7 @@ const Pillar2Playable: React.FC = () => {
         <div>
           <div className="flex justify-between text-[11px] mb-0.5">
             <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-semibold">STORAGE TEMPERATURE:</span>
-            <span className={`font-bold ${temp > 8 ? 'text-[var(--color-critical)]' : isLight ? 'text-[#8f7200]' : 'text-[#e8b14c]'}`}>
+            <span className={`font-bold ${temp > 8 ? (isLight ? 'text-[#b21919]' : 'text-[var(--color-critical)]') : isLight ? 'text-[#8f7200]' : 'text-[#e8b14c]'}`}>
               {temp.toFixed(1)}°C {temp > 8 ? '(EXCURSION)' : '(WHO 2-8°C)'}
             </span>
           </div>
@@ -193,7 +193,7 @@ const Pillar2Playable: React.FC = () => {
             <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">REMAINING BATCH POTENCY:</span>
             <span
               className={`font-bold ${
-                potency > 92 ? (isLight ? 'text-[#033500]' : 'text-[var(--color-pass)]') : potency > 80 ? 'text-[var(--color-warn)]' : 'text-[var(--color-critical)]'
+                potency > 92 ? (isLight ? 'text-[#033500]' : 'text-[var(--color-pass)]') : potency > 80 ? 'text-[var(--color-warn)]' : (isLight ? 'text-[#b21919]' : 'text-[var(--color-critical)]')
               }`}
             >
               {potency.toFixed(1)}%
@@ -202,7 +202,7 @@ const Pillar2Playable: React.FC = () => {
           <div className={`h-2 w-full rounded-full overflow-hidden ${isLight ? 'bg-[#cbe4ca]' : 'bg-black/10 dark:bg-[#1b1b20]'}`}>
             <div
               className={`h-full transition-all duration-300 rounded-full ${
-                potency > 92 ? (isLight ? 'bg-[#033500]' : 'bg-[var(--color-pass)]') : potency > 80 ? 'bg-[var(--color-warn)]' : 'bg-[var(--color-critical)]'
+                potency > 92 ? (isLight ? 'bg-[#033500]' : 'bg-[var(--color-pass)]') : potency > 80 ? 'bg-[var(--color-warn)]' : (isLight ? 'bg-[#b21919]' : 'bg-[var(--color-critical)]')
               }`}
               style={{ width: `${potency}%` }}
             />
@@ -211,7 +211,7 @@ const Pillar2Playable: React.FC = () => {
         <div
           className={`p-1.5 rounded text-[11px] font-bold flex items-center justify-between ${
             isExcursion
-              ? 'bg-[var(--color-critical)]/15 text-[var(--color-critical)] border border-[var(--color-critical)]/30'
+              ? isLight ? 'bg-[#fcecec] text-[#b21919] border border-[#b21919]/30' : 'bg-[var(--color-critical)]/15 text-[var(--color-critical)] border border-[var(--color-critical)]/30'
               : isLight
                 ? 'bg-[#d7edd5] text-[#033500] border border-[#033500]/30'
                 : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)] border border-[var(--color-pass)]/30'
@@ -291,14 +291,14 @@ const Pillar3Playable: React.FC = () => {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">POLYGON MERKLE ROOT:</span>
-          <span className={isCorrupted ? 'text-[var(--color-critical)] font-bold' : isLight ? 'text-[#033500] font-bold' : 'text-[var(--color-pass)] font-bold'}>
+          <span className={isCorrupted ? (isLight ? 'text-[#b21919] font-bold' : 'text-[var(--color-critical)] font-bold') : isLight ? 'text-[#033500] font-bold' : 'text-[var(--color-pass)] font-bold'}>
             {isCorrupted ? '0xBAD_ROOT_MISMATCH' : '0x8492f1b4029a1e0b5c77'}
           </span>
         </div>
         <div
           className={`p-1.5 rounded font-bold flex items-center justify-between ${
             isCorrupted
-              ? 'bg-[var(--color-critical)]/15 text-[var(--color-critical)] border border-[var(--color-critical)]/30'
+              ? isLight ? 'bg-[#fcecec] text-[#b21919] border border-[#b21919]/30' : 'bg-[var(--color-critical)]/15 text-[var(--color-critical)] border border-[var(--color-critical)]/30'
               : isLight
                 ? 'bg-[#d7edd5] text-[#033500] border border-[#033500]/30'
                 : 'bg-[var(--color-pass)]/15 text-[var(--color-pass)] border border-[var(--color-pass)]/30'
@@ -331,7 +331,7 @@ const Pillar3Playable: React.FC = () => {
               ? isLight
                 ? 'bg-[#033500]/10 text-[#033500] border border-[#033500]/30'
                 : 'bg-white/10 text-white border border-white/20'
-              : 'bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/30 text-[var(--color-critical)] hover:bg-[var(--color-critical)]/20'
+              : isLight ? 'bg-[#fcecec] border border-[#b21919]/30 text-[#b21919] hover:bg-[#b21919]/10' : 'bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/30 text-[var(--color-critical)] hover:bg-[var(--color-critical)]/20'
           }`}
         >
           {isCorrupted ? 'RESTORE DATA' : '⚡ TAMPER BATCH DATA'}
@@ -430,7 +430,7 @@ const Pillar4Playable: React.FC = () => {
           <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">EARLY WARNING ADVISORY:</span>
           <span className="text-[#033500] dark:text-white font-bold">{current.leadTime}</span>
         </div>
-        <div className="p-1.5 rounded text-[11px] font-bold bg-[#9d7bff]/10 border border-[#9d7bff]/30 text-[#033500] dark:text-[#c4b5fd] flex items-center justify-between">
+        <div className="p-1.5 rounded text-[11px] font-bold bg-[#9d7bff]/10 border border-[#9d7bff]/30 text-[#4c1d95] dark:text-[#c4b5fd] flex items-center justify-between">
           <span>🛡️ CORE LEDGER UNMUTATED</span>
           <span>ISOLATION RULE ENFORCED</span>
         </div>
@@ -549,11 +549,11 @@ export const SpiralGallery: React.FC = () => {
     [0, 0, 1, 1, 2, 2, 3, 3]
   );
 
-  // Snappy, agile spring physics for faster, butter-smooth card transitions
+  // Smoother spring physics for more fluid card shuffling on scroll
   const smoothActiveFloat = useSpring(activeFloat, {
-    stiffness: 150,
-    damping: 20,
-    mass: 0.35,
+    stiffness: 85,
+    damping: 25,
+    mass: 0.6,
     restDelta: 0.001,
   });
 
