@@ -560,7 +560,7 @@ export const SpiralGallery: React.FC = () => {
               ARCHITECTURE // 4 CORE PILLARS
             </div>
 
-            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#021a18] dark:text-white leading-tight">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#033500] dark:text-white leading-tight">
               The Four Pillars of FrostLedger
             </h2>
 

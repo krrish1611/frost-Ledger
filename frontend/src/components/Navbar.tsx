@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shield, Radio, Activity, Cpu, Layers, LogOut, User as UserIcon } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { useTheme } from '../context/ThemeContext';
 
 export type ActiveTab = 'shipments' | 'verify' | 'ai-intelligence' | 'admin';
 export type UserRole = 'operator' | 'receiver' | 'auditor' | 'admin';
@@ -24,11 +25,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onSignOut,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   return (
     <header
       style={{
-        borderBottom: '1px solid var(--color-border)',
-        backgroundColor: 'rgba(17, 17, 19, 0.85)',
+        borderBottom: isLight ? '1px solid #a7d3a2' : '1px solid var(--color-border)',
+        backgroundColor: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(17, 17, 19, 0.85)',
         backdropFilter: 'blur(12px)',
         position: 'sticky',
         top: 0,
@@ -57,13 +61,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             style={{
               width: '32px',
               height: '32px',
-              backgroundColor: 'var(--color-panel-elevated)',
-              border: '1px solid var(--color-border)',
+              backgroundColor: isLight ? '#ebf5eb' : 'var(--color-panel-elevated)',
+              border: isLight ? '1.5px solid #033500' : '1px solid var(--color-border)',
               borderRadius: 'var(--radius-sm)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--color-accent)',
+              color: isLight ? '#033500' : 'var(--color-accent)',
             }}
           >
             <Shield size={18} />
@@ -75,14 +79,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 fontSize: '1.1rem',
                 fontWeight: 800,
                 letterSpacing: '-0.02em',
-                color: 'var(--color-text)',
+                color: isLight ? '#033500' : 'var(--color-text)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.4rem',
               }}
             >
               FROSTLEDGER
-              <span className="status-dot status-dot-active" />
+              <span className="status-dot status-dot-active" style={isLight ? { background: '#033500', boxShadow: '0 0 8px #033500' } : undefined} />
             </div>
             <div
               style={{
@@ -140,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onReturnToLanding}
               className="btn btn-ghost"
-              style={{ fontSize: '13px', padding: '0.45rem 0.85rem', color: 'var(--color-accent)' }}
+              style={{ fontSize: '13px', padding: '0.45rem 0.85rem', color: isLight ? '#033500' : 'var(--color-accent)' }}
               title="Return to Public Landing Showcase"
             >
               &larr; Landing Showcase
@@ -159,17 +163,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               gap: '0.5rem',
               padding: '0.35rem 0.65rem',
               borderRadius: 'var(--radius-sm)',
-              background: 'var(--color-panel)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-muted)',
+              background: isLight ? '#ffffff' : 'var(--color-panel)',
+              border: isLight ? '1.5px solid #033500' : '1px solid var(--color-border)',
+              color: isLight ? '#033500' : 'var(--color-muted)',
+              fontWeight: isLight ? 600 : 400,
             }}
           >
-            <Radio size={12} color="var(--color-pass)" />
+            <Radio size={12} color={isLight ? '#033500' : 'var(--color-pass)'} />
             <span>AMOY: ANCHORED</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <span style={{ fontSize: '11px', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontSize: '11px', color: isLight ? '#033500' : 'var(--color-muted)', fontFamily: 'var(--font-mono)' }}>
               ROLE:
             </span>
             <select
@@ -180,8 +185,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 fontSize: '11px',
                 fontFamily: 'var(--font-mono)',
                 textTransform: 'uppercase',
-                backgroundColor: 'var(--color-panel-elevated)',
-                borderColor: 'var(--color-border-hover)',
+                backgroundColor: isLight ? '#ffffff' : 'var(--color-panel-elevated)',
+                borderColor: isLight ? '#033500' : 'var(--color-border-hover)',
+                color: isLight ? '#033500' : 'var(--color-text)',
+                fontWeight: isLight ? 600 : 400,
               }}
             >
               <option value="operator">Operator</option>
@@ -200,11 +207,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 gap: '0.5rem',
                 padding: '0.25rem 0.65rem',
                 borderRadius: 'var(--radius-sm)',
-                background: 'rgba(125, 249, 196, 0.08)',
-                border: '1px solid rgba(125, 249, 196, 0.25)',
+                background: isLight ? 'rgba(3, 53, 0, 0.08)' : 'rgba(125, 249, 196, 0.08)',
+                border: isLight ? '1.5px solid #033500' : '1px solid rgba(125, 249, 196, 0.25)',
                 fontFamily: 'var(--font-mono)',
                 fontSize: '11px',
-                color: 'var(--color-accent)',
+                color: isLight ? '#033500' : 'var(--color-accent)',
+                fontWeight: isLight ? 600 : 400,
               }}
             >
               <UserIcon size={12} />

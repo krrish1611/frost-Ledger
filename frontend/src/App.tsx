@@ -9,8 +9,11 @@ import { AiRiskIntelligenceView } from './components/AiRiskIntelligenceView';
 import { AdminManagementView } from './components/AdminManagementView';
 import { LandingView } from './components/landing/LandingView';
 import { ShipmentSummary, MOCK_SHIPMENTS } from './services/api';
+import { useTheme } from './context/ThemeContext';
 
 export default function App() {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [viewMode, setViewMode] = useState<'landing' | 'dashboard'>('landing');
   const [activeTab, setActiveTab] = useState<ActiveTab>('shipments');
   const [userRole, setUserRole] = useState<UserRole>('operator');
@@ -127,23 +130,24 @@ export default function App() {
         </main>
 
         {/* Global Footer */}
+        {/* Global Footer */}
         <footer
           style={{
-            borderTop: '1px solid var(--fl-hairline)',
+            borderTop: isLight ? '1px solid #a7d3a2' : '1px solid var(--fl-hairline)',
             padding: '16px 24px',
             fontSize: '12px',
-            color: 'var(--fl-muted)',
+            color: isLight ? '#033500' : 'var(--fl-muted)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: '12px',
-            background: 'rgba(10, 10, 11, 0.8)',
+            background: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(10, 10, 11, 0.8)',
             backdropFilter: 'blur(8px)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontWeight: 600, color: 'var(--fl-text)' }}>FrostLedger</span>
+            <span style={{ fontWeight: 800, color: isLight ? '#033500' : 'var(--fl-text)' }}>FrostLedger</span>
             <span>&bull; Cold Chain Integrity &amp; Tamper Detection System v3.1</span>
           </div>
 

@@ -64,7 +64,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
       case 'MODERATE':
         return isLight ? '#8f7200' : '#F59E0B';
       default:
-        return isLight ? '#00665b' : 'var(--fl-mint)';
+        return isLight ? '#033500' : 'var(--fl-mint)';
     }
   };
 
@@ -188,7 +188,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                 cy="100"
                 r={radius}
                 fill="none"
-                stroke={isLight ? 'rgba(0, 102, 91, 0.16)' : 'rgba(255, 255, 255, 0.05)'}
+                stroke={isLight ? 'rgba(3, 53, 0, 0.15)' : 'rgba(255, 255, 255, 0.05)'}
                 strokeWidth="14"
               />
               {/* Progress Arc */}
@@ -312,7 +312,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                   {factorBreakdown.thermal} / 100 (Weight: 35%)
                 </span>
               </div>
-              <div style={{ height: '8px', background: isLight ? 'rgba(0, 102, 91, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '8px', background: isLight ? 'rgba(3, 53, 0, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                 <div
                   style={{
                     height: '100%',
@@ -322,7 +322,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                         ? (isLight ? '#b21919' : 'var(--fl-danger)')
                         : factorBreakdown.thermal > 40
                         ? (isLight ? '#8f7200' : 'var(--fl-warning)')
-                        : (isLight ? '#00665b' : 'var(--fl-mint)'),
+                        : (isLight ? '#033500' : 'var(--fl-mint)'),
                     transition: 'width 0.6s ease',
                   }}
                 />
@@ -337,7 +337,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                   {factorBreakdown.anomaly} / 100 (Weight: 25%)
                 </span>
               </div>
-              <div style={{ height: '8px', background: isLight ? 'rgba(0, 102, 91, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '8px', background: isLight ? 'rgba(3, 53, 0, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                 <div
                   style={{
                     height: '100%',
@@ -347,7 +347,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                         ? (isLight ? '#b21919' : 'var(--fl-danger)')
                         : factorBreakdown.anomaly > 40
                         ? (isLight ? '#8f7200' : 'var(--fl-warning)')
-                        : (isLight ? '#00665b' : 'var(--fl-mint)'),
+                        : (isLight ? '#033500' : 'var(--fl-mint)'),
                     transition: 'width 0.6s ease',
                   }}
                 />
@@ -362,7 +362,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                   {factorBreakdown.drift} / 100 (Weight: 15%)
                 </span>
               </div>
-              <div style={{ height: '8px', background: isLight ? 'rgba(0, 102, 91, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '8px', background: isLight ? 'rgba(3, 53, 0, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                 <div
                   style={{
                     height: '100%',
@@ -372,7 +372,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                         ? (isLight ? '#b21919' : 'var(--fl-danger)')
                         : factorBreakdown.drift > 40
                         ? (isLight ? '#8f7200' : 'var(--fl-warning)')
-                        : (isLight ? '#00665b' : 'var(--fl-mint)'),
+                        : (isLight ? '#033500' : 'var(--fl-mint)'),
                     transition: 'width 0.6s ease',
                   }}
                 />
@@ -387,7 +387,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                   {factorBreakdown.kinetics} / 100 (Weight: 15%)
                 </span>
               </div>
-              <div style={{ height: '8px', background: isLight ? 'rgba(0, 102, 91, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '8px', background: isLight ? 'rgba(3, 53, 0, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                 <div
                   style={{
                     height: '100%',
@@ -397,7 +397,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                         ? (isLight ? '#b21919' : 'var(--fl-danger)')
                         : factorBreakdown.kinetics > 40
                         ? (isLight ? '#8f7200' : 'var(--fl-warning)')
-                        : (isLight ? '#00665b' : 'var(--fl-mint)'),
+                        : (isLight ? '#033500' : 'var(--fl-mint)'),
                     transition: 'width 0.6s ease',
                   }}
                 />
@@ -412,12 +412,12 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
                   {factorBreakdown.security} / 100 (Weight: 10%)
                 </span>
               </div>
-              <div style={{ height: '8px', background: isLight ? 'rgba(0, 102, 91, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ height: '8px', background: isLight ? 'rgba(3, 53, 0, 0.12)' : 'var(--fl-bg-secondary)', borderRadius: '4px', overflow: 'hidden' }}>
                 <div
                   style={{
                     height: '100%',
                     width: `${factorBreakdown.security}%`,
-                    background: isLight ? '#00665b' : 'var(--fl-mint)',
+                    background: isLight ? '#033500' : 'var(--fl-mint)',
                     transition: 'width 0.6s ease',
                   }}
                 />

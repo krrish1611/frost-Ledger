@@ -136,8 +136,8 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
 
       ctx.clearRect(0, 0, width, height);
       const isLight = isLightNow();
-      // In light mode use pitch obsidian forest (#021a18) with 19.5:1 contrast against light background
-      ctx.fillStyle = isLight ? '#021a18' : '#7df9c4';
+      // In light mode use user requested green #033500 for the wordmark
+      ctx.fillStyle = isLight ? '#033500' : '#7df9c4';
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
@@ -191,7 +191,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
   if (isMobile || shouldReduceMotion) {
     return (
       <div className={`text-center py-2 select-none ${className}`}>
-        <h1 className="font-display font-extrabold tracking-tight text-5xl sm:text-7xl md:text-8xl text-[#021a18] dark:text-white drop-shadow-[0_2px_12px_rgba(0,128,114,0.18)] dark:drop-shadow-[0_0_35px_rgba(125,249,196,0.35)]">
+        <h1 className="font-display font-extrabold tracking-tight text-5xl sm:text-7xl md:text-8xl text-[#033500] dark:text-white drop-shadow-[0_2px_12px_rgba(3,53,0,0.22)] dark:drop-shadow-[0_0_35px_rgba(125,249,196,0.35)]">
           {text}
         </h1>
       </div>

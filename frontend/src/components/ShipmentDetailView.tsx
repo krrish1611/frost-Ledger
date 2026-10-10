@@ -268,18 +268,18 @@ export const ShipmentDetailView: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={telemetryData} margin={{ top: 12, right: 75, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={isLight ? '#72c4b7' : '#1F1F23'} opacity={isLight ? 0.55 : 1} />
-              <XAxis dataKey="timestamp" stroke={isLight ? '#021a18' : '#8A8A92'} fontSize={11} fontFamily="Geist Mono" strokeWidth={isLight ? 1.5 : 1} />
-              <YAxis domain={[-2, 20]} stroke={isLight ? '#021a18' : '#8A8A92'} fontSize={11} fontFamily="Geist Mono" unit="°C" strokeWidth={isLight ? 1.5 : 1} />
+              <XAxis dataKey="timestamp" stroke={isLight ? '#033500' : '#8A8A92'} fontSize={11} fontFamily="Geist Mono" strokeWidth={isLight ? 1.5 : 1} />
+              <YAxis domain={[-2, 20]} stroke={isLight ? '#033500' : '#8A8A92'} fontSize={11} fontFamily="Geist Mono" unit="°C" strokeWidth={isLight ? 1.5 : 1} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: isLight ? '#ffffff' : '#111113',
-                  border: isLight ? '1.5px solid #008072' : '1px solid #1F1F23',
+                  border: isLight ? '1.5px solid #033500' : '1px solid #1F1F23',
                   borderRadius: '6px',
-                  color: isLight ? '#021a18' : '#e8e8e8',
+                  color: isLight ? '#033500' : '#e8e8e8',
                   fontFamily: 'Geist Mono',
                   fontSize: '12px',
                   fontWeight: 600,
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                  boxShadow: '0 4px 16px rgba(3, 53, 0, 0.15)',
                 }}
               />
               <ReferenceLine
@@ -291,15 +291,15 @@ export const ShipmentDetailView: React.FC = () => {
               />
               <ReferenceLine
                 y={shipment.temp_min_c}
-                stroke={isLight ? '#004d44' : '#7DF9C4'}
+                stroke={isLight ? '#033500' : '#7DF9C4'}
                 strokeDasharray="4 4"
                 strokeWidth={isLight ? 2.5 : 1}
-                label={{ value: `Min: ${shipment.temp_min_c}°C`, fill: isLight ? '#004d44' : '#7DF9C4', fontSize: 11, fontWeight: 800, position: 'right' }}
+                label={{ value: `Min: ${shipment.temp_min_c}°C`, fill: isLight ? '#033500' : '#7DF9C4', fontSize: 11, fontWeight: 800, position: 'right' }}
               />
               <Line
                 type="monotone"
                 dataKey="temperature"
-                stroke={isLight ? '#004d44' : '#7DF9C4'}
+                stroke={isLight ? '#033500' : '#7DF9C4'}
                 strokeWidth={isLight ? 3.5 : 2}
                 dot={false}
                 name="Temperature (°C)"
@@ -307,8 +307,8 @@ export const ShipmentDetailView: React.FC = () => {
               <Area
                 type="monotone"
                 dataKey="humidity"
-                fill={isLight ? 'rgba(0, 102, 91, 0.16)' : 'rgba(91, 201, 140, 0.08)'}
-                stroke={isLight ? '#00665b' : '#5BC98C'}
+                fill={isLight ? 'rgba(3, 53, 0, 0.15)' : 'rgba(91, 201, 140, 0.08)'}
+                stroke={isLight ? '#033500' : '#5BC98C'}
                 strokeWidth={isLight ? 2 : 1}
                 name="Humidity (%)"
               />

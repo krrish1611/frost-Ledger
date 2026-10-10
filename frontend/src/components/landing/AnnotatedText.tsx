@@ -12,7 +12,7 @@ export const AnnotatedText: React.FC<AnnotatedTextProps> = ({
   children,
   variant = 'underline',
   className = '',
-  strokeColor = '#7df9c4',
+  strokeColor = 'var(--color-accent)',
 }) => {
   const shouldReduceMotion = useReducedMotion();
 

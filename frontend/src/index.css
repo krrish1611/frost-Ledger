@@ -64,51 +64,51 @@
   --fl-font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
 }
 
-/* Light Theme: Official Design System Tokens (Success #008072, Warning #8F7200, Error #B21919) */
+/* Light Theme: Official Design System Tokens with User Requested #033500 Green */
 html.light,
 html[data-theme="light"],
 :root[data-theme="light"],
 .light {
-  --color-bg: #f4faf8;
+  --color-bg: #f5faf5;
   --color-panel: #ffffff;
-  --color-panel-elevated: #ebf8f5;
-  --color-border: #a0e3d8;
-  --color-border-hover: #008072;
-  --color-text: #021a18;
-  --color-text-dim: #1d332f;
-  --color-muted: #51706b;
+  --color-panel-elevated: #eaf5ea;
+  --color-border: #033500;
+  --color-border-hover: #033500;
+  --color-text: #033500;
+  --color-text-dim: #164014;
+  --color-muted: #2d552b;
 
-  /* Primary Brand Accent (l.success-100 / l.success-60 / l.success-10) */
-  --color-accent: #008072;
-  --color-accent-subtle: #d0fbf5;
-  --color-accent-border: #a0e3d8;
-  --color-accent-glow: rgba(0, 128, 114, 0.22);
+  /* Primary Brand Accent / Highlights */
+  --color-accent: #033500;
+  --color-accent-subtle: #d7edd5;
+  --color-accent-border: #033500;
+  --color-accent-glow: rgba(3, 53, 0, 0.28);
 
-  /* Pass / Success (l.success-100 / l.success-60 / l.success-10) */
-  --color-pass: #008072;
-  --color-pass-subtle: #d0fbf5;
+  /* Pass / Success */
+  --color-pass: #033500;
+  --color-pass-subtle: #d7edd5;
 
-  /* Warning / Advisory (l.warning-100 / l.warning-60 / l.warning-10) */
+  /* Warning / Advisory */
   --color-warn: #8f7200;
   --color-warn-subtle: #fff3c2;
 
-  /* Error / Critical Excursion (l.error-100 / l.error-60 / l.error-10) */
+  /* Error / Critical Excursion */
   --color-critical: #b21919;
   --color-critical-subtle: #fbe0e0;
 
   /* AI Advisory Badge */
-  --color-ai-badge: #008072;
-  --color-ai-badge-bg: #d0fbf5;
+  --color-ai-badge: #033500;
+  --color-ai-badge-bg: #d7edd5;
 
   /* FL Variables mapped for light theme */
-  --fl-mint: #008072;
-  --fl-cyan: #00665b;
+  --fl-mint: #033500;
+  --fl-cyan: #033500;
   --fl-danger: #b21919;
   --fl-warning: #8f7200;
-  --fl-muted: #51706b;
-  --fl-text: #021a18;
-  --fl-bg-secondary: rgba(0, 128, 114, 0.08);
-  --fl-hairline: #a0e3d8;
+  --fl-muted: #2d552b;
+  --fl-text: #033500;
+  --fl-bg-secondary: #eaf5ea;
+  --fl-hairline: #033500;
   --fl-font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
 }
 
@@ -493,7 +493,7 @@ html.light [class*="border-[#232328]"],
 html.light [class*="border-white/[0.06]"],
 html.light [class*="border-white/[0.08]"],
 html.light [class*="border-white/[0.12]"] {
-  border-color: #a0e3d8 !important;
+  border-color: #033500 !important;
 }
 
 /* Text Adaptations */
@@ -510,81 +510,99 @@ html.light .text-neutral-500 {
   color: var(--color-muted) !important;
 }
 
+/* Card & Panel Overrides */
+html.light .panel,
+html.light .fl-card {
+  background-color: #ffffff !important;
+  border: 1.5px solid #033500 !important;
+  box-shadow: 0 4px 20px -4px rgba(3, 53, 0, 0.15) !important;
+}
+
+html.light .panel-elevated {
+  background-color: #eaf5ea !important;
+  border: 1.5px solid #033500 !important;
+}
+
 /* Glow Effects */
 html.light .glow-accent {
-  border-color: #a0e3d8 !important;
-  box-shadow: 0 4px 20px -4px rgba(0, 128, 114, 0.22), inset 0 0 14px -6px rgba(0, 128, 114, 0.08) !important;
+  border-color: #033500 !important;
+  box-shadow: 0 4px 20px -4px rgba(3, 53, 0, 0.25), inset 0 0 14px -6px rgba(3, 53, 0, 0.1) !important;
 }
 
 html.light .glow-accent-strong {
-  border-color: #008072 !important;
-  box-shadow: 0 8px 30px -4px rgba(0, 128, 114, 0.32), inset 0 0 18px -6px rgba(0, 128, 114, 0.12) !important;
+  border-color: #033500 !important;
+  box-shadow: 0 8px 30px -4px rgba(3, 53, 0, 0.35), inset 0 0 18px -6px rgba(3, 53, 0, 0.15) !important;
 }
 
 html.light .card-title {
-  color: var(--color-accent) !important;
+  color: #033500 !important;
+  font-weight: 800 !important;
   text-shadow: none !important;
 }
 
 /* Buttons */
 html.light .btn-accent,
 html.light button.bg-\[var\(--color-accent\)\] {
-  background: #008072 !important;
+  background: #033500 !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 18px rgba(0, 128, 114, 0.35) !important;
+  box-shadow: 0 4px 18px rgba(3, 53, 0, 0.35) !important;
 }
 
 html.light .btn-accent:hover,
 html.light button.bg-\[var\(--color-accent\)\]:hover {
-  background: #00665b !important;
-  box-shadow: 0 6px 24px rgba(0, 128, 114, 0.45) !important;
+  background: #022400 !important;
+  box-shadow: 0 6px 24px rgba(3, 53, 0, 0.45) !important;
 }
 
 html.light .btn-outline {
-  border-color: #a0e3d8 !important;
-  color: var(--color-text) !important;
+  border-color: #033500 !important;
+  color: #033500 !important;
 }
 
 html.light .btn-outline:hover {
-  border-color: #008072 !important;
-  color: #008072 !important;
-  background: #d0fbf5 !important;
+  border-color: #033500 !important;
+  color: #ffffff !important;
+  background: #033500 !important;
 }
 
 html.light .btn-ghost:hover {
-  background: var(--color-panel-elevated) !important;
-  color: var(--color-text) !important;
+  background: #eaf5ea !important;
+  color: #033500 !important;
 }
 
 /* Badges with Official Design System Tiers */
 html.light .badge-pass {
-  background-color: #d0fbf5 !important;
-  color: #008072 !important;
-  border-color: #a0e3d8 !important;
+  background-color: #d7edd5 !important;
+  color: #033500 !important;
+  border-color: #033500 !important;
+  font-weight: 700 !important;
 }
 
 html.light .badge-warn {
   background-color: #fff3c2 !important;
   color: #8f7200 !important;
   border-color: #f8e081 !important;
+  font-weight: 700 !important;
 }
 
 html.light .badge-critical {
   background-color: #fbe0e0 !important;
   color: #b21919 !important;
   border-color: #ea9e9e !important;
+  font-weight: 700 !important;
 }
 
 html.light .badge-advisory {
-  background-color: #d0fbf5 !important;
-  color: #008072 !important;
-  border-color: #a0e3d8 !important;
+  background-color: #d7edd5 !important;
+  color: #033500 !important;
+  border-color: #033500 !important;
+  font-weight: 700 !important;
 }
 
 /* Status dots */
 html.light .status-dot-active {
-  background: #008072 !important;
-  box-shadow: 0 0 8px #008072 !important;
+  background: #033500 !important;
+  box-shadow: 0 0 8px #033500 !important;
 }
 
 html.light .status-dot-warn {
