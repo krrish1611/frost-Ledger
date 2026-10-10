@@ -78,7 +78,7 @@ export const TraceStatusCard: React.FC = () => {
               EXCURSION : THRESHOLD BREACH
             </div>
           ) : isPostResolution ? (
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[#a0e3d8] bg-[#d0fbf5] text-[#008072] font-bold text-[11px] shadow-[0_0_12px_rgba(0,128,114,0.2)]">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[#033500]/40 bg-[#d7edd5] text-[#033500] font-bold text-[11px] shadow-[0_0_12px_rgba(3,53,0,0.15)]">
               <CheckCircle2 size={12} />
               ANCHORED : HASH CHAIN VERIFIED
             </div>

@@ -42,7 +42,13 @@
   --color-pass-subtle: rgba(91, 201, 140, 0.12);
   --color-ai-badge: #9d7bff;
   --color-ai-badge-bg: rgba(157, 123, 255, 0.12);
+  /* Light green circle annotation for hero text */
   --color-circle-annotation: #7df9c4;
+
+  /* Universal Light Green Backlight Tokens */
+  --backlight-glow-card: 0 0 25px 3px rgba(125, 249, 196, 0.42), 0 0 50px 8px rgba(125, 249, 196, 0.18);
+  --backlight-glow-btn: 0 0 18px 2px rgba(125, 249, 196, 0.55), 0 0 32px 5px rgba(125, 249, 196, 0.22);
+  --backlight-border-hover: rgba(125, 249, 196, 0.65);
 
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-sans: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -103,6 +109,11 @@ html[data-theme="light"],
 
   /* Light green circle annotation for hero text */
   --color-circle-annotation: #4ade80;
+
+  /* Light Green Backlight Tokens for Light Theme */
+  --backlight-glow-card: 0 0 26px 4px rgba(74, 222, 128, 0.55), 0 0 55px 10px rgba(74, 222, 128, 0.22), 0 6px 22px -2px rgba(3, 53, 0, 0.12);
+  --backlight-glow-btn: 0 0 18px 3px rgba(74, 222, 128, 0.65), 0 0 35px 6px rgba(74, 222, 128, 0.28);
+  --backlight-border-hover: #033500;
 
   /* FL Variables mapped for light theme */
   --fl-mint: #033500;
@@ -270,6 +281,65 @@ body {
   color: var(--color-accent);
   text-shadow: 0 0 14px color-mix(in oklab, var(--color-accent) 45%, transparent),
                0 0 30px color-mix(in oklab, var(--color-accent) 20%, transparent);
+}
+
+/* ==========================================================================
+   GLOBAL LIGHT GREEN BACKLIGHT HOVER SYSTEM
+   Emits an ambient light green backlight aura on hover across all components,
+   cards, panels, and interactive elements.
+   ========================================================================== */
+
+/* 1. Component Cards & Panels Backlight */
+.panel,
+.panel-elevated,
+.fl-card,
+[class*="rounded-2xl"][class*="border"],
+[class*="rounded-xl"][class*="border"],
+[class*="rounded-lg"][class*="border"],
+.hairline[class*="rounded"],
+.glow-accent,
+.glow-accent-strong {
+  transition: box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, transform 0.25s ease;
+}
+
+.panel:hover,
+.panel-elevated:hover,
+.fl-card:hover,
+[class*="rounded-2xl"][class*="border"]:hover,
+[class*="rounded-xl"][class*="border"]:hover,
+[class*="rounded-lg"][class*="border"]:hover,
+.hairline[class*="rounded"]:hover,
+.glow-accent:hover,
+.glow-accent-strong:hover {
+  box-shadow: var(--backlight-glow-card) !important;
+  border-color: var(--backlight-border-hover) !important;
+}
+
+/* 2. Interactive Buttons, Action Pills & Nav Items Backlight */
+button:not(:disabled),
+.btn,
+.fl-button,
+.btn-accent,
+.btn-outline,
+.btn-ghost,
+[role="button"]:not([aria-disabled="true"]) {
+  transition: box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, transform 0.15s ease, background-color 0.2s ease;
+}
+
+button:not(:disabled):hover,
+.btn:hover,
+.fl-button:hover,
+.btn-outline:hover,
+[role="button"]:not([aria-disabled="true"]):hover {
+  box-shadow: var(--backlight-glow-btn) !important;
+}
+
+/* 3. Inputs & Focus Form Controls Backlight */
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow: var(--backlight-glow-btn) !important;
+  border-color: var(--backlight-border-hover) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -580,6 +650,20 @@ html.light .panel-elevated {
   border: 1.5px solid #033500 !important;
 }
 
+/* Light Green Backlight on Hover for Light Mode Components & Cards */
+html.light .panel:hover,
+html.light .panel-elevated:hover,
+html.light .fl-card:hover,
+html.light [class*="rounded-2xl"][class*="border"]:hover,
+html.light [class*="rounded-xl"][class*="border"]:hover,
+html.light [class*="rounded-lg"][class*="border"]:hover,
+html.light .hairline[class*="rounded"]:hover,
+html.light .glow-accent:hover,
+html.light .glow-accent-strong:hover {
+  box-shadow: var(--backlight-glow-card) !important;
+  border-color: #033500 !important;
+}
+
 /* Glow Effects */
 html.light .glow-accent {
   border-color: #033500 !important;
@@ -608,7 +692,7 @@ html.light button.bg-\[var\(--color-accent\)\] {
 html.light .btn-accent:hover,
 html.light button.bg-\[var\(--color-accent\)\]:hover {
   background: #022400 !important;
-  box-shadow: 0 6px 24px rgba(3, 53, 0, 0.45) !important;
+  box-shadow: var(--backlight-glow-btn) !important;
 }
 
 html.light .btn-outline {
@@ -620,11 +704,19 @@ html.light .btn-outline:hover {
   border-color: #033500 !important;
   color: #ffffff !important;
   background: #033500 !important;
+  box-shadow: var(--backlight-glow-btn) !important;
 }
 
 html.light .btn-ghost:hover {
   background: #eaf5ea !important;
   color: #033500 !important;
+  box-shadow: var(--backlight-glow-btn) !important;
+}
+
+html.light button:not(:disabled):hover,
+html.light .fl-button:hover,
+html.light [role="button"]:not([aria-disabled="true"]):hover {
+  box-shadow: var(--backlight-glow-btn) !important;
 }
 
 /* Badges with Official Design System Tiers */

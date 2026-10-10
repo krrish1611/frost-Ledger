@@ -77,22 +77,22 @@ export const LandingView: React.FC<LandingViewProps> = ({
           </div>
 
           {/* Center Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 font-mono text-xs text-[var(--color-muted)]">
+          <nav className="hidden md:flex items-center gap-4 font-mono text-xs text-[var(--color-muted)]">
             <button
               onClick={() => scrollToSection('features')}
-              className="hover:text-[var(--color-accent)] transition-colors cursor-pointer"
+              className="px-2.5 py-1 rounded-md hover:text-[#033500] dark:hover:text-white transition-all cursor-pointer"
             >
               Diagnostics
             </button>
             <button
               onClick={() => scrollToSection('architecture')}
-              className="hover:text-[var(--color-accent)] transition-colors cursor-pointer"
+              className="px-2.5 py-1 rounded-md hover:text-[#033500] dark:hover:text-white transition-all cursor-pointer"
             >
               Architecture
             </button>
             <button
               onClick={() => scrollToSection('guarantees')}
-              className="hover:text-[var(--color-accent)] transition-colors cursor-pointer"
+              className="px-2.5 py-1 rounded-md hover:text-[#033500] dark:hover:text-white transition-all cursor-pointer"
             >
               Standards
             </button>
