@@ -292,3 +292,6 @@ if (require.main === module) {
   console.log(`[Simulator CLI] Generated ${batches.length} batches.`);
   console.log(`Sample batch 1:`, JSON.stringify(batches[0], null, 2));
 }
+
+export * from './mqttSimulator';
+

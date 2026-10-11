@@ -9,7 +9,7 @@ import { ArrivalVerificationView } from './components/ArrivalVerificationView';
 import { AiRiskIntelligenceView } from './components/AiRiskIntelligenceView';
 import { AdminManagementView } from './components/AdminManagementView';
 import { LandingView } from './components/landing/LandingView';
-import { ShipmentSummary, MOCK_SHIPMENTS } from './services/api';
+import { ShipmentSummary, MOCK_SHIPMENTS, fetchLiveShipments } from './services/api';
 import { useTheme } from './context/ThemeContext';
 import { CommandPalette } from './components/CommandPalette';
 import { ExcursionSimulatorModal } from './components/ExcursionSimulatorModal';
@@ -24,6 +24,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('shipments');
   const [userRole, setUserRole] = useState<UserRole>('operator');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [shipmentsList, setShipmentsList] = useState<ShipmentSummary[]>(MOCK_SHIPMENTS);
   const [selectedShipment, setSelectedShipment] = useState<ShipmentSummary>(MOCK_SHIPMENTS[0]);
 
   // Interactive Modals State
@@ -47,6 +48,28 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Fetch and poll live shipments from backend API
+  useEffect(() => {
+    let mounted = true;
+    const loadShipments = async () => {
+      try {
+        const live = await fetchLiveShipments();
+        if (mounted && live && live.length > 0) {
+          setShipmentsList(live);
+          setSelectedShipment((prev) => live.find((s) => s.shipment_id === prev.shipment_id) || live[0]);
+        }
+      } catch {
+        // Fallback to existing mock shipments
+      }
+    };
+    loadShipments();
+    const interval = setInterval(loadShipments, 4000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
@@ -146,11 +169,11 @@ export default function App() {
               currentUser={currentUser}
               currentRole={userRole}
               onSelectShipmentId={(id) => {
-                const s = MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
+                const s = shipmentsList.find((x) => x.shipment_id === id) || MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
                 if (s) setSelectedShipment(s);
               }}
               onOpenSimulator={(id) => {
-                const s = MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
+                const s = shipmentsList.find((x) => x.shipment_id === id) || MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
                 if (s) setSelectedShipment(s);
                 setIsSimulatorOpen(true);
               }}
@@ -165,7 +188,7 @@ export default function App() {
             <ArrivalVerificationView
               selectedShipmentId={selectedShipment.shipment_id}
               onSelectShipmentId={(id) => {
-                const s = MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
+                const s = shipmentsList.find((x) => x.shipment_id === id) || MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
                 if (s) setSelectedShipment(s);
               }}
               isQrScannerOpen={isQrScannerOpen}
