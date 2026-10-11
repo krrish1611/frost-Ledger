@@ -5,14 +5,14 @@ const rootDir = path.resolve(__dirname, '..');
 
 const steps = [
   { name: 'Shared Module (Typecheck & Build)', cmd: 'npm run build --workspace=@frostledger/shared' },
+  { name: 'Simulator (Typecheck & Build)', cmd: 'npm run build --workspace=@frostledger/simulator' },
+  { name: 'Simulator (Unit Tests)', cmd: 'npm run test --workspace=@frostledger/simulator' },
   { name: 'Backend (Typecheck)', cmd: 'npm run typecheck --workspace=@frostledger/backend' },
   { name: 'Backend (Acceptance Tests)', cmd: 'npm run test --workspace=@frostledger/backend' },
   { name: 'Worker (Typecheck)', cmd: 'npm run typecheck --workspace=@frostledger/worker' },
   { name: 'Worker (Unit Tests)', cmd: 'npm run test --workspace=@frostledger/worker' },
   { name: 'Contracts (Hardhat Tests)', cmd: 'npm run test --workspace=@frostledger/contracts' },
-  { name: 'Simulator (Typecheck & Build)', cmd: 'npm run build --workspace=@frostledger/simulator' },
-  { name: 'Simulator (Unit Tests)', cmd: 'npm run test --workspace=@frostledger/simulator' },
-  { name: 'AI Service (Pytest Test Suite)', cmd: 'py -3.13 -m pytest', cwd: path.resolve(rootDir, 'ai-service') },
+  { name: 'AI Service (Pytest Test Suite)', cmd: 'uv run --python 3.11 --with-requirements requirements.txt pytest', cwd: path.resolve(rootDir, 'ai-service') },
   { name: 'Frontend (Typecheck & Production Build)', cmd: 'npm run build --workspace=@frostledger/frontend' },
 ];
 

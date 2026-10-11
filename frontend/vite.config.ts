@@ -9,5 +9,12 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    proxy: {
+      '/verify': 'http://localhost:3001',
+      '/dashboard': 'http://localhost:3001',
+      '/esp32': 'http://localhost:3001',
+      '/telemetry': 'http://localhost:3001',
+      '/health': 'http://localhost:3001',
+    },
   },
 });

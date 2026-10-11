@@ -9,6 +9,7 @@ import telemetryRoutes from './routes/telemetryRoutes';
 import alertRoutes from './routes/alertRoutes';
 import verificationRoutes from './routes/verificationRoutes';
 import aiRoutes from './routes/aiRoutes';
+import dashboardRoutes from './routes/dashboardRoutes';
 import { rateLimiter } from './middleware/rateLimit';
 
 export function createApp() {
@@ -25,6 +26,7 @@ export function createApp() {
 
   // Mount API modules
   app.use('/', telemetryRoutes);
+  app.use('/', dashboardRoutes);
   app.use('/auth', authRoutes);
   app.use('/profiles', profileRoutes);
   app.use('/shipments', shipmentRoutes);

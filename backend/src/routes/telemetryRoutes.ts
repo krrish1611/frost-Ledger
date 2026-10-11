@@ -15,6 +15,8 @@ import { authenticateWebhook } from '../middleware/webhookAuth';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { createSecurityAlert } from '../services/alertService';
 import { enqueueBatchProcessing } from '../services/queueService';
+import { processBatchDeterministic } from '../services/deterministicCore';
+import { checkAndCloseBatchWindow } from '../services/blockchainService';
 
 const router = Router();
 
@@ -258,6 +260,11 @@ router.post(
       device_id,
       sequence_no,
     });
+
+    if (process.env.AUTO_PROCESS_INLINE === 'true') {
+      await processBatchDeterministic(finalBatchId, shipment_id);
+      await checkAndCloseBatchWindow(shipment_id, 5);
+    }
 
     return res.status(201).json({
       message: 'Batch accepted and stored successfully',

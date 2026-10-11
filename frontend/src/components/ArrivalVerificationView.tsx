@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ShieldCheck,
   CheckCircle,
@@ -9,23 +9,56 @@ import {
   Cpu,
   Printer,
 } from 'lucide-react';
-import { MOCK_SHIPMENTS } from '../services/api';
+import {
+  MOCK_SHIPMENTS,
+  ShipmentSummary,
+  API_BASE,
+  fetchDashboardState,
+  verifyShipmentArrivalApi,
+} from '../services/api';
 
 export const ArrivalVerificationView: React.FC = () => {
+  const [shipments, setShipments] = useState<ShipmentSummary[]>(MOCK_SHIPMENTS);
   const [selectedId, setSelectedId] = useState(MOCK_SHIPMENTS[0].shipment_id);
   const [isTamperSimulated, setIsTamperSimulated] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [liveReport, setLiveReport] = useState<any | null>(null);
 
-  const shipment = MOCK_SHIPMENTS.find((s) => s.shipment_id === selectedId) || MOCK_SHIPMENTS[0];
+  const shipment = shipments.find((s) => s.shipment_id === selectedId) || shipments[0] || MOCK_SHIPMENTS[0];
+
+  const runLiveVerification = useCallback(async (sid: string) => {
+    setIsVerifying(true);
+    try {
+      const [dash, rep] = await Promise.all([
+        fetchDashboardState(),
+        verifyShipmentArrivalApi(sid),
+      ]);
+      if (dash?.shipments?.length) {
+        setShipments(dash.shipments);
+      }
+      if (rep) {
+        setLiveReport(rep);
+      }
+    } finally {
+      setIsVerifying(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    runLiveVerification(selectedId);
+  }, [selectedId, runLiveVerification]);
 
   const handleRunVerify = () => {
-    setIsVerifying(true);
-    setTimeout(() => {
-      setIsVerifying(false);
-    }, 600);
+    runLiveVerification(selectedId);
   };
 
-  const isVerified = !isTamperSimulated && shipment.status !== 'flagged';
+  const backendPass = liveReport ? liveReport.status === 'PASS' : true;
+  const isVerified = !isTamperSimulated && backendPass;
+  const totalBatches = liveReport?.total_batches ?? 10;
+  const latestBatchDetail =
+    liveReport?.batch_details && liveReport.batch_details.length > 0
+      ? liveReport.batch_details[liveReport.batch_details.length - 1]
+      : null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -59,7 +92,7 @@ export const ArrivalVerificationView: React.FC = () => {
             }}
             style={{ padding: '0.45rem 0.75rem', fontFamily: 'var(--font-mono)' }}
           >
-            {MOCK_SHIPMENTS.map((s) => (
+            {shipments.map((s) => (
               <option key={s.shipment_id} value={s.shipment_id}>
                 {s.shipment_id} ({s.profile_name})
               </option>
@@ -103,13 +136,13 @@ export const ArrivalVerificationView: React.FC = () => {
 
         <p style={{ maxWidth: '640px', margin: '0.5rem auto 1.5rem', color: 'var(--color-text-dim)', fontSize: '13px' }}>
           {isVerified
-            ? 'All 40 telemetry batches match canonical SHA-256 hashes, valid Ed25519 device signatures, continuous prev_hash chain, and on-chain Polygon Amoy root anchor.'
+            ? `All ${totalBatches} telemetry batches match canonical SHA-256 hashes, valid Ed25519 device signatures, continuous prev_hash chain, and on-chain Polygon Amoy root anchor.`
             : 'Hash chain integrity failure! The recomputed batch hash diverges from the device signature or the on-chain blockchain anchor.'}
         </p>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <a
-            href={`/verify/${shipment.shipment_id}/report`}
+            href={`${API_BASE}/verify/${shipment.shipment_id}/report`}
             target="_blank"
             rel="noreferrer"
             className="btn btn-outline"
@@ -151,10 +184,13 @@ export const ArrivalVerificationView: React.FC = () => {
                 Canonical Payload Hash
               </td>
               <td>RFC-8785 JSON canonicalization + SHA-256</td>
-              <td className="data">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</td>
+              <td className="data">
+                {latestBatchDetail?.recomputed_hash ||
+                  'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}
+              </td>
               <td>
-                <span className={`badge ${!isTamperSimulated ? 'badge-pass' : 'badge-critical'}`}>
-                  {!isTamperSimulated ? 'MATCHED' : 'HASH MISMATCH'}
+                <span className={`badge ${!isTamperSimulated && (liveReport ? liveReport.checks.hash_integrity.pass : true) ? 'badge-pass' : 'badge-critical'}`}>
+                  {!isTamperSimulated && (liveReport ? liveReport.checks.hash_integrity.pass : true) ? 'MATCHED' : 'HASH MISMATCH'}
                 </span>
               </td>
             </tr>
@@ -165,10 +201,12 @@ export const ArrivalVerificationView: React.FC = () => {
                 Ed25519 Hardware Signature
               </td>
               <td>Curve25519 onboard crypto key verification</td>
-              <td className="data">pub: a7f8e329... signature: 8f2b3149...</td>
+              <td className="data">
+                device: {liveReport?.device_id || shipment.device_id} ({totalBatches} signed batches)
+              </td>
               <td>
-                <span className={`badge ${!isTamperSimulated ? 'badge-pass' : 'badge-critical'}`}>
-                  {!isTamperSimulated ? 'VALID SIGNATURE' : 'FORGERY REJECTED'}
+                <span className={`badge ${!isTamperSimulated && (liveReport ? liveReport.checks.signature_authenticity.pass : true) ? 'badge-pass' : 'badge-critical'}`}>
+                  {!isTamperSimulated && (liveReport ? liveReport.checks.signature_authenticity.pass : true) ? 'VALID SIGNATURE' : 'FORGERY REJECTED'}
                 </span>
               </td>
             </tr>
@@ -179,10 +217,12 @@ export const ArrivalVerificationView: React.FC = () => {
                 Sequential Hash Chain
               </td>
               <td>prev_hash pointer verification across all batches</td>
-              <td className="data">Continuity verified [1..40] with zero sequence gaps</td>
+              <td className="data">
+                Continuity verified [1..{totalBatches}] with zero sequence gaps
+              </td>
               <td>
-                <span className={`badge ${!isTamperSimulated ? 'badge-pass' : 'badge-critical'}`}>
-                  {!isTamperSimulated ? 'CONTINUOUS' : 'BROKEN CHAIN'}
+                <span className={`badge ${!isTamperSimulated && (liveReport ? liveReport.checks.hash_chain_continuity.pass : true) ? 'badge-pass' : 'badge-critical'}`}>
+                  {!isTamperSimulated && (liveReport ? liveReport.checks.hash_chain_continuity.pass : true) ? 'CONTINUOUS' : 'BROKEN CHAIN'}
                 </span>
               </td>
             </tr>
@@ -193,9 +233,13 @@ export const ArrivalVerificationView: React.FC = () => {
                 Smart Contract Window Anchor
               </td>
               <td>Polygon Amoy ColdChainTracker contract query</td>
-              <td className="data">TX: 0x97273b89beb8f51b1386c4f65078b380c8801fc3c54eb64194d8e0d6f98ced37</td>
+              <td className="data">
+                TX: {shipment.anchored_tx || '0x97273b89beb8f51b1386c4f65078b380c8801fc3c54eb64194d8e0d6f98ced37'}
+              </td>
               <td>
-                <span className="badge badge-pass">ANCHORED ON-CHAIN</span>
+                <span className={`badge ${liveReport ? (liveReport.checks.blockchain_anchors.pass ? 'badge-pass' : 'badge-critical') : 'badge-pass'}`}>
+                  {liveReport ? (liveReport.checks.blockchain_anchors.pass ? 'ANCHORED ON-CHAIN' : 'ANCHOR MISMATCH') : 'ANCHORED ON-CHAIN'}
+                </span>
               </td>
             </tr>
 
@@ -205,9 +249,13 @@ export const ArrivalVerificationView: React.FC = () => {
                 Immutable Profile Snapshot
               </td>
               <td>Genesis profile hash matching smart contract registration</td>
-              <td className="data">profile_hash: 7d21fe8294... (Pfizer v1)</td>
+              <td className="data">
+                profile_hash: {(liveReport?.profile_hash || '7d21fe8294000000').substring(0, 16)}... ({liveReport?.profile_id || shipment.profile_id} v{liveReport?.profile_version || 1})
+              </td>
               <td>
-                <span className="badge badge-pass">FROZEN SPEC VERIFIED</span>
+                <span className={`badge ${liveReport ? (liveReport.profile_integrity_pass ? 'badge-pass' : 'badge-critical') : 'badge-pass'}`}>
+                  {liveReport ? (liveReport.profile_integrity_pass ? 'FROZEN SPEC VERIFIED' : 'PROFILE TAMPERED') : 'FROZEN SPEC VERIFIED'}
+                </span>
               </td>
             </tr>
           </tbody>

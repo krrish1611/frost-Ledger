@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   DeviceFleetItem,
   ProductProfileItem,
@@ -6,6 +6,9 @@ import {
   MOCK_DEVICES,
   MOCK_PROFILES,
   MOCK_AUDIT_LOGS,
+  fetchDashboardState,
+  revokeDeviceKeyApi,
+  createProfileApi,
 } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 
@@ -17,6 +20,19 @@ export const AdminManagementView: React.FC = () => {
   const [devices, setDevices] = useState<DeviceFleetItem[]>(MOCK_DEVICES);
   const [profiles, setProfiles] = useState<ProductProfileItem[]>(MOCK_PROFILES);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(MOCK_AUDIT_LOGS);
+
+  const loadAdminState = useCallback(async () => {
+    const dash = await fetchDashboardState();
+    if (dash) {
+      if (dash.devices?.length) setDevices(dash.devices);
+      if (dash.profiles?.length) setProfiles(dash.profiles);
+      if (dash.auditLogs?.length) setAuditLogs(dash.auditLogs);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAdminState();
+  }, [loadAdminState]);
 
   // Profile modal state
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
@@ -30,15 +46,15 @@ export const AdminManagementView: React.FC = () => {
   // Revoke modal state
   const [revokeTarget, setRevokeTarget] = useState<DeviceFleetItem | null>(null);
 
-  const handleRevokeDevice = (deviceId: string) => {
+  const handleRevokeDevice = async (deviceId: string) => {
+    await revokeDeviceKeyApi(deviceId, 'admin@coldchain.test');
     setDevices((prev) =>
       prev.map((d) => (d.device_id === deviceId ? { ...d, status: 'revoked' } : d))
     );
-    // Add audit entry
     const newLog: AuditLogItem = {
       log_id: `aud-${Date.now().toString().slice(-4)}`,
       timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      actor: 'admin@pharma.corp',
+      actor: 'admin@coldchain.test',
       action: 'REVOKE_DEVICE_KEY',
       target_table: 'devices',
       record_id: deviceId,
@@ -46,43 +62,44 @@ export const AdminManagementView: React.FC = () => {
     };
     setAuditLogs((prev) => [newLog, ...prev]);
     setRevokeTarget(null);
+    await loadAdminState();
   };
 
-  const handleCreateProfile = (e: React.FormEvent) => {
+  const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProfileName) return;
 
-    // Simulate sha256 generation
-    const mockHash = Array.from({ length: 64 }, () =>
-      Math.floor(Math.random() * 16).toString(16)
-    ).join('');
-
-    const newProf: ProductProfileItem = {
-      profile_id: `profile-${newProfileName.toLowerCase().replace(/\s+/g, '-')}-v1`,
+    const created = await createProfileApi({
       name: newProfileName,
       cargo_type: newProfileCargo,
       temp_min_c: newProfileMin,
       temp_max_c: newProfileMax,
       max_excursion_seconds: newProfileMaxExcursion,
       mkt_activation_energy_kj: newProfileEa,
-      version: 1,
-      profile_hash: mockHash,
-      created_at: new Date().toISOString(),
-    };
+      actor: 'admin@coldchain.test',
+    });
 
-    setProfiles((prev) => [...prev, newProf]);
-
-    // Audit log
-    const newLog: AuditLogItem = {
-      log_id: `aud-${Date.now().toString().slice(-4)}`,
-      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      actor: 'admin@pharma.corp',
-      action: 'REGISTER_PROFILE',
-      target_table: 'product_profiles',
-      record_id: newProf.profile_id,
-      details: `Registered immutable profile '${newProfileName}' v1 with hash ${mockHash.substring(0, 16)}...`,
-    };
-    setAuditLogs((prev) => [newLog, ...prev]);
+    if (created) {
+      setProfiles((prev) => [...prev, created]);
+      await loadAdminState();
+    } else {
+      const mockHash = Array.from({ length: 64 }, () =>
+        Math.floor(Math.random() * 16).toString(16)
+      ).join('');
+      const newProf: ProductProfileItem = {
+        profile_id: `profile-${newProfileName.toLowerCase().replace(/\s+/g, '-')}-v1`,
+        name: newProfileName,
+        cargo_type: newProfileCargo,
+        temp_min_c: newProfileMin,
+        temp_max_c: newProfileMax,
+        max_excursion_seconds: newProfileMaxExcursion,
+        mkt_activation_energy_kj: newProfileEa,
+        version: 1,
+        profile_hash: mockHash,
+        created_at: new Date().toISOString(),
+      };
+      setProfiles((prev) => [...prev, newProf]);
+    }
 
     setShowProfileModal(false);
     setNewProfileName('');

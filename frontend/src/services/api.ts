@@ -100,7 +100,7 @@ export interface AuditLogItem {
   details: string;
 }
 
-export const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
+export const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
 
 // Mock dataset representing live and completed cold-chain shipments
 export const MOCK_SHIPMENTS: ShipmentSummary[] = [
@@ -435,4 +435,139 @@ export function generateTelemetryHistory(shipment: ShipmentSummary): TelemetryRe
 
   return points;
 }
+
+export interface LiveAlertRecord {
+  alert_id: string;
+  shipment_id: string;
+  type: string;
+  severity: 'info' | 'warning' | 'critical';
+  source: string;
+  acknowledged_by: string | null;
+  note: string | null;
+  created_at: string;
+}
+
+export interface DashboardStateResponse {
+  status: string;
+  timestamp: string;
+  shipments: ShipmentSummary[];
+  telemetryByShipment: Record<string, TelemetryReading[]>;
+  alertsByShipment: Record<string, LiveAlertRecord[]>;
+  aiInsightsByShipment: Record<string, AiInsightItem[]>;
+  evaluations: EvaluationBenchmark[];
+  devices: DeviceFleetItem[];
+  profiles: ProductProfileItem[];
+  auditLogs: AuditLogItem[];
+  esp32Heartbeats: Record<string, any>;
+}
+
+export async function fetchDashboardState(): Promise<DashboardStateResponse | null> {
+  try {
+    const res = await fetch(`${API_BASE}/dashboard/state`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function verifyShipmentArrivalApi(shipmentId: string): Promise<any | null> {
+  try {
+    const res = await fetch(`${API_BASE}/verify/${encodeURIComponent(shipmentId)}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function acknowledgeAlertApi(alertId: string, note: string, actor?: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/dashboard/alerts/${encodeURIComponent(alertId)}/acknowledge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note, actor }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function revokeDeviceKeyApi(deviceId: string, actor?: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/dashboard/devices/${encodeURIComponent(deviceId)}/revoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actor }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function createProfileApi(payload: {
+  name: string;
+  cargo_type: string;
+  temp_min_c: number;
+  temp_max_c: number;
+  max_excursion_seconds: number;
+  mkt_activation_energy_kj: number;
+  actor?: string;
+}): Promise<ProductProfileItem | null> {
+  try {
+    const res = await fetch(`${API_BASE}/dashboard/profiles`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.profile || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchEsp32StatusApi(): Promise<{
+  host_com_ports: string[];
+  hardware_usb_detected: boolean;
+  active_esp32_streams: number;
+  heartbeats: Record<string, any>;
+} | null> {
+  try {
+    const res = await fetch(`${API_BASE}/esp32/status`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function ingestEsp32PacketApi(payload: {
+  device_id: string;
+  shipment_id: string;
+  temperature: number;
+  humidity: number;
+  shock_g?: number;
+  battery_pct?: number;
+  transport?: string;
+}): Promise<any | null> {
+  try {
+    const res = await fetch(`${API_BASE}/esp32/ingest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody?.error?.message || `HTTP ${res.status}`);
+    }
+    return await res.json();
+  } catch (err) {
+    throw err;
+  }
+}
+
 

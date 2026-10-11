@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import {
   ShipmentSummary,
   AiInsightItem,
+  EvaluationBenchmark,
   MOCK_SHIPMENTS,
   MOCK_AI_INSIGHTS,
   MOCK_EVALUATION_BENCHMARKS,
+  fetchDashboardState,
 } from '../services/api';
 
 interface AiRiskIntelligenceViewProps {
@@ -20,11 +22,24 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const [selectedShipmentId, setSelectedShipmentId] = useState<string>(currentShipment.shipment_id);
+  const [shipments, setShipments] = useState<ShipmentSummary[]>(MOCK_SHIPMENTS);
+  const [insightsMap, setInsightsMap] = useState<Record<string, AiInsightItem[]>>(MOCK_AI_INSIGHTS);
+  const [evaluations, setEvaluations] = useState<EvaluationBenchmark[]>(MOCK_EVALUATION_BENCHMARKS);
+
+  useEffect(() => {
+    fetchDashboardState().then((dash) => {
+      if (dash) {
+        if (dash.shipments?.length) setShipments(dash.shipments);
+        if (dash.aiInsightsByShipment) setInsightsMap(dash.aiInsightsByShipment);
+        if (dash.evaluations?.length) setEvaluations(dash.evaluations);
+      }
+    });
+  }, []);
 
   const activeShipment =
-    MOCK_SHIPMENTS.find((s) => s.shipment_id === selectedShipmentId) || currentShipment;
+    shipments.find((s) => s.shipment_id === selectedShipmentId) || currentShipment;
 
-  const insights: AiInsightItem[] = MOCK_AI_INSIGHTS[activeShipment.shipment_id] || [];
+  const insights: AiInsightItem[] = insightsMap[activeShipment.shipment_id] || MOCK_AI_INSIGHTS[activeShipment.shipment_id] || [];
 
   // Calculate simulated 5-factor breakdown based on shipment
   const factorBreakdown = {
@@ -128,7 +143,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
             SELECT SHIPMENT TELEMETRY STREAM
           </div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {MOCK_SHIPMENTS.map((s) => (
+            {shipments.map((s) => (
               <button
                 key={s.shipment_id}
                 onClick={() => {
@@ -618,7 +633,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
               </tr>
             </thead>
             <tbody>
-              {MOCK_EVALUATION_BENCHMARKS.map((m) => (
+              {evaluations.map((m) => (
                 <tr key={m.evaluation_id}>
                   <td style={{ fontWeight: 600, color: m.model_name.includes('River') ? 'var(--fl-mint)' : 'var(--fl-text)' }}>
                     {m.model_name}
