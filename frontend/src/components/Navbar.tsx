@@ -1,8 +1,9 @@
-import React from 'react';
-import { Shield, Radio, Activity, Cpu, Layers, LogOut, User as UserIcon, Wallet } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Radio, Activity, Cpu, Layers, LogOut, User as UserIcon, Wallet, Search, Flame, Volume2, VolumeX, QrCode } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
 import { useWeb3 } from '../context/Web3Context';
+import { soundEffects } from '../services/soundEffects';
 
 export type ActiveTab = 'shipments' | 'verify' | 'ai-intelligence' | 'admin';
 export type UserRole = 'operator' | 'receiver' | 'auditor' | 'admin';
@@ -15,6 +16,10 @@ interface NavbarProps {
   onReturnToLanding?: () => void;
   currentUser?: { email?: string; id?: string } | null;
   onSignOut?: () => void;
+  onOpenCommandPalette?: () => void;
+  onOpenSimulator?: () => void;
+  onOpenVerifier?: () => void;
+  onOpenQrScanner?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -25,10 +30,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   onReturnToLanding,
   currentUser,
   onSignOut,
+  onOpenCommandPalette,
+  onOpenSimulator,
+  onOpenVerifier,
+  onOpenQrScanner,
 }) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const { account, networkName, isConnecting, connectWallet, disconnectWallet } = useWeb3();
+  const [isMuted, setIsMuted] = useState(soundEffects.isMuted());
 
   return (
     <header
@@ -105,9 +115,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
           <button
-            onClick={() => onTabChange('shipments')}
+            onClick={() => {
+              soundEffects.playClick();
+              onTabChange('shipments');
+            }}
             className={`btn ${activeTab === 'shipments' ? 'btn-accent' : 'btn-ghost'}`}
             style={{ fontSize: '13px', padding: '0.45rem 0.85rem' }}
           >
@@ -116,7 +129,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
-            onClick={() => onTabChange('verify')}
+            onClick={() => {
+              soundEffects.playClick();
+              onTabChange('verify');
+            }}
             className={`btn ${activeTab === 'verify' ? 'btn-accent' : 'btn-ghost'}`}
             style={{ fontSize: '13px', padding: '0.45rem 0.85rem' }}
           >
@@ -125,7 +141,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
-            onClick={() => onTabChange('ai-intelligence')}
+            onClick={() => {
+              soundEffects.playClick();
+              onTabChange('ai-intelligence');
+            }}
             className={`btn ${activeTab === 'ai-intelligence' ? 'btn-accent' : 'btn-ghost'}`}
             style={{ fontSize: '13px', padding: '0.45rem 0.85rem' }}
           >
@@ -134,7 +153,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
-            onClick={() => onTabChange('admin')}
+            onClick={() => {
+              soundEffects.playClick();
+              onTabChange('admin');
+            }}
             className={`btn ${activeTab === 'admin' ? 'btn-accent' : 'btn-ghost'}`}
             style={{ fontSize: '13px', padding: '0.45rem 0.85rem' }}
           >
@@ -144,7 +166,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {onReturnToLanding && (
             <button
-              onClick={onReturnToLanding}
+              onClick={() => {
+                soundEffects.playClick();
+                onReturnToLanding();
+              }}
               className="btn btn-ghost"
               style={{ fontSize: '13px', padding: '0.45rem 0.85rem', color: isLight ? '#033500' : 'var(--color-accent)' }}
               title="Return to Public Landing Showcase"
@@ -153,6 +178,140 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
         </nav>
+
+        {/* Quick Simulator & Search Trigger Group */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+          {onOpenCommandPalette && (
+            <button
+              onClick={() => {
+                soundEffects.playClick();
+                onOpenCommandPalette();
+              }}
+              className="btn btn-outline"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.35rem 0.65rem',
+                fontSize: '12px',
+                fontFamily: 'var(--font-mono)',
+                borderColor: isLight ? '#033500' : 'var(--color-border)',
+                background: isLight ? '#ebf5eb' : 'rgba(255, 255, 255, 0.03)',
+                color: isLight ? '#033500' : 'var(--color-text)',
+              }}
+              title="Command Palette (Press ⌘K or Ctrl+K)"
+            >
+              <Search size={13} color="var(--color-accent)" />
+              <span className="hidden sm:inline">Commands</span>
+              <kbd
+                style={{
+                  fontSize: '10px',
+                  padding: '1px 5px',
+                  borderRadius: '3px',
+                  background: isLight ? 'rgba(3, 53, 0, 0.12)' : 'rgba(255, 255, 255, 0.1)',
+                  fontWeight: 600,
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                ⌘K
+              </kbd>
+            </button>
+          )}
+
+          {onOpenSimulator && (
+            <button
+              onClick={() => {
+                soundEffects.playClick();
+                onOpenSimulator();
+              }}
+              className="btn"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.65rem',
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700,
+                background: 'rgba(245, 158, 11, 0.12)',
+                border: '1px solid rgba(245, 158, 11, 0.45)',
+                color: '#f59e0b',
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+              }}
+              title="Interactive Excursion Simulator (Arrhenius kinetics, edge Ed25519 signing & L2 anchor)"
+            >
+              <Flame size={12} />
+              <span>Simulate Excursion</span>
+            </button>
+          )}
+
+          {onOpenVerifier && (
+            <button
+              onClick={() => {
+                soundEffects.playClick();
+                onOpenVerifier();
+              }}
+              className="btn"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.65rem',
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 700,
+                background: isLight ? 'rgba(3, 53, 0, 0.08)' : 'rgba(125, 249, 196, 0.08)',
+                border: isLight ? '1.5px solid #033500' : '1px solid rgba(125, 249, 196, 0.35)',
+                color: isLight ? '#033500' : 'var(--color-accent)',
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+              }}
+              title="Verify Cold Chain Hash on Polygon Amoy L2"
+            >
+              <Shield size={12} />
+              <span>Verify On-Chain</span>
+            </button>
+          )}
+
+          {onOpenQrScanner && (
+            <button
+              onClick={() => {
+                soundEffects.playClick();
+                onOpenQrScanner();
+              }}
+              className="btn btn-outline"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.65rem',
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono)',
+              }}
+              title="Open Pallet QR Arrival Scanner"
+            >
+              <QrCode size={12} />
+              <span>Scan QR</span>
+            </button>
+          )}
+
+          {/* Sound Mute Toggle */}
+          <button
+            onClick={() => {
+              const muted = soundEffects.toggleMute();
+              setIsMuted(muted);
+            }}
+            className="btn btn-ghost"
+            style={{
+              padding: '0.35rem',
+              color: isMuted ? 'var(--color-muted)' : 'var(--color-accent)',
+            }}
+            title={isMuted ? 'Tactile Sound Effects Muted (Click to Unmute)' : 'Tactile Sound Effects Active (Click to Mute)'}
+          >
+            {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+          </button>
+        </div>
 
         {/* Role Switcher, Theme Toggle, Supabase User & System Telemetry Pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -237,7 +396,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
             <select
               value={currentRole}
-              onChange={(e) => onRoleChange(e.target.value as UserRole)}
+              onChange={(e) => {
+                soundEffects.playClick();
+                onRoleChange(e.target.value as UserRole);
+              }}
               style={{
                 padding: '0.3rem 0.5rem',
                 fontSize: '11px',

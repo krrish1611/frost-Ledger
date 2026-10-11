@@ -19,8 +19,9 @@ import {
   Download,
   FileBarChart,
   Eye,
+  QrCode,
 } from 'lucide-react';
-import { MOCK_SHIPMENTS, API_BASE } from '../services/api';
+import { MOCK_SHIPMENTS, API_BASE, ShipmentSummary } from '../services/api';
 import { useWeb3 } from '../context/Web3Context';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -39,8 +40,23 @@ import {
   DEFAULT_CONTRACT_ADDRESS,
 } from '../lib/contracts';
 import { ethers } from 'ethers';
+import { PalletQrScannerModal } from './PalletQrScannerModal';
+import { PolygonScanLink } from './PolygonScanLink';
+import { soundEffects } from '../services/soundEffects';
 
-export const ArrivalVerificationView: React.FC = () => {
+interface ArrivalVerificationViewProps {
+  selectedShipmentId?: string;
+  onSelectShipmentId?: (id: string) => void;
+  isQrScannerOpen?: boolean;
+  onCloseQrScanner?: () => void;
+}
+
+export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = ({
+  selectedShipmentId: propSelectedId,
+  onSelectShipmentId,
+  isQrScannerOpen: propIsQrScannerOpen,
+  onCloseQrScanner,
+}) => {
   const {
     account,
     chainId,
@@ -59,7 +75,20 @@ export const ArrivalVerificationView: React.FC = () => {
     isMetaMaskChromeExtension,
   } = useWeb3();
 
-  const [selectedId, setSelectedId] = useState(MOCK_SHIPMENTS[0].shipment_id);
+  const [selectedId, setSelectedId] = useState(propSelectedId || MOCK_SHIPMENTS[0].shipment_id);
+  const [localQrOpen, setLocalQrOpen] = useState(false);
+  const isQrScannerOpen = propIsQrScannerOpen !== undefined ? propIsQrScannerOpen : localQrOpen;
+  const setIsQrScannerOpen = (val: boolean) => {
+    setLocalQrOpen(val);
+    if (!val && onCloseQrScanner) onCloseQrScanner();
+  };
+
+  useEffect(() => {
+    if (propSelectedId && propSelectedId !== selectedId) {
+      setSelectedId(propSelectedId);
+    }
+  }, [propSelectedId]);
+
   const [isTamperSimulated, setIsTamperSimulated] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isQueryingContract, setIsQueryingContract] = useState(false);
@@ -129,10 +158,12 @@ export const ArrivalVerificationView: React.FC = () => {
 
   // Run arrival verification audit
   const handleRunVerify = async () => {
+    soundEffects.playClick();
     setIsVerifying(true);
     setAuditSuccessToast(null);
     try {
       await handleQueryContractLive();
+      soundEffects.playSuccessChime();
       setAuditSuccessToast(
         'Audit complete! Cryptographic checks & live on-chain contract verified. Official PDF & Deep Thermal Analytics PDF ready.'
       );
@@ -332,10 +363,34 @@ export const ArrivalVerificationView: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => {
+              soundEffects.playClick();
+              setIsQrScannerOpen(true);
+            }}
+            className="btn btn-outline"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              fontSize: '12px',
+              fontFamily: 'var(--font-mono)',
+              borderColor: 'var(--color-accent)',
+              color: 'var(--color-accent)',
+            }}
+            title="Scan Pallet QR code with camera, badge generator, or photo upload"
+          >
+            <QrCode size={15} />
+            <span>Scan Pallet QR</span>
+          </button>
+
           <select
             value={selectedId}
             onChange={(e) => {
-              setSelectedId(e.target.value);
+              soundEffects.playClick();
+              const newId = e.target.value;
+              setSelectedId(newId);
+              onSelectShipmentId?.(newId);
               setIsTamperSimulated(false);
               setThresholdTestResult(null);
             }}
@@ -883,7 +938,7 @@ export const ArrivalVerificationView: React.FC = () => {
               ON-CHAIN ANCHORED BATCH WINDOWS ({contractAudit?.windows.length || 0})
             </span>
             <span style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-              Contract: <code style={{ fontSize: '11px' }}>{contractAddress.substring(0, 12)}...</code>
+              Contract: <PolygonScanLink value={contractAddress} type="address" shorten={true} />
             </span>
           </div>
 
@@ -904,7 +959,7 @@ export const ArrivalVerificationView: React.FC = () => {
                     <td className="data">#{win.index + 1}</td>
                     <td className="data">[{win.startSeq}..{win.endSeq}]</td>
                     <td className="data" style={{ wordBreak: 'break-all' }}>
-                      {win.windowHash}
+                      <PolygonScanLink value={win.windowHash} type="tx" shorten={false} />
                     </td>
                     <td className="data">
                       {new Date(win.timestamp * 1000).toLocaleString()}
@@ -1088,6 +1143,17 @@ export const ArrivalVerificationView: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Pallet QR Scanner & Printable Badge Generator Modal */}
+      <PalletQrScannerModal
+        isOpen={isQrScannerOpen}
+        onClose={() => setIsQrScannerOpen(false)}
+        onScanSuccess={(scanned: ShipmentSummary) => {
+          setSelectedId(scanned.shipment_id);
+          onSelectShipmentId?.(scanned.shipment_id);
+          handleRunVerify();
+        }}
+      />
     </div>
   );
 };

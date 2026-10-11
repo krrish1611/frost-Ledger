@@ -15,7 +15,6 @@ import {
   Clock,
   CheckCircle2,
   AlertTriangle,
-  ExternalLink,
   ShieldAlert,
   Flame,
 } from 'lucide-react';
@@ -24,14 +23,37 @@ import {
   generateTelemetryHistory,
 } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
+import { PolygonScanLink } from './PolygonScanLink';
+import { soundEffects } from '../services/soundEffects';
 
-export const ShipmentDetailView: React.FC = () => {
+interface ShipmentDetailViewProps {
+  selectedShipmentId?: string;
+  onSelectShipmentId?: (id: string) => void;
+  onOpenSimulator?: (shipmentId: string) => void;
+  onOpenVerifier?: (hash: string) => void;
+}
+
+export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
+  selectedShipmentId: propShipmentId,
+  onSelectShipmentId,
+  onOpenSimulator,
+  onOpenVerifier,
+}) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const [selectedShipmentId, setSelectedShipmentId] = useState<string>(
+  const [internalShipmentId, setInternalShipmentId] = useState<string>(
     MOCK_SHIPMENTS[0].shipment_id
   );
+
+  const selectedShipmentId = propShipmentId || internalShipmentId;
+
+  const handleSelectShipment = (id: string) => {
+    soundEffects.playClick();
+    setInternalShipmentId(id);
+    onSelectShipmentId?.(id);
+  };
+
   const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<Set<string>>(new Set());
   const [ackModalAlertId, setAckModalAlertId] = useState<string | null>(null);
   const [ackNote, setAckNote] = useState('');
@@ -81,7 +103,7 @@ export const ShipmentDetailView: React.FC = () => {
               return (
                 <button
                   key={s.shipment_id}
-                  onClick={() => setSelectedShipmentId(s.shipment_id)}
+                  onClick={() => handleSelectShipment(s.shipment_id)}
                   className={`btn ${active ? 'btn-accent' : 'btn-outline'}`}
                   style={{ padding: '0.35rem 0.75rem', fontSize: '12px' }}
                 >
@@ -101,8 +123,37 @@ export const ShipmentDetailView: React.FC = () => {
           </div>
         </div>
 
-        <div className="data" style={{ color: 'var(--color-muted)' }}>
-          ID: <span style={{ color: 'var(--color-text)' }}>{shipment.shipment_id}</span> &bull; DEVICE: <span style={{ color: 'var(--color-accent)' }}>{shipment.device_id}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {onOpenSimulator && (
+            <button
+              onClick={() => {
+                soundEffects.playClick();
+                onOpenSimulator(shipment.shipment_id);
+              }}
+              className="btn"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                fontSize: '12px',
+                padding: '0.4rem 0.85rem',
+                fontWeight: 700,
+                background: 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid rgba(245, 158, 11, 0.45)',
+                color: '#f59e0b',
+                cursor: 'pointer',
+                borderRadius: 'var(--radius-sm)',
+              }}
+              title="Launch interactive Arrhenius temperature excursion simulator on this shipment"
+            >
+              <Flame size={14} />
+              <span>Simulate Excursion Sandbox</span>
+            </button>
+          )}
+
+          <div className="data" style={{ color: 'var(--color-muted)' }}>
+            ID: <span style={{ color: 'var(--color-text)' }}>{shipment.shipment_id}</span> &bull; DEVICE: <span style={{ color: 'var(--color-accent)' }}>{shipment.device_id}</span>
+          </div>
         </div>
       </div>
 
@@ -218,32 +269,37 @@ export const ShipmentDetailView: React.FC = () => {
             </span>
             <CheckCircle2 size={18} color="var(--color-pass)" />
           </div>
-          <div style={{ marginTop: '0.75rem' }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text)' }}>
-              TX: {shipment.anchored_tx ? shipment.anchored_tx.substring(0, 16) + '...' : 'Pending'}
-            </div>
-            <div className="data" style={{ color: 'var(--color-muted)', marginTop: '0.25rem' }}>
-              Batch Window: 5 / 5 hashes sealed
+          <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {shipment.anchored_tx ? (
+              <PolygonScanLink
+                hash={shipment.anchored_tx}
+                type="tx"
+                label="Polygon Amoy Anchor"
+                showFullLink={true}
+              />
+            ) : (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-muted)' }}>
+                Pending Batch Window Anchor
+              </div>
+            )}
+            <div className="data" style={{ color: 'var(--color-muted)', fontSize: '11px' }}>
+              Batch Window: 5 / 5 hashes sealed &bull; Ed25519 Verified
             </div>
           </div>
-          <div style={{ marginTop: '0.75rem' }}>
-            <a
-              href={`https://amoy.polygonscan.com/tx/${shipment.anchored_tx}`}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontSize: '11px',
-                color: 'var(--color-accent)',
-                textDecoration: 'none',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              View on Polygonscan <ExternalLink size={11} />
-            </a>
-          </div>
+          {onOpenVerifier && shipment.anchored_tx && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <button
+                onClick={() => {
+                  soundEffects.playClick();
+                  onOpenVerifier(shipment.anchored_tx!);
+                }}
+                className="btn btn-ghost"
+                style={{ fontSize: '11px', padding: '0.2rem 0.5rem', color: 'var(--color-accent)' }}
+              >
+                Inspect On-Chain Merkle Tree &rarr;
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
+import { Toaster, toast } from 'sonner';
 import { supabase } from './lib/supabase';
 import { AtmosphereCanvas } from './components/AtmosphereCanvas';
 import { Navbar, ActiveTab, UserRole } from './components/Navbar';
@@ -10,6 +11,11 @@ import { AdminManagementView } from './components/AdminManagementView';
 import { LandingView } from './components/landing/LandingView';
 import { ShipmentSummary, MOCK_SHIPMENTS } from './services/api';
 import { useTheme } from './context/ThemeContext';
+import { CommandPalette } from './components/CommandPalette';
+import { ExcursionSimulatorModal } from './components/ExcursionSimulatorModal';
+import { OnChainVerificationModal } from './components/OnChainVerificationModal';
+import { PalletQrScannerModal } from './components/PalletQrScannerModal';
+import { soundEffects } from './services/soundEffects';
 
 export default function App() {
   const { theme } = useTheme();
@@ -19,14 +25,29 @@ export default function App() {
   const [userRole, setUserRole] = useState<UserRole>('operator');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [selectedShipment, setSelectedShipment] = useState<ShipmentSummary>(MOCK_SHIPMENTS[0]);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Interactive Modals State
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+  const [isOnChainModalOpen, setIsOnChainModalOpen] = useState(false);
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
+  const [activeVerificationHash, setActiveVerificationHash] = useState<string>('0x97273b89beb8f51b1386c4f65078b380c8801fc3c54eb64194d8e0d6f98ced37');
 
   const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage((current) => (current === msg ? null : current));
-    }, 4000);
+    toast(msg);
   };
+
+  // Global Keyboard Shortcut: Cmd+K / Ctrl+K for Command Palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     // 1. Initial Session Check
@@ -111,13 +132,44 @@ export default function App() {
             showToast(`Switched active role to ${r.toUpperCase()}`);
           }}
           onReturnToLanding={() => setViewMode('landing')}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+          onOpenSimulator={() => setIsSimulatorOpen(true)}
+          onOpenVerifier={() => setIsOnChainModalOpen(true)}
+          onOpenQrScanner={() => setIsQrScannerOpen(true)}
         />
 
         {/* Dynamic View Content */}
         <main style={{ maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '24px', flex: 1 }}>
-          {activeTab === 'shipments' && <ShipmentDetailView />}
+          {activeTab === 'shipments' && (
+            <ShipmentDetailView
+              selectedShipmentId={selectedShipment.shipment_id}
+              onSelectShipmentId={(id) => {
+                const s = MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
+                if (s) setSelectedShipment(s);
+              }}
+              onOpenSimulator={(id) => {
+                const s = MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
+                if (s) setSelectedShipment(s);
+                setIsSimulatorOpen(true);
+              }}
+              onOpenVerifier={(hash) => {
+                setActiveVerificationHash(hash);
+                setIsOnChainModalOpen(true);
+              }}
+            />
+          )}
 
-          {activeTab === 'verify' && <ArrivalVerificationView />}
+          {activeTab === 'verify' && (
+            <ArrivalVerificationView
+              selectedShipmentId={selectedShipment.shipment_id}
+              onSelectShipmentId={(id) => {
+                const s = MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
+                if (s) setSelectedShipment(s);
+              }}
+              isQrScannerOpen={isQrScannerOpen}
+              onCloseQrScanner={() => setIsQrScannerOpen(false)}
+            />
+          )}
 
           {activeTab === 'ai-intelligence' && (
             <AiRiskIntelligenceView
@@ -129,7 +181,6 @@ export default function App() {
           {activeTab === 'admin' && <AdminManagementView />}
         </main>
 
-        {/* Global Footer */}
         {/* Global Footer */}
         <footer
           style={{
@@ -151,34 +202,97 @@ export default function App() {
             <span>&bull; Cold Chain Integrity &amp; Tamper Detection System v3.1</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            <span>Polygon Amoy: 0x9727...ed37</span>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <a
+              href="https://amoy.polygonscan.com/address/0x97273b89beb8f51b1386c4f65078b380c8801fc3c54eb64194d8e0d6f98ced37"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                color: isLight ? '#033500' : 'var(--color-accent)',
+                textDecoration: 'none',
+                fontFamily: 'var(--fl-font-mono)',
+              }}
+            >
+              Polygon Amoy: 0x9727...ed37 ↗
+            </a>
             <span>Supabase PostgreSQL + Trigger Layer</span>
             <span className="fl-badge fl-badge-ai">AI Advisory Layer Active</span>
           </div>
         </footer>
       </div>
 
-      {/* Floating Toast Notification */}
-      {toastMessage && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            background: 'var(--fl-bg-secondary)',
-            border: '1px solid var(--fl-mint)',
-            color: 'var(--fl-mint)',
-            padding: '12px 20px',
+      {/* Emil Kowalski Style Sonner Toaster */}
+      <Toaster
+        position="top-right"
+        richColors
+        theme={theme === 'light' ? 'light' : 'dark'}
+        toastOptions={{
+          style: {
+            fontFamily: 'var(--fl-font-mono, monospace)',
             borderRadius: '8px',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(125, 249, 196, 0.2)',
-            zIndex: 9999,
             fontSize: '13px',
-            fontFamily: 'var(--fl-font-mono)',
+          },
+        }}
+      />
+
+      {/* 1. Quick Command Palette (Cmd + K / Ctrl + K) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          setIsCommandPaletteOpen(false);
+        }}
+        onSelectShipment={(shipment) => {
+          setSelectedShipment(shipment);
+          setActiveTab('shipments');
+          setIsCommandPaletteOpen(false);
+          soundEffects.playClick();
+        }}
+        onOpenSimulator={() => {
+          setIsSimulatorOpen(true);
+          setIsCommandPaletteOpen(false);
+        }}
+        onOpenVerifier={() => {
+          setIsOnChainModalOpen(true);
+          setIsCommandPaletteOpen(false);
+        }}
+        onNavigateHome={() => {
+          setViewMode('landing');
+          setIsCommandPaletteOpen(false);
+        }}
+      />
+
+      {/* 2. Interactive Excursion Simulator Sandbox */}
+      <ExcursionSimulatorModal
+        isOpen={isSimulatorOpen}
+        onClose={() => setIsSimulatorOpen(false)}
+        shipmentId={selectedShipment.shipment_id}
+        initialTemp={selectedShipment.current_temp}
+        onExcursionSimulated={(temp, potency, tx) => {
+          showToast(`Excursion simulated at ${temp.toFixed(1)}°C: Potency ${potency.toFixed(1)}%, batch anchored on Amoy (${tx.slice(0, 10)}...)`);
+        }}
+      />
+
+      {/* 3. On-Chain Live PolygonScan Verifier Modal */}
+      <OnChainVerificationModal
+        isOpen={isOnChainModalOpen}
+        onClose={() => setIsOnChainModalOpen(false)}
+        shipmentId={selectedShipment.shipment_id}
+        initialHash={activeVerificationHash || selectedShipment.anchored_tx || '0x97273b89beb8f51b1386c4f65078b380c8801fc3c54eb64194d8e0d6f98ced37'}
+      />
+
+      {/* 4. Pallet QR Scanner & Printable Badge Generator Modal (Fallback / Global) */}
+      {isQrScannerOpen && activeTab !== 'verify' && (
+        <PalletQrScannerModal
+          isOpen={isQrScannerOpen}
+          onClose={() => setIsQrScannerOpen(false)}
+          onScanSuccess={(scanned) => {
+            setSelectedShipment(scanned);
+            setActiveTab('verify');
+            setIsQrScannerOpen(false);
           }}
-        >
-          {toastMessage}
-        </div>
+        />
       )}
     </div>
   );
