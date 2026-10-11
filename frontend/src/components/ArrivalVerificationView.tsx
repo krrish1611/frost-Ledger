@@ -21,7 +21,13 @@ import {
   Eye,
   QrCode,
 } from 'lucide-react';
-import { MOCK_SHIPMENTS, API_BASE, ShipmentSummary } from '../services/api';
+import {
+  MOCK_SHIPMENTS,
+  API_BASE,
+  ShipmentSummary,
+  fetchDashboardState,
+  verifyShipmentArrivalApi,
+} from '../services/api';
 import { useWeb3 } from '../context/Web3Context';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -75,6 +81,7 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
     isMetaMaskChromeExtension,
   } = useWeb3();
 
+  const [shipmentsList, setShipmentsList] = useState<ShipmentSummary[]>(MOCK_SHIPMENTS);
   const [selectedId, setSelectedId] = useState(propSelectedId || MOCK_SHIPMENTS[0].shipment_id);
   const [localQrOpen, setLocalQrOpen] = useState(false);
   const isQrScannerOpen = propIsQrScannerOpen !== undefined ? propIsQrScannerOpen : localQrOpen;
@@ -82,6 +89,14 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
     setLocalQrOpen(val);
     if (!val && onCloseQrScanner) onCloseQrScanner();
   };
+
+  useEffect(() => {
+    fetchDashboardState().then((state) => {
+      if (state && state.shipments.length > 0) {
+        setShipmentsList(state.shipments);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (propSelectedId && propSelectedId !== selectedId) {
@@ -105,7 +120,7 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
   const [thresholdTestResult, setThresholdTestResult] = useState<boolean | null>(null);
   const [isTestingThreshold, setIsTestingThreshold] = useState(false);
 
-  const shipment = MOCK_SHIPMENTS.find((s) => s.shipment_id === selectedId) || MOCK_SHIPMENTS[0];
+  const shipment = shipmentsList.find((s) => s.shipment_id === selectedId) || shipmentsList[0] || MOCK_SHIPMENTS[0];
 
   // Live Query Smart Contract
   const handleQueryContractLive = useCallback(async () => {
@@ -162,7 +177,10 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
     setIsVerifying(true);
     setAuditSuccessToast(null);
     try {
-      await handleQueryContractLive();
+      await Promise.all([
+        handleQueryContractLive(),
+        verifyShipmentArrivalApi(selectedId),
+      ]);
       soundEffects.playSuccessChime();
       setAuditSuccessToast(
         'Audit complete! Cryptographic checks & live on-chain contract verified. Official PDF & Deep Thermal Analytics PDF ready.'
@@ -396,7 +414,7 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
             }}
             style={{ padding: '0.45rem 0.75rem', fontFamily: 'var(--font-mono)' }}
           >
-            {MOCK_SHIPMENTS.map((s) => (
+            {shipmentsList.map((s) => (
               <option key={s.shipment_id} value={s.shipment_id}>
                 {s.shipment_id} ({s.profile_name})
               </option>

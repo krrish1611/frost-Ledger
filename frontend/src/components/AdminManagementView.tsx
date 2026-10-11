@@ -6,6 +6,9 @@ import {
   MOCK_DEVICES,
   MOCK_PROFILES,
   MOCK_AUDIT_LOGS,
+  fetchDashboardState,
+  revokeDeviceKeyApi,
+  createProfileApi,
 } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { PolygonScanLink } from './PolygonScanLink';
@@ -76,12 +79,18 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({
 
   const fetchUsersAndAuditTrail = async () => {
     setIsLoadingUsers(true);
-    const [profilesData, auditsData] = await Promise.all([
+    const [profilesData, auditsData, dashState] = await Promise.all([
       alertService.fetchUserProfiles(),
       alertService.fetchAuditLogs(),
+      fetchDashboardState(),
     ]);
     setUserProfiles(profilesData);
     setRealtimeAuditLogs(auditsData);
+    if (dashState) {
+      setDevices(dashState.devices);
+      setProfiles(dashState.profiles);
+      setAuditLogs(dashState.auditLogs);
+    }
     setIsLoadingUsers(false);
   };
 
@@ -109,7 +118,8 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({
     };
   }, []);
 
-  const handleRevokeDevice = (deviceId: string) => {
+  const handleRevokeDevice = async (deviceId: string) => {
+    await revokeDeviceKeyApi(deviceId);
     setDevices((prev) =>
       prev.map((d) => (d.device_id === deviceId ? { ...d, status: 'revoked' } : d))
     );
@@ -126,15 +136,24 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({
     setRevokeTarget(null);
   };
 
-  const handleCreateProfile = (e: React.FormEvent) => {
+  const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProfileName) return;
+
+    const created = await createProfileApi({
+      name: newProfileName,
+      cargo_type: newProfileCargo,
+      temp_min_c: newProfileMin,
+      temp_max_c: newProfileMax,
+      max_excursion_seconds: newProfileMaxExcursion,
+      mkt_activation_energy_kj: newProfileEa,
+    });
 
     const mockHash = Array.from({ length: 64 }, () =>
       Math.floor(Math.random() * 16).toString(16)
     ).join('');
 
-    const newProf: ProductProfileItem = {
+    const newProf: ProductProfileItem = created || {
       profile_id: `profile-${newProfileName.toLowerCase().replace(/\s+/g, '-')}-v1`,
       name: newProfileName,
       cargo_type: newProfileCargo,
@@ -156,7 +175,7 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({
       action: 'REGISTER_PROFILE',
       target_table: 'product_profiles',
       record_id: newProf.profile_id,
-      details: `Registered immutable profile '${newProfileName}' v1 with hash ${mockHash.substring(0, 16)}...`,
+      details: `Registered immutable profile '${newProfileName}' v1 with hash ${newProf.profile_hash.substring(0, 16)}...`,
     };
     setAuditLogs((prev) => [newLog, ...prev]);
 
