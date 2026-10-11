@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { DbClient, getDbClient } from './index';
-import { getUtcTimestamp, generateEd25519KeyPair } from '@frostledger/shared';
+import { getUtcTimestamp, computeCanonicalHash } from '@frostledger/shared';
 
 export async function runSeed(clientOverride?: DbClient): Promise<void> {
   const db = clientOverride || (await getDbClient());
@@ -35,6 +35,9 @@ export async function runSeed(clientOverride?: DbClient): Promise<void> {
     max_shock_g: 5.0,
     max_tilt_degrees: 60.0,
   };
+
+  const vaccineHash = computeCanonicalHash(vaccineParams);
+  const produceHash = computeCanonicalHash(produceParams);
 
   const existingVaccine = await db.query(
     'SELECT 1 FROM profiles WHERE profile_id = $1 AND version = $2',
@@ -101,16 +104,60 @@ export async function runSeed(clientOverride?: DbClient): Promise<void> {
   }
 
   // 3. Seed Device
-  // Deterministic sample Ed25519 public key for demo
-  const sampleKeyPair = generateEd25519KeyPair();
-  const existingDevice = await db.query('SELECT 1 FROM devices WHERE device_id = $1', ['dev-esp32-001']);
+  // Fixed public key corresponding to simulator default private key: 9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60
+  const DEFAULT_PUBKEY = 'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a';
+  const existingDevice = await db.query('SELECT public_key FROM devices WHERE device_id = $1', ['dev-esp32-001']);
   if (existingDevice.rowCount === 0) {
     await db.query(
       `INSERT INTO devices (device_id, org_id, public_key, status, created_at)
        VALUES ($1, $2, $3, $4, $5)`,
-      ['dev-esp32-001', 'org-frost-demo', sampleKeyPair.publicKeyHex, 'active', getUtcTimestamp()]
+      ['dev-esp32-001', 'org-frost-demo', DEFAULT_PUBKEY, 'active', getUtcTimestamp()]
     );
     console.log('[Seed] Seeded device: dev-esp32-001');
+  } else if (existingDevice.rows[0].public_key !== DEFAULT_PUBKEY) {
+    await db.query(
+      `UPDATE devices SET public_key = $1, status = 'active' WHERE device_id = $2`,
+      [DEFAULT_PUBKEY, 'dev-esp32-001']
+    );
+    console.log('[Seed] Updated device dev-esp32-001 with default public key');
+  }
+
+  // 4. Seed Shipments (for testing, simulator, and frontend dashboard)
+  const defaultShipments = [
+    { id: 'shipment-vax-amoy-001', deviceId: 'dev-esp32-001', profileId: 'profile-vaccine-2-8c', hash: vaccineHash, status: 'in_transit' },
+    { id: 'shipment-test-001', deviceId: 'dev-esp32-001', profileId: 'profile-vaccine-2-8c', hash: vaccineHash, status: 'in_transit' },
+    { id: 'shipment-insulin-002', deviceId: 'dev-esp32-001', profileId: 'profile-vaccine-2-8c', hash: vaccineHash, status: 'in_transit' },
+    { id: 'shipment-produce-003', deviceId: 'dev-esp32-001', profileId: 'profile-produce-0-4c', hash: produceHash, status: 'flagged' },
+  ];
+
+  for (const s of defaultShipments) {
+    const existingShipment = await db.query('SELECT 1 FROM shipments WHERE shipment_id = $1', [s.id]);
+    if (existingShipment.rowCount === 0) {
+      await db.query(
+        `INSERT INTO shipments (
+          shipment_id, device_id, profile_id, profile_version, profile_hash,
+          status, start_time, ai_enabled, ai_email_enabled
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          s.id,
+          s.deviceId,
+          s.profileId,
+          1,
+          s.hash,
+          s.status,
+          getUtcTimestamp(),
+          true,
+          false,
+        ]
+      );
+      console.log(`[Seed] Seeded shipment: ${s.id}`);
+    } else {
+      // If shipment has no batches recorded yet, update to its dedicated device
+      const batchCheck = await db.query('SELECT 1 FROM batches WHERE shipment_id = $1 LIMIT 1', [s.id]);
+      if (batchCheck.rowCount === 0) {
+        await db.query('UPDATE shipments SET device_id = $1 WHERE shipment_id = $2', [s.deviceId, s.id]);
+      }
+    }
   }
 
   console.log('[Seed] Seeding completed successfully.');

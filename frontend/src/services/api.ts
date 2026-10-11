@@ -100,7 +100,11 @@ export interface AuditLogItem {
   details: string;
 }
 
-export const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
+export const API_BASE =
+  (import.meta as any).env?.VITE_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+    ? 'https://4zxl3477-3001.inc1.devtunnels.ms'
+    : 'http://localhost:3001');
 
 // Mock dataset representing live and completed cold-chain shipments
 export const MOCK_SHIPMENTS: ShipmentSummary[] = [
@@ -435,4 +439,45 @@ export function generateTelemetryHistory(shipment: ShipmentSummary): TelemetryRe
 
   return points;
 }
+
+export async function fetchLiveShipments(): Promise<ShipmentSummary[]> {
+  try {
+    const res = await fetch(`${API_BASE}/shipments`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.shipments && data.shipments.length > 0) {
+      return data.shipments;
+    }
+  } catch (err) {
+    console.warn('[API Client] Live shipments fetch notice (using cache/fallback):', err);
+  }
+  return MOCK_SHIPMENTS;
+}
+
+export async function fetchLiveTelemetry(shipment: ShipmentSummary): Promise<TelemetryReading[]> {
+  try {
+    const res = await fetch(`${API_BASE}/shipments/${shipment.shipment_id}/telemetry`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.readings && data.readings.length > 0) {
+      return data.readings;
+    }
+  } catch (err) {
+    console.warn('[API Client] Live telemetry fetch notice (using fallback):', err);
+  }
+  return generateTelemetryHistory(shipment);
+}
+
+export async function verifyLiveShipment(shipmentId: string): Promise<any> {
+  try {
+    const res = await fetch(`${API_BASE}/verify/${shipmentId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[API Client] Live verification fetch notice:', err);
+    return null;
+  }
+}
+
+
 

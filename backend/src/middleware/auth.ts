@@ -6,7 +6,9 @@ export interface AuthenticatedRequest extends Request {
   user?: JwtTokenPayload;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'frostledger_default_development_secret_32_chars';
+function getJwtSecret(): string {
+  return process.env.JWT_SECRET || 'frostledger_default_development_secret_32_chars';
+}
 
 export function authenticateJwt(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
@@ -16,7 +18,7 @@ export function authenticateJwt(req: AuthenticatedRequest, res: Response, next: 
 
   const token = authHeader.substring(7);
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtTokenPayload;
+    const decoded = jwt.verify(token, getJwtSecret()) as JwtTokenPayload;
     req.user = decoded;
     return next();
   } catch (err: any) {
@@ -44,3 +46,18 @@ export function requireRole(...allowedRoles: UserRole[]) {
 }
 
 export const requireAdmin = requireRole('admin');
+
+export function optionalAuthenticateJwt(req: AuthenticatedRequest, _res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    try {
+      const decoded = jwt.verify(token, getJwtSecret()) as JwtTokenPayload;
+      req.user = decoded;
+    } catch {
+      // Ignore invalid token in optional mode
+    }
+  }
+  return next();
+}
+
