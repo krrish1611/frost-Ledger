@@ -14,6 +14,7 @@ import { ClosingNotes } from './ClosingNotes';
 import { FooterQuote } from './FooterQuote';
 import { AuthModal } from './AuthModal';
 import { ThemeToggle } from '../ThemeToggle';
+import { useTheme } from '../../context/ThemeContext';
 
 interface LandingViewProps {
   onEnterDashboard: (role?: 'operator' | 'admin' | 'receiver' | 'auditor') => void;
@@ -26,6 +27,8 @@ export const LandingView: React.FC<LandingViewProps> = ({
   currentUser,
   onSignOut,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
@@ -145,10 +148,15 @@ export const LandingView: React.FC<LandingViewProps> = ({
             {/* Launch Dashboard Primary Button */}
             <button
               onClick={() => onEnterDashboard('operator')}
-              className="px-3.5 py-1.5 rounded bg-[var(--color-accent)] text-[#0a0a0b] font-bold text-xs font-mono flex items-center gap-1.5 shadow-[0_0_14px_rgba(125,249,196,0.35)] hover:bg-[#6febb5] transition-all cursor-pointer"
+              style={isLight ? { color: '#ffffff' } : undefined}
+              className={`px-3.5 py-1.5 rounded font-bold text-xs font-mono flex items-center gap-1.5 shadow-[0_0_14px_rgba(125,249,196,0.35)] transition-all cursor-pointer ${
+                isLight
+                  ? 'bg-[#033500] !text-white force-white hover:bg-[#022400]'
+                  : 'bg-[var(--color-accent)] text-[#0a0a0b] hover:bg-[#6febb5]'
+              }`}
             >
-              <span>Console</span>
-              <ArrowRight size={13} />
+              <span className={isLight ? '!text-white force-white' : ''}>Console</span>
+              <ArrowRight size={13} className={isLight ? '!text-white force-white' : ''} />
             </button>
           </div>
         </div>
@@ -199,10 +207,15 @@ export const LandingView: React.FC<LandingViewProps> = ({
           >
             <button
               onClick={() => onEnterDashboard('operator')}
-              className="w-full sm:w-auto px-6 py-3.5 rounded bg-[var(--color-accent)] text-[#0a0a0b] font-bold text-sm font-mono flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(125,249,196,0.45)] hover:bg-[#6febb5] transition-all cursor-pointer"
+              style={isLight ? { color: '#ffffff' } : undefined}
+              className={`w-full sm:w-auto px-6 py-3.5 rounded font-bold text-sm font-mono flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(125,249,196,0.45)] transition-all cursor-pointer ${
+                isLight
+                  ? 'bg-[#033500] !text-white force-white hover:bg-[#022400]'
+                  : 'bg-[var(--color-accent)] text-[#0a0a0b] hover:bg-[#6febb5]'
+              }`}
             >
-              <span>Launch Live Dashboard</span>
-              <ArrowRight size={16} />
+              <span className={isLight ? '!text-white force-white' : ''}>Launch Live Dashboard</span>
+              <ArrowRight size={16} className={isLight ? '!text-white force-white' : ''} />
             </button>
 
             <button
