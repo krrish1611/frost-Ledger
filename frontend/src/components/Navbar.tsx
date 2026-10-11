@@ -1,7 +1,8 @@
 import React from 'react';
-import { Shield, Radio, Activity, Cpu, Layers, LogOut, User as UserIcon } from 'lucide-react';
+import { Shield, Radio, Activity, Cpu, Layers, LogOut, User as UserIcon, Wallet } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
+import { useWeb3 } from '../context/Web3Context';
 
 export type ActiveTab = 'shipments' | 'verify' | 'ai-intelligence' | 'admin';
 export type UserRole = 'operator' | 'receiver' | 'auditor' | 'admin';
@@ -27,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';
+  const { account, networkName, isConnecting, connectWallet, disconnectWallet } = useWeb3();
 
   return (
     <header
@@ -155,6 +157,62 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Role Switcher, Theme Toggle, Supabase User & System Telemetry Pill */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <ThemeToggle />
+
+          {/* MetaMask Wallet Connection Status & Action */}
+          {account ? (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.3rem 0.65rem',
+                borderRadius: 'var(--radius-sm)',
+                background: isLight ? 'rgba(3, 53, 0, 0.08)' : 'rgba(125, 249, 196, 0.08)',
+                border: isLight ? '1.5px solid #033500' : '1px solid rgba(125, 249, 196, 0.35)',
+                color: isLight ? '#033500' : 'var(--color-accent)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+                fontWeight: 600,
+              }}
+              title={`MetaMask Connected: ${account} (${networkName})`}
+            >
+              <Wallet size={12} />
+              <span>{account.substring(0, 6)}...{account.substring(38)}</span>
+              <button
+                onClick={disconnectWallet}
+                title="Disconnect MetaMask"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  padding: '0 2px',
+                  fontSize: '10px',
+                  opacity: 0.7,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => connectWallet()}
+              disabled={isConnecting}
+              className="btn btn-outline"
+              style={{
+                padding: '0.3rem 0.65rem',
+                fontSize: '11px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+              }}
+              title="Connect MetaMask Chrome / Browser Extension (permission prompt required)"
+            >
+              <Wallet size={12} />
+              <span>{isConnecting ? 'Connecting...' : 'Connect MetaMask Extension'}</span>
+            </button>
+          )}
+
           <div
             className="data"
             style={{
