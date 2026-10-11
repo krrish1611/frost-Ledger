@@ -87,6 +87,8 @@ class AiService:
             cusum_stat=cusum_stat,
             cusum_h=cusum_h,
             is_flat_copied=is_flat,
+            current_humidity=learner.rate_of_change.last_humidity,
+            shock_g=0.0,
         )
         risk_data["shipment_id"] = shipment_id
         risk_data["evaluated_at"] = datetime.now(timezone.utc).isoformat()

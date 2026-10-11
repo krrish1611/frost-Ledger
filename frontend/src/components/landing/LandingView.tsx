@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, ArrowRight, Play, LogIn, UserCheck } from 'lucide-react';
+import { Shield, ArrowRight, LogIn, UserCheck } from 'lucide-react';
 import { ScrollProgress } from './ScrollProgress';
 import { AmbientBackground } from './AmbientBackground';
 import { AsciiReveal } from './AsciiReveal';
@@ -14,6 +14,7 @@ import { ClosingNotes } from './ClosingNotes';
 import { FooterQuote } from './FooterQuote';
 import { AuthModal } from './AuthModal';
 import { ThemeToggle } from '../ThemeToggle';
+import { useTheme } from '../../context/ThemeContext';
 
 interface LandingViewProps {
   onEnterDashboard: (role?: 'operator' | 'admin' | 'receiver' | 'auditor') => void;
@@ -26,11 +27,15 @@ export const LandingView: React.FC<LandingViewProps> = ({
   currentUser,
   onSignOut,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [authPortal, setAuthPortal] = useState<'operator' | 'admin'>('operator');
 
-  const openAuth = (mode: 'login' | 'signup') => {
+  const openAuth = (mode: 'login' | 'signup' = 'login', portal: 'operator' | 'admin' = 'operator') => {
     setAuthMode(mode);
+    setAuthPortal(portal);
     setAuthOpen(true);
   };
 
@@ -62,16 +67,25 @@ export const LandingView: React.FC<LandingViewProps> = ({
           
           {/* Logo & Brand Identity */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded border hairline bg-[var(--color-panel-elevated)] dark:bg-[#131316] flex items-center justify-center text-[#033500] dark:text-[var(--color-accent)] dot-matrix shadow-[0_0_12px_rgba(3,53,0,0.2)] dark:shadow-[0_0_12px_rgba(125,249,196,0.2)]">
+            <div
+              className="w-8 h-8 rounded border hairline bg-[var(--color-panel-elevated)] dark:bg-[#131316] flex items-center justify-center dot-matrix shadow-[0_0_12px_rgba(3,53,0,0.2)] dark:shadow-[0_0_12px_rgba(125,249,196,0.2)]"
+              style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}
+            >
               <Shield size={17} />
             </div>
-            <div>
-              <div className="font-display font-extrabold text-base tracking-tight text-[#033500] dark:text-white flex items-center gap-2">
+            <div className="flex items-center">
+              <div
+                className="font-display font-black text-base tracking-tight flex items-center gap-2"
+                style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}
+              >
                 <span>FROSTLEDGER</span>
-                <span className="w-2 h-2 rounded-full bg-[#033500] dark:bg-[var(--color-accent)] shadow-[0_0_8px_#033500] animate-pulse" />
-              </div>
-              <div className="font-mono text-[9px] text-[var(--color-muted)] tracking-wider uppercase hidden sm:block">
-                POLYGON AMOY &bull; COLD CHAIN INTEGRITY &bull; ED25519
+                <span
+                  className="w-2 h-2 rounded-full animate-pulse"
+                  style={{
+                    backgroundColor: isLight ? '#033500' : 'var(--color-accent)',
+                    boxShadow: isLight ? '0 0 8px #033500' : '0 0 8px var(--color-accent)',
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -122,22 +136,24 @@ export const LandingView: React.FC<LandingViewProps> = ({
               </>
             ) : (
               <>
-                {/* Login Button */}
+                {/* Operator Login Button */}
                 <button
-                  onClick={() => openAuth('login')}
+                  onClick={() => openAuth('login', 'operator')}
                   className="px-3 py-1.5 rounded border hairline hover:border-[var(--color-accent)] text-xs font-mono text-neutral-300 hover:text-white bg-[#111113] hover:bg-[#18181c] transition-all flex items-center gap-1.5 cursor-pointer"
+                  title="Sign in as Cold Chain Operator or Field Receiver"
                 >
                   <LogIn size={13} className="text-[var(--color-accent)]" />
-                  <span>Login</span>
+                  <span>Operator Login</span>
                 </button>
 
-                {/* Sign In / Register Button */}
+                {/* Admin Portal Button */}
                 <button
-                  onClick={() => openAuth('signup')}
-                  className="hidden sm:inline-flex px-3 py-1.5 rounded border border-[var(--color-accent)]/40 hover:border-[var(--color-accent)] text-xs font-mono text-[var(--color-accent)] bg-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/20 transition-all items-center gap-1.5 cursor-pointer"
+                  onClick={() => openAuth('login', 'admin')}
+                  className="px-3 py-1.5 rounded border border-amber-500/40 hover:border-amber-400 text-xs font-mono text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                  title="Sign in with Administrator Governance Privileges"
                 >
-                  <UserCheck size={13} />
-                  <span>Register</span>
+                  <Shield size={13} className="text-amber-400" />
+                  <span>Admin Portal</span>
                 </button>
               </>
             )}
@@ -145,10 +161,15 @@ export const LandingView: React.FC<LandingViewProps> = ({
             {/* Launch Dashboard Primary Button */}
             <button
               onClick={() => onEnterDashboard('operator')}
-              className="px-3.5 py-1.5 rounded bg-[var(--color-accent)] text-[#0a0a0b] font-bold text-xs font-mono flex items-center gap-1.5 shadow-[0_0_14px_rgba(125,249,196,0.35)] hover:bg-[#6febb5] transition-all cursor-pointer"
+              style={isLight ? { color: '#ffffff' } : undefined}
+              className={`px-3.5 py-1.5 rounded font-bold text-xs font-mono flex items-center gap-1.5 shadow-[0_0_14px_rgba(125,249,196,0.35)] transition-all cursor-pointer ${
+                isLight
+                  ? 'bg-[#033500] !text-white force-white hover:bg-[#022400]'
+                  : 'bg-[var(--color-accent)] text-[#0a0a0b] hover:bg-[#6febb5]'
+              }`}
             >
-              <span>Console</span>
-              <ArrowRight size={13} />
+              <span className={isLight ? '!text-white force-white' : ''}>Console</span>
+              <ArrowRight size={13} className={isLight ? '!text-white force-white' : ''} />
             </button>
           </div>
         </div>
@@ -199,18 +220,23 @@ export const LandingView: React.FC<LandingViewProps> = ({
           >
             <button
               onClick={() => onEnterDashboard('operator')}
-              className="w-full sm:w-auto px-6 py-3.5 rounded bg-[var(--color-accent)] text-[#0a0a0b] font-bold text-sm font-mono flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(125,249,196,0.45)] hover:bg-[#6febb5] transition-all cursor-pointer"
+              style={isLight ? { color: '#ffffff' } : undefined}
+              className={`w-full sm:w-auto px-6 py-3.5 rounded font-bold text-sm font-mono flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(125,249,196,0.45)] transition-all cursor-pointer ${
+                isLight
+                  ? 'bg-[#033500] !text-white force-white hover:bg-[#022400]'
+                  : 'bg-[var(--color-accent)] text-[#0a0a0b] hover:bg-[#6febb5]'
+              }`}
             >
-              <span>Launch Live Dashboard</span>
-              <ArrowRight size={16} />
+              <span className={isLight ? '!text-white force-white' : ''}>Launch Operator Console</span>
+              <ArrowRight size={16} className={isLight ? '!text-white force-white' : ''} />
             </button>
 
             <button
-              onClick={() => openAuth('login')}
-              className="w-full sm:w-auto px-6 py-3.5 rounded border hairline hover:border-[var(--color-accent)] bg-[#111113]/80 hover:bg-[#18181c] text-white font-mono text-sm flex items-center justify-center gap-2 backdrop-blur transition-all cursor-pointer"
+              onClick={() => openAuth('login', 'admin')}
+              className="w-full sm:w-auto px-6 py-3.5 rounded border border-amber-500/40 hover:border-amber-400 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-mono text-sm flex items-center justify-center gap-2 backdrop-blur transition-all cursor-pointer"
             >
-              <Play size={14} className="text-[var(--color-accent)]" />
-              <span>Instant 1-Click Guest Access</span>
+              <Shield size={15} className="text-amber-400" />
+              <span>Admin Governance Portal</span>
             </button>
           </motion.div>
 
@@ -242,7 +268,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
 
       {/* 9. TERMINAL QUOTE, FINAL CTA & LIVE HEALTH POLLING FOOTER */}
       <FooterQuote
-        onOpenAuth={openAuth}
+        onOpenAuth={(mode) => openAuth(mode, 'operator')}
         onLaunchDashboard={() => onEnterDashboard('operator')}
       />
 
@@ -250,6 +276,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
       <AuthModal
         isOpen={authOpen}
         initialMode={authMode}
+        initialPortal={authPortal}
         onClose={() => setAuthOpen(false)}
         onSuccess={handleAuthSuccess}
       />

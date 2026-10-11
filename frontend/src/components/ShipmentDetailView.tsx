@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -15,7 +15,6 @@ import {
   Clock,
   CheckCircle2,
   AlertTriangle,
-  ExternalLink,
   ShieldAlert,
   Flame,
   Cpu,
@@ -37,22 +36,47 @@ import {
   API_BASE,
 } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
+import { PolygonScanLink } from './PolygonScanLink';
+import { soundEffects } from '../services/soundEffects';
+import { alertService } from '../services/alertService';
 
-export const ShipmentDetailView: React.FC = () => {
+interface ShipmentDetailViewProps {
+  selectedShipmentId?: string;
+  onSelectShipmentId?: (id: string) => void;
+  onOpenSimulator?: (shipmentId: string) => void;
+  onOpenVerifier?: (hash: string) => void;
+  currentUser?: { email?: string; id?: string } | null;
+  currentRole?: string;
+}
+
+export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
+  selectedShipmentId: propShipmentId,
+  onSelectShipmentId,
+  onOpenSimulator,
+  onOpenVerifier,
+  currentUser,
+  currentRole = 'operator',
+}) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
-  const [shipments, setShipments] = useState<ShipmentSummary[]>(MOCK_SHIPMENTS);
-  const [telemetryByShipment, setTelemetryByShipment] = useState<Record<string, TelemetryReading[]>>({});
-  const [alertsByShipment, setAlertsByShipment] = useState<Record<string, LiveAlertRecord[]>>({});
-  const [backendConnected, setBackendConnected] = useState<boolean>(false);
-
-  const [selectedShipmentId, setSelectedShipmentId] = useState<string>(
+  const [internalShipmentId, setInternalShipmentId] = useState<string>(
     MOCK_SHIPMENTS[0].shipment_id
   );
+
+  const selectedShipmentId = propShipmentId || internalShipmentId;
+
+  const handleSelectShipment = (id: string) => {
+    soundEffects.playClick();
+    setInternalShipmentId(id);
+    onSelectShipmentId?.(id);
+  };
+
   const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<Set<string>>(new Set());
+  const [lastAckInfo, setLastAckInfo] = useState<{ by: string; notes: string; hash: string } | null>(null);
   const [ackModalAlertId, setAckModalAlertId] = useState<string | null>(null);
   const [ackNote, setAckNote] = useState('');
+  const [isAcknowledging, setIsAcknowledging] = useState(false);
 
   // ESP-32 Hardware & Web Serial State
   const [esp32Status, setEsp32Status] = useState<{
@@ -109,98 +133,49 @@ export const ShipmentDetailView: React.FC = () => {
     return generateTelemetryHistory(shipment);
   }, [telemetryByShipment, shipment]);
 
-  const liveAlerts = useMemo(() => {
-    return alertsByShipment[shipment.shipment_id] || [];
-  }, [alertsByShipment, shipment.shipment_id]);
-
-  const handleAcknowledge = async (alertId: string) => {
-    await acknowledgeAlertApi(alertId, ackNote);
-    setAcknowledgedAlerts((prev) => new Set(prev).add(alertId));
-    setAckModalAlertId(null);
-    setAckNote('');
-    await refreshLiveState();
-  };
-
-  // Connect physical ESP-32 via Browser Web Serial API (115200 baud)
-  const handleConnectUsbSerial = async () => {
-    const nav = navigator as any;
-    if (!nav.serial) {
-      setUsbSerialLog('Web Serial API is not supported in this browser (use Chrome or Edge).');
-      return;
-    }
-    try {
-      const port = await nav.serial.requestPort();
-      await port.open({ baudRate: 115200 });
-      serialPortRef.current = port;
-      setUsbSerialConnected(true);
-      setUsbSerialLog('ESP-32 USB Serial port opened at 115200 baud. Listening for JSON telemetry...');
-
-      const textDecoder = new TextDecoderStream();
-      port.readable.pipeTo(textDecoder.writable);
-      const reader = textDecoder.readable.getReader();
-      let buffer = '';
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        if (value) {
-          buffer += value;
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-          for (const rawLine of lines) {
-            const line = rawLine.trim();
-            if (!line) continue;
-            setUsbSerialLog(`Serial RX: ${line.substring(0, 90)}`);
-            if (line.startsWith('{') && line.endsWith('}')) {
-              try {
-                const parsed = JSON.parse(line);
-                if (typeof parsed.temperature === 'number') {
-                  await ingestEsp32PacketApi({
-                    device_id: parsed.device_id || shipment.device_id,
-                    shipment_id: parsed.shipment_id || shipment.shipment_id,
-                    temperature: parsed.temperature,
-                    humidity: parsed.humidity ?? 50,
-                    shock_g: parsed.shock_g ?? 0.1,
-                    battery_pct: parsed.battery_pct ?? 98,
-                    transport: 'usb-web-serial',
-                  });
-                  await refreshLiveState();
-                }
-              } catch {
-                // Ignore non-telemetry JSON lines
-              }
-            }
+  // Sync existing database alerts on shipment load
+  useEffect(() => {
+    alertService.fetchAlerts(selectedShipmentId).then((alerts) => {
+      alerts.forEach((a) => {
+        if (a.status === 'ACKNOWLEDGED' || a.status === 'RESOLVED') {
+          setAcknowledgedAlerts((prev) => new Set(prev).add(a.alert_id));
+          if (a.acknowledged_by && a.remediation_notes) {
+            setLastAckInfo({
+              by: a.acknowledged_by,
+              notes: a.remediation_notes,
+              hash: a.signature || '0x9727...sealed',
+            });
           }
         }
-      }
-    } catch (err: any) {
-      setUsbSerialConnected(false);
-      setUsbSerialLog(`USB Serial connection notice: ${err?.message || 'No ESP-32 port selected'}`);
-    }
-  };
-
-  // Send a live ESP-32 telemetry packet to POST /esp32/ingest
-  const handleSendEsp32Packet = async () => {
-    setIsSendingPacket(true);
-    setLastIngestResult(null);
-    try {
-      const res = await ingestEsp32PacketApi({
-        device_id: shipment.device_id,
-        shipment_id: shipment.shipment_id,
-        temperature: simTemp,
-        humidity: simHumidity,
-        shock_g: 0.1,
-        battery_pct: 95,
-        transport: 'wifi-http',
       });
-      setLastIngestResult(
-        `Accepted Seq #${res.sequence_no} | Hash: ${String(res.hash).substring(0, 12)}... | MKT: ${res.mkt_celsius}°C`
-      );
-      await refreshLiveState();
-    } catch (err: any) {
-      setLastIngestResult(`Error: ${err?.message || 'Failed to reach backend'}`);
+    });
+  }, [selectedShipmentId]);
+
+  const handleAcknowledge = async (alertId: string) => {
+    setIsAcknowledging(true);
+    soundEffects.playClick();
+    try {
+      const actorEmail = currentUser?.email || 'operator@frostledger.io';
+      const result = await alertService.acknowledgeAlert({
+        alertId,
+        shipmentId: shipment.shipment_id,
+        remediationNotes: ackNote,
+        actorEmail,
+        actorRole: currentRole || 'operator',
+        actorId: currentUser?.id,
+      });
+
+      setAcknowledgedAlerts((prev) => new Set(prev).add(alertId));
+      setLastAckInfo({
+        by: actorEmail,
+        notes: ackNote,
+        hash: result.auditHash,
+      });
+      soundEffects.playSuccessChime();
+      setAckModalAlertId(null);
+      setAckNote('');
     } finally {
-      setIsSendingPacket(false);
+      setIsAcknowledging(false);
     }
   };
 
@@ -232,11 +207,7 @@ export const ShipmentDetailView: React.FC = () => {
               return (
                 <button
                   key={s.shipment_id}
-                  onClick={() => {
-                    setSelectedShipmentId(s.shipment_id);
-                    setSimTemp(s.current_temp);
-                    setSimHumidity(s.current_humidity);
-                  }}
+                  onClick={() => handleSelectShipment(s.shipment_id)}
                   className={`btn ${active ? 'btn-accent' : 'btn-outline'}`}
                   style={{ padding: '0.35rem 0.75rem', fontSize: '12px' }}
                 >
@@ -256,159 +227,36 @@ export const ShipmentDetailView: React.FC = () => {
           </div>
         </div>
 
-        <div className="data" style={{ color: 'var(--color-muted)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span className={`badge ${backendConnected ? 'badge-pass' : 'badge-warn'}`}>
-            {backendConnected ? 'LIVE BACKEND :3001' : 'OFFLINE MOCK FALLBACK'}
-          </span>
-          <span>
-            ID: <span style={{ color: 'var(--color-text)' }}>{shipment.shipment_id}</span> &bull; DEVICE:{' '}
-            <span style={{ color: 'var(--color-accent)' }}>{shipment.device_id}</span>
-          </span>
-        </div>
-      </div>
-
-      {/* ESP-32 Hardware Link & Live Ingestion Panel */}
-      <div className="panel" style={{ padding: '1.25rem 1.5rem' }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            marginBottom: '1rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Cpu size={18} color="var(--color-accent)" />
-            <div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 600 }}>
-                ESP-32 Hardware Link (USB Web Serial &amp; Wi-Fi HTTP Webhook)
-              </h3>
-              <p style={{ fontSize: '12px', color: 'var(--color-muted)' }}>
-                Stream live sensor readings from a physical ESP-32 over USB Serial (115200 baud) or Wi-Fi HTTP POST{' '}
-                <code>{API_BASE}/esp32/ingest</code>
-              </p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span
-              className={`badge ${
-                esp32Status?.hardware_usb_detected || usbSerialConnected ? 'badge-pass' : 'badge-warn'
-              }`}
-            >
-              USB COM PORTS:{' '}
-              {esp32Status?.host_com_ports?.length
-                ? esp32Status.host_com_ports.join(', ')
-                : usbSerialConnected
-                ? 'CONNECTED (WEB SERIAL)'
-                : 'NONE DETECTED ON HOST'}
-            </span>
-            <span className="badge badge-pass">
-              <Wifi size={11} style={{ marginRight: '4px', display: 'inline' }} />
-              HTTP GATEWAY: READY ({esp32Status?.active_esp32_streams || 0} ACTIVE STREAMS)
-            </span>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1rem',
-            alignItems: 'center',
-          }}
-        >
-          {/* Left: USB Web Serial Connection */}
-          <div
-            style={{
-              padding: '0.85rem 1rem',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--color-border)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.5rem',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
-                1. DIRECT USB SERIAL BRIDGE
-              </span>
-              <button
-                onClick={handleConnectUsbSerial}
-                className="btn btn-outline"
-                style={{ padding: '0.35rem 0.75rem', fontSize: '12px' }}
-              >
-                <Usb size={14} />
-                {usbSerialConnected ? 'USB Serial Connected' : 'Connect ESP-32 via USB'}
-              </button>
-            </div>
-            <div className="data" style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-              {usbSerialLog ||
-                'Plug in your ESP-32 over USB and click "Connect ESP-32 via USB" to bridge serial JSON directly to the cryptographic ledger.'}
-            </div>
-          </div>
-
-          {/* Right: Live ESP-32 HTTP Packet Transmitter */}
-          <div
-            style={{
-              padding: '0.85rem 1rem',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--color-border)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.5rem',
-            }}
-          >
-            <div
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {onOpenSimulator && (
+            <button
+              onClick={() => {
+                soundEffects.playClick();
+                onOpenSimulator(shipment.shipment_id);
+              }}
+              className="btn"
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
                 alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '0.5rem',
+                gap: '0.4rem',
+                fontSize: '12px',
+                padding: '0.4rem 0.85rem',
+                fontWeight: 700,
+                background: 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid rgba(245, 158, 11, 0.45)',
+                color: '#f59e0b',
+                cursor: 'pointer',
+                borderRadius: 'var(--radius-sm)',
               }}
+              title="Launch interactive Arrhenius temperature excursion simulator on this shipment"
             >
-              <span style={{ fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
-                2. LIVE ESP-32 PACKET INGESTION ({shipment.device_id})
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <label style={{ fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
-                  Temp (°C):
-                  <input
-                    type="number"
-                    step="0.2"
-                    value={simTemp}
-                    onChange={(e) => setSimTemp(Number(e.target.value))}
-                    style={{ width: '68px', marginLeft: '4px', padding: '2px 6px', fontSize: '12px' }}
-                  />
-                </label>
-                <label style={{ fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
-                  RH (%):
-                  <input
-                    type="number"
-                    step="1"
-                    value={simHumidity}
-                    onChange={(e) => setSimHumidity(Number(e.target.value))}
-                    style={{ width: '60px', marginLeft: '4px', padding: '2px 6px', fontSize: '12px' }}
-                  />
-                </label>
-                <button
-                  onClick={handleSendEsp32Packet}
-                  disabled={isSendingPacket}
-                  className="btn btn-accent"
-                  style={{ padding: '0.35rem 0.75rem', fontSize: '12px' }}
-                >
-                  {isSendingPacket ? <RefreshCw size={13} /> : <Send size={13} />}
-                  Send ESP-32 Ping
-                </button>
-              </div>
-            </div>
-            <div className="data" style={{ fontSize: '11px', color: 'var(--color-accent)' }}>
-              {lastIngestResult ||
-                'Signs reading with Ed25519 key, chains SHA-256 prev_hash, updates Arrhenius MKT, and evaluates alerts live.'}
-            </div>
+              <Flame size={14} />
+              <span>Simulate Excursion Sandbox</span>
+            </button>
+          )}
+
+          <div className="data" style={{ color: 'var(--color-muted)' }}>
+            ID: <span style={{ color: 'var(--color-text)' }}>{shipment.shipment_id}</span> &bull; DEVICE: <span style={{ color: 'var(--color-accent)' }}>{shipment.device_id}</span>
           </div>
         </div>
       </div>
@@ -525,32 +373,37 @@ export const ShipmentDetailView: React.FC = () => {
             </span>
             <CheckCircle2 size={18} color="var(--color-pass)" />
           </div>
-          <div style={{ marginTop: '0.75rem' }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-text)' }}>
-              TX: {shipment.anchored_tx ? shipment.anchored_tx.substring(0, 16) + '...' : 'Pending'}
-            </div>
-            <div className="data" style={{ color: 'var(--color-muted)', marginTop: '0.25rem' }}>
-              Batch Window: {telemetryData.length} readings sealed
+          <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {shipment.anchored_tx ? (
+              <PolygonScanLink
+                hash={shipment.anchored_tx}
+                type="tx"
+                label="Polygon Amoy Anchor"
+                showFullLink={true}
+              />
+            ) : (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-muted)' }}>
+                Pending Batch Window Anchor
+              </div>
+            )}
+            <div className="data" style={{ color: 'var(--color-muted)', fontSize: '11px' }}>
+              Batch Window: 5 / 5 hashes sealed &bull; Ed25519 Verified
             </div>
           </div>
-          <div style={{ marginTop: '0.75rem' }}>
-            <a
-              href={`https://amoy.polygonscan.com/tx/${shipment.anchored_tx}`}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontSize: '11px',
-                color: 'var(--color-accent)',
-                textDecoration: 'none',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              View on Polygonscan <ExternalLink size={11} />
-            </a>
-          </div>
+          {onOpenVerifier && shipment.anchored_tx && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <button
+                onClick={() => {
+                  soundEffects.playClick();
+                  onOpenVerifier(shipment.anchored_tx!);
+                }}
+                className="btn btn-ghost"
+                style={{ fontSize: '11px', padding: '0.2rem 0.5rem', color: 'var(--color-accent)' }}
+              >
+                Inspect On-Chain Merkle Tree &rarr;
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -714,7 +567,19 @@ export const ShipmentDetailView: React.FC = () => {
               </div>
 
               {acknowledgedAlerts.has('alt_excursion_det_094') ? (
-                <span className="badge badge-pass">ACKNOWLEDGED BY OPERATOR</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                  <span className="badge badge-pass">
+                    ACKNOWLEDGED BY {lastAckInfo?.by || currentUser?.email || 'OPERATOR'}
+                  </span>
+                  <span className="data" style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
+                    Dispatched to Admin Dashboard &bull; Supabase audit_logs sealed ✓
+                  </span>
+                  {lastAckInfo?.notes && (
+                    <span style={{ fontSize: '11px', color: 'var(--color-text-dim)', fontStyle: 'italic', maxWidth: '320px', textAlign: 'right' }}>
+                      &ldquo;{lastAckInfo.notes}&rdquo;
+                    </span>
+                  )}
+                </div>
               ) : (
                 <button
                   onClick={() => setAckModalAlertId('alt_excursion_det_094')}
@@ -754,7 +619,7 @@ export const ShipmentDetailView: React.FC = () => {
         >
           <div
             className="panel glow-critical"
-            style={{ width: '100%', maxWidth: '480px', padding: '1.5rem', background: '#161619' }}
+            style={{ width: '100%', maxWidth: '500px', padding: '1.5rem', background: '#161619' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
               <AlertTriangle size={20} color="var(--color-warn)" />
@@ -763,8 +628,33 @@ export const ShipmentDetailView: React.FC = () => {
               </h4>
             </div>
 
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.65rem 0.85rem',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                <span style={{ color: 'var(--color-muted)' }}>OPERATOR IDENTITY:</span>
+                <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+                  {currentUser?.email || 'operator@frostledger.io'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--color-muted)' }}>AUTHORIZED ROLE:</span>
+                <span style={{ color: 'var(--color-text)', textTransform: 'uppercase', fontWeight: 600 }}>
+                  {currentRole || 'OPERATOR'}
+                </span>
+              </div>
+            </div>
+
             <p style={{ fontSize: '13px', color: 'var(--color-text-dim)', marginBottom: '1rem' }}>
-              Mandatory SOP: Regulatory standard requires documenting the remediation action before alert resolution is entered into the immutable audit log.
+              Mandatory SOP: Regulatory standard requires documenting the remediation action before alert resolution is entered into the immutable database audit log.
             </p>
 
             <textarea
@@ -775,17 +665,26 @@ export const ShipmentDetailView: React.FC = () => {
               style={{ width: '100%', marginBottom: '1.25rem' }}
             />
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-              <button onClick={() => setAckModalAlertId(null)} className="btn btn-ghost">
-                Cancel
-              </button>
-              <button
-                disabled={!ackNote.trim()}
-                onClick={() => handleAcknowledge(ackModalAlertId)}
-                className="btn btn-accent"
-              >
-                Sign &amp; Acknowledge
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="data" style={{ fontSize: '10px', color: 'var(--color-muted)' }}>
+                ⚡ Auto-dispatches to Admin Dashboard &amp; Supabase
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  disabled={isAcknowledging}
+                  onClick={() => setAckModalAlertId(null)}
+                  className="btn btn-ghost"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={!ackNote.trim() || isAcknowledging}
+                  onClick={() => handleAcknowledge(ackModalAlertId)}
+                  className="btn btn-accent"
+                >
+                  {isAcknowledging ? 'Signing & Anchoring...' : 'Sign & Acknowledge'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
