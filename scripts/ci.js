@@ -1,7 +1,20 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
+const fs = require('fs');
+
 const rootDir = path.resolve(__dirname, '..');
+
+let pythonTestCmd = 'pytest';
+const venvWin = path.resolve(rootDir, 'ai-service', 'venv', 'Scripts', 'python.exe');
+const venvUnix = path.resolve(rootDir, 'ai-service', 'venv', 'bin', 'python');
+if (fs.existsSync(venvWin)) {
+  pythonTestCmd = `"${venvWin}" -m pytest`;
+} else if (fs.existsSync(venvUnix)) {
+  pythonTestCmd = `"${venvUnix}" -m pytest`;
+} else {
+  pythonTestCmd = 'python -m pytest';
+}
 
 const steps = [
   { name: 'Shared Module (Typecheck & Build)', cmd: 'npm run build --workspace=@frostledger/shared' },
@@ -12,7 +25,7 @@ const steps = [
   { name: 'Contracts (Hardhat Tests)', cmd: 'npm run test --workspace=@frostledger/contracts' },
   { name: 'Simulator (Typecheck & Build)', cmd: 'npm run build --workspace=@frostledger/simulator' },
   { name: 'Simulator (Unit Tests)', cmd: 'npm run test --workspace=@frostledger/simulator' },
-  { name: 'AI Service (Pytest Test Suite)', cmd: 'py -3.13 -m pytest', cwd: path.resolve(rootDir, 'ai-service') },
+  { name: 'AI Service (Pytest Test Suite)', cmd: pythonTestCmd, cwd: path.resolve(rootDir, 'ai-service') },
   { name: 'Frontend (Typecheck & Production Build)', cmd: 'npm run build --workspace=@frostledger/frontend' },
 ];
 

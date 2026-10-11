@@ -72,22 +72,23 @@ class NotificationService:
             return record
 
         # Rule 3: Quiet period (debouncing) check
-        quiet_cutoff = (now - timedelta(minutes=self.quiet_period_minutes)).isoformat()
-        recent_notifs = self.db.get_recent_notifications(shipment_id, quiet_cutoff)
-        sent_in_quiet_period = [n for n in recent_notifs if n["status"] == "sent"]
+        if self.quiet_period_minutes > 0:
+            quiet_cutoff = (now - timedelta(minutes=self.quiet_period_minutes)).isoformat()
+            recent_notifs = self.db.get_recent_notifications(shipment_id, quiet_cutoff)
+            sent_in_quiet_period = [n for n in recent_notifs if n["status"] == "sent"]
 
-        if sent_in_quiet_period:
-            record = {
-                "notification_id": notif_id,
-                "insight_id": insight_id,
-                "shipment_id": shipment_id,
-                "sent_at": now_iso,
-                "status": "suppressed",
-                "reason": f"quiet_period_active ({self.quiet_period_minutes}m debounce)",
-                "label": ADVISORY_LABEL,
-            }
-            self.db.insert_notification(record)
-            return record
+            if sent_in_quiet_period:
+                record = {
+                    "notification_id": notif_id,
+                    "insight_id": insight_id,
+                    "shipment_id": shipment_id,
+                    "sent_at": now_iso,
+                    "status": "suppressed",
+                    "reason": f"quiet_period_active ({self.quiet_period_minutes}m debounce)",
+                    "label": ADVISORY_LABEL,
+                }
+                self.db.insert_notification(record)
+                return record
 
         # Rule 4: Rate limit check (hourly cap)
         hour_cutoff = (now - timedelta(hours=1)).isoformat()
