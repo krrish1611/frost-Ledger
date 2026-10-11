@@ -45,3 +45,8 @@ typechain-types/
 .DS_Store
 Thumbs.db
 
+# Graphify machine-specific cache & environment paths
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/cache/
+
