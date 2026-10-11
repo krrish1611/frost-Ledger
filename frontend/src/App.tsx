@@ -143,6 +143,8 @@ export default function App() {
           {activeTab === 'shipments' && (
             <ShipmentDetailView
               selectedShipmentId={selectedShipment.shipment_id}
+              currentUser={currentUser}
+              currentRole={userRole}
               onSelectShipmentId={(id) => {
                 const s = MOCK_SHIPMENTS.find((x) => x.shipment_id === id);
                 if (s) setSelectedShipment(s);
@@ -178,7 +180,12 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'admin' && <AdminManagementView />}
+          {activeTab === 'admin' && (
+            <AdminManagementView
+              currentUser={currentUser}
+              currentRole={userRole}
+            />
+          )}
         </main>
 
         {/* Global Footer */}

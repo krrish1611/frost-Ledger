@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -25,12 +25,15 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { PolygonScanLink } from './PolygonScanLink';
 import { soundEffects } from '../services/soundEffects';
+import { alertService } from '../services/alertService';
 
 interface ShipmentDetailViewProps {
   selectedShipmentId?: string;
   onSelectShipmentId?: (id: string) => void;
   onOpenSimulator?: (shipmentId: string) => void;
   onOpenVerifier?: (hash: string) => void;
+  currentUser?: { email?: string; id?: string } | null;
+  currentRole?: string;
 }
 
 export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
@@ -38,6 +41,8 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
   onSelectShipmentId,
   onOpenSimulator,
   onOpenVerifier,
+  currentUser,
+  currentRole = 'operator',
 }) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';
@@ -55,8 +60,10 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
   };
 
   const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<Set<string>>(new Set());
+  const [lastAckInfo, setLastAckInfo] = useState<{ by: string; notes: string; hash: string } | null>(null);
   const [ackModalAlertId, setAckModalAlertId] = useState<string | null>(null);
   const [ackNote, setAckNote] = useState('');
+  const [isAcknowledging, setIsAcknowledging] = useState(false);
 
   const shipment = useMemo(() => {
     return (
@@ -69,10 +76,50 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
     return generateTelemetryHistory(shipment);
   }, [shipment]);
 
-  const handleAcknowledge = (alertId: string) => {
-    setAcknowledgedAlerts((prev) => new Set(prev).add(alertId));
-    setAckModalAlertId(null);
-    setAckNote('');
+  // Sync existing database alerts on shipment load
+  useEffect(() => {
+    alertService.fetchAlerts(selectedShipmentId).then((alerts) => {
+      alerts.forEach((a) => {
+        if (a.status === 'ACKNOWLEDGED' || a.status === 'RESOLVED') {
+          setAcknowledgedAlerts((prev) => new Set(prev).add(a.alert_id));
+          if (a.acknowledged_by && a.remediation_notes) {
+            setLastAckInfo({
+              by: a.acknowledged_by,
+              notes: a.remediation_notes,
+              hash: a.signature || '0x9727...sealed',
+            });
+          }
+        }
+      });
+    });
+  }, [selectedShipmentId]);
+
+  const handleAcknowledge = async (alertId: string) => {
+    setIsAcknowledging(true);
+    soundEffects.playClick();
+    try {
+      const actorEmail = currentUser?.email || 'operator@frostledger.io';
+      const result = await alertService.acknowledgeAlert({
+        alertId,
+        shipmentId: shipment.shipment_id,
+        remediationNotes: ackNote,
+        actorEmail,
+        actorRole: currentRole || 'operator',
+        actorId: currentUser?.id,
+      });
+
+      setAcknowledgedAlerts((prev) => new Set(prev).add(alertId));
+      setLastAckInfo({
+        by: actorEmail,
+        notes: ackNote,
+        hash: result.auditHash,
+      });
+      soundEffects.playSuccessChime();
+      setAckModalAlertId(null);
+      setAckNote('');
+    } finally {
+      setIsAcknowledging(false);
+    }
   };
 
   const isTempExcursion =
@@ -414,7 +461,19 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
               </div>
 
               {acknowledgedAlerts.has('alt_excursion_det_094') ? (
-                <span className="badge badge-pass">ACKNOWLEDGED BY OPERATOR</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                  <span className="badge badge-pass">
+                    ACKNOWLEDGED BY {lastAckInfo?.by || currentUser?.email || 'OPERATOR'}
+                  </span>
+                  <span className="data" style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
+                    Dispatched to Admin Dashboard &bull; Supabase audit_logs sealed ✓
+                  </span>
+                  {lastAckInfo?.notes && (
+                    <span style={{ fontSize: '11px', color: 'var(--color-text-dim)', fontStyle: 'italic', maxWidth: '320px', textAlign: 'right' }}>
+                      &ldquo;{lastAckInfo.notes}&rdquo;
+                    </span>
+                  )}
+                </div>
               ) : (
                 <button
                   onClick={() => setAckModalAlertId('alt_excursion_det_094')}
@@ -454,7 +513,7 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
         >
           <div
             className="panel glow-critical"
-            style={{ width: '100%', maxWidth: '480px', padding: '1.5rem', background: '#161619' }}
+            style={{ width: '100%', maxWidth: '500px', padding: '1.5rem', background: '#161619' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
               <AlertTriangle size={20} color="var(--color-warn)" />
@@ -463,8 +522,33 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
               </h4>
             </div>
 
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.65rem 0.85rem',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '11px',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                <span style={{ color: 'var(--color-muted)' }}>OPERATOR IDENTITY:</span>
+                <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+                  {currentUser?.email || 'operator@frostledger.io'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--color-muted)' }}>AUTHORIZED ROLE:</span>
+                <span style={{ color: 'var(--color-text)', textTransform: 'uppercase', fontWeight: 600 }}>
+                  {currentRole || 'OPERATOR'}
+                </span>
+              </div>
+            </div>
+
             <p style={{ fontSize: '13px', color: 'var(--color-text-dim)', marginBottom: '1rem' }}>
-              Mandatory SOP: Regulatory standard requires documenting the remediation action before alert resolution is entered into the immutable audit log.
+              Mandatory SOP: Regulatory standard requires documenting the remediation action before alert resolution is entered into the immutable database audit log.
             </p>
 
             <textarea
@@ -475,17 +559,26 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
               style={{ width: '100%', marginBottom: '1.25rem' }}
             />
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-              <button onClick={() => setAckModalAlertId(null)} className="btn btn-ghost">
-                Cancel
-              </button>
-              <button
-                disabled={!ackNote.trim()}
-                onClick={() => handleAcknowledge(ackModalAlertId)}
-                className="btn btn-accent"
-              >
-                Sign &amp; Acknowledge
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="data" style={{ fontSize: '10px', color: 'var(--color-muted)' }}>
+                ⚡ Auto-dispatches to Admin Dashboard &amp; Supabase
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  disabled={isAcknowledging}
+                  onClick={() => setAckModalAlertId(null)}
+                  className="btn btn-ghost"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={!ackNote.trim() || isAcknowledging}
+                  onClick={() => handleAcknowledge(ackModalAlertId)}
+                  className="btn btn-accent"
+                >
+                  {isAcknowledging ? 'Signing & Anchoring...' : 'Sign & Acknowledge'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

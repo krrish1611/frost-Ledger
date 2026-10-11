@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Shield, Lock, Mail, ArrowRight, UserCheck, KeyRound, Terminal, AlertTriangle, CheckCircle2, Building, User } from 'lucide-react';
+import {
+  X,
+  Shield,
+  Lock,
+  Mail,
+  ArrowRight,
+  AlertTriangle,
+  CheckCircle2,
+  Building,
+  User,
+} from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
   initialMode?: 'login' | 'signup';
+  initialPortal?: 'operator' | 'admin';
   onClose: () => void;
   onSuccess: (role: 'operator' | 'admin' | 'receiver' | 'auditor') => void;
 }
@@ -13,9 +24,11 @@ interface AuthModalProps {
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   initialMode = 'login',
+  initialPortal = 'operator',
   onClose,
   onSuccess,
 }) => {
+  const [portal, setPortal] = useState<'operator' | 'admin'>(initialPortal);
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,9 +41,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   useEffect(() => {
     setMode(initialMode);
+    setPortal(initialPortal);
+    if (initialPortal === 'admin') {
+      setRole('admin');
+    } else {
+      setRole('operator');
+    }
     setErrorMessage(null);
     setInfoMessage(null);
-  }, [initialMode, isOpen]);
+  }, [initialMode, initialPortal, isOpen]);
+
+  const handlePortalSwitch = (target: 'operator' | 'admin') => {
+    setPortal(target);
+    setRole(target === 'admin' ? 'admin' : 'operator');
+    setErrorMessage(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,15 +65,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     try {
       if (mode === 'signup') {
-        // Sign up with user metadata (automatically triggers public.handle_new_user to insert into public.profiles)
+        const assignedRole = portal === 'admin' ? 'admin' : role;
+        // Sign up with user metadata
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             data: {
               full_name: fullName.trim() || email.split('@')[0],
-              company: company.trim() || 'FrostLedger Cold Chain Partner',
-              role,
+              company: company.trim() || (portal === 'admin' ? 'FrostLedger Central Compliance' : 'FrostLedger Cold Chain Partner'),
+              role: assignedRole,
             },
           },
         });
@@ -58,16 +84,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         }
 
         if (data.session) {
-          // Auto-authenticated without email confirmation requirement
           setInfoMessage('Account created and verified! Redirecting to dashboard...');
           setTimeout(() => {
-            onSuccess(role);
+            onSuccess(assignedRole);
             onClose();
           }, 800);
         } else if (data.user) {
-          // If email confirmation is enabled in Supabase
           setInfoMessage(
-            'Account registered! If email confirmation is enabled in your Supabase project, check your inbox. You can also sign in directly if confirm email is turned off.'
+            'Account registered! If email confirmation is enabled in your Supabase project, check your inbox. You can also sign in directly.'
           );
           setMode('login');
         }
@@ -93,7 +117,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           const resolvedRole =
             (profile?.role as 'operator' | 'admin' | 'receiver' | 'auditor') ||
             (data.user.user_metadata?.role as 'operator' | 'admin' | 'receiver' | 'auditor') ||
-            'operator';
+            (portal === 'admin' ? 'admin' : 'operator');
+
+          if (portal === 'admin' && resolvedRole !== 'admin') {
+            // Give clear guidance if operator attempts admin portal
+            setErrorMessage('Access denied: This account does not possess administrator credentials. Please use the Operator Portal.');
+            return;
+          }
 
           onSuccess(resolvedRole);
           onClose();
@@ -107,11 +137,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const handleGuestLogin = () => {
+  const handleQuickDemoLogin = (targetRole: 'operator' | 'admin') => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      onSuccess('operator');
+      onSuccess(targetRole);
       onClose();
     }, 300);
   };
@@ -138,17 +168,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b hairline mb-5">
+            <div className="flex items-center justify-between pb-4 border-b hairline mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded bg-[#18181c] border hairline flex items-center justify-center text-[var(--color-accent)] shadow-[0_0_10px_rgba(125,249,196,0.2)]">
+                <div
+                  className={`w-8 h-8 rounded border hairline flex items-center justify-center ${
+                    portal === 'admin'
+                      ? 'bg-amber-500/15 text-amber-400 border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                      : 'bg-[#18181c] text-[var(--color-accent)] shadow-[0_0_10px_rgba(125,249,196,0.2)]'
+                  }`}
+                >
                   <Shield size={16} />
                 </div>
                 <div>
                   <div className="font-display font-bold text-white text-base">
-                    {mode === 'login' ? 'SUPABASE OPERATOR SIGN IN' : 'NEW OPERATOR REGISTRATION'}
+                    {portal === 'admin' ? 'ADMIN & COMPLIANCE PORTAL' : 'FIELD OPERATOR PORTAL'}
                   </div>
                   <div className="text-[10px] text-[var(--color-muted)]">
-                    FROSTLEDGER SECURE AUTH &bull; SUPABASE POSTGRESQL
+                    {portal === 'admin' ? 'ELEVATED GOVERNANCE & USER MONITORING' : 'COLD CHAIN TELEMETRY & ALERT REMEDIATION'}
                   </div>
                 </div>
               </div>
@@ -161,17 +197,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </button>
             </div>
 
-            {/* Mode Switcher Tabs */}
-            <div className="grid grid-cols-2 gap-1 p-1 bg-[#0a0a0b] rounded border hairline mb-4 text-xs">
+            {/* Portal Switcher (User vs Admin) */}
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#0a0a0b] rounded-lg border hairline mb-4 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => handlePortalSwitch('operator')}
+                className={`py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  portal === 'operator'
+                    ? 'bg-[var(--color-accent)] text-[#0a0a0b] shadow-[0_0_12px_rgba(125,249,196,0.25)]'
+                    : 'text-[var(--color-muted)] hover:text-white'
+                }`}
+              >
+                <User size={13} />
+                <span>Operator / Field</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePortalSwitch('admin')}
+                className={`py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  portal === 'admin'
+                    ? 'bg-amber-400 text-[#0a0a0b] shadow-[0_0_12px_rgba(245,158,11,0.35)]'
+                    : 'text-[var(--color-muted)] hover:text-white'
+                }`}
+              >
+                <Shield size={13} />
+                <span>Admin Governance</span>
+              </button>
+            </div>
+
+            {/* Mode Switcher Tabs (Sign In vs Create Account) */}
+            <div className="grid grid-cols-2 gap-1 p-1 bg-[#0a0a0b]/60 rounded border hairline mb-4 text-xs">
               <button
                 type="button"
                 onClick={() => {
                   setMode('login');
                   setErrorMessage(null);
                 }}
-                className={`py-1.5 rounded text-center font-medium transition-all cursor-pointer ${
+                className={`py-1 rounded text-center font-medium transition-all cursor-pointer ${
                   mode === 'login'
-                    ? 'bg-[var(--color-accent)] text-[#0a0a0b] font-bold shadow-[0_0_12px_rgba(125,249,196,0.3)]'
+                    ? 'bg-[#222228] text-white font-bold'
                     : 'text-[var(--color-muted)] hover:text-white'
                 }`}
               >
@@ -183,13 +247,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setMode('signup');
                   setErrorMessage(null);
                 }}
-                className={`py-1.5 rounded text-center font-medium transition-all cursor-pointer ${
+                className={`py-1 rounded text-center font-medium transition-all cursor-pointer ${
                   mode === 'signup'
-                    ? 'bg-[var(--color-accent)] text-[#0a0a0b] font-bold shadow-[0_0_12px_rgba(125,249,196,0.3)]'
+                    ? 'bg-[#222228] text-white font-bold'
                     : 'text-[var(--color-muted)] hover:text-white'
                 }`}
               >
-                Create Account
+                Register
               </button>
             </div>
 
@@ -215,132 +279,134 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <>
                   <div>
                     <label className="block text-[11px] text-[var(--color-muted)] mb-1">
-                      OPERATOR FULL NAME
+                      FULL NAME
                     </label>
                     <div className="relative">
-                      <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
                       <input
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Dr. Sarah Connor"
-                        className="w-full bg-[#0a0a0b] border hairline rounded pl-9 pr-3 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
+                        placeholder={portal === 'admin' ? 'Dr. Sarah Connor' : 'John Doe'}
+                        className="w-full bg-[#0a0a0b] border hairline rounded px-3 py-2 pl-9 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[var(--color-accent)] transition-colors"
+                        required
                       />
+                      <User size={14} className="absolute left-3 top-2.5 text-[var(--color-muted)]" />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-[11px] text-[var(--color-muted)] mb-1">
-                      LOGISTICS ENTERPRISE / COMPANY
+                      ORGANIZATION / COMPANY
                     </label>
                     <div className="relative">
-                      <Building size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
                       <input
                         type="text"
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
-                        placeholder="BioPharma Global Hub"
-                        className="w-full bg-[#0a0a0b] border hairline rounded pl-9 pr-3 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
+                        placeholder="Pfizer Supply Chain Hub"
+                        className="w-full bg-[#0a0a0b] border hairline rounded px-3 py-2 pl-9 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[var(--color-accent)] transition-colors"
                       />
+                      <Building size={14} className="absolute left-3 top-2.5 text-[var(--color-muted)]" />
                     </div>
                   </div>
+
+                  {portal === 'operator' && (
+                    <div>
+                      <label className="block text-[11px] text-[var(--color-muted)] mb-1">
+                        FIELD ROLE ASSIGNMENT
+                      </label>
+                      <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value as any)}
+                        className="w-full bg-[#0a0a0b] border hairline rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-[var(--color-accent)] transition-colors"
+                      >
+                        <option value="operator">Cold Chain Operator</option>
+                        <option value="receiver">Dock Arrival Receiver</option>
+                        <option value="auditor">Compliance Auditor</option>
+                      </select>
+                    </div>
+                  )}
                 </>
               )}
 
               <div>
                 <label className="block text-[11px] text-[var(--color-muted)] mb-1">
-                  SUPABASE AUTH EMAIL
+                  {portal === 'admin' ? 'ADMINISTRATOR EMAIL' : 'OPERATOR EMAIL'}
                 </label>
                 <div className="relative">
-                  <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    placeholder={portal === 'admin' ? 'admin@frostledger.io' : 'operator@frostledger.io'}
+                    className="w-full bg-[#0a0a0b] border hairline rounded px-3 py-2 pl-9 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[var(--color-accent)] transition-colors"
                     required
-                    className="w-full bg-[#0a0a0b] border hairline rounded pl-9 pr-3 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
-                    placeholder="operator@frostledger.org"
                   />
+                  <Mail size={14} className="absolute left-3 top-2.5 text-[var(--color-muted)]" />
                 </div>
               </div>
 
               <div>
                 <label className="block text-[11px] text-[var(--color-muted)] mb-1">
-                  SECURE PASSWORD
+                  PASSWORD
                 </label>
                 <div className="relative">
-                  <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full bg-[#0a0a0b] border hairline rounded px-3 py-2 pl-9 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[var(--color-accent)] transition-colors"
                     required
                     minLength={6}
-                    className="w-full bg-[#0a0a0b] border hairline rounded pl-9 pr-3 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]"
-                    placeholder="At least 6 characters"
                   />
+                  <Lock size={14} className="absolute left-3 top-2.5 text-[var(--color-muted)]" />
                 </div>
               </div>
-
-              {mode === 'signup' && (
-                <div>
-                  <label className="block text-[11px] text-[var(--color-muted)] mb-1">
-                    ASSIGNED ROLE (SAVED TO PROFILES)
-                  </label>
-                  <div className="relative">
-                    <KeyRound size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)]" />
-                    <select
-                      value={role}
-                      onChange={(e) => setRole(e.target.value as any)}
-                      className="w-full bg-[#0a0a0b] border hairline rounded pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] uppercase cursor-pointer"
-                    >
-                      <option value="operator">Operator (Full IoT & AI Telemetry)</option>
-                      <option value="receiver">Receiver (Arrival Verification)</option>
-                      <option value="auditor">Auditor (ZK & Immutable Logs)</option>
-                      <option value="admin">Admin (System Configuration)</option>
-                    </select>
-                  </div>
-                </div>
-              )}
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-3 py-2.5 rounded bg-[var(--color-accent)] text-[#0a0a0b] font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#6febb5] transition-all shadow-[0_0_16px_rgba(125,249,196,0.35)] cursor-pointer disabled:opacity-60"
+                className={`w-full py-2.5 rounded font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg mt-4 ${
+                  portal === 'admin'
+                    ? 'bg-amber-400 text-[#0a0a0b] hover:bg-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.3)]'
+                    : 'bg-[var(--color-accent)] text-[#0a0a0b] hover:bg-[#6febb5] shadow-[0_0_16px_rgba(125,249,196,0.3)]'
+                }`}
               >
                 {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 border-2 border-[#0a0a0b] border-t-transparent rounded-full animate-spin" />
-                    COMMUNICATING WITH SUPABASE...
-                  </span>
+                  <span>Authenticating with Supabase...</span>
                 ) : (
                   <>
-                    <span>
-                      {mode === 'login'
-                        ? 'AUTHENTICATE & ENTER CONSOLE'
-                        : 'REGISTER & PERSIST IN SUPABASE'}
-                    </span>
+                    <span>{mode === 'login' ? `Sign In as ${portal.toUpperCase()}` : `Register as ${portal.toUpperCase()}`}</span>
                     <ArrowRight size={14} />
                   </>
                 )}
               </button>
             </form>
 
-            {/* Quick 1-Click Guest Bypass */}
-            <div className="mt-4 pt-3.5 border-t hairline text-center">
-              <button
-                type="button"
-                onClick={handleGuestLogin}
-                className="w-full py-2 px-3 rounded border hairline hover:border-[var(--color-accent)]/50 bg-[#0c0c0e] hover:bg-[#141418] text-neutral-300 hover:text-[var(--color-accent)] text-[11px] flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <UserCheck size={13} className="text-[var(--color-accent)]" />
-                <span>Instant 1-Click Guest Demo (Bypass Auth)</span>
-              </button>
-            </div>
-
-            <div className="mt-3.5 text-[10px] text-center text-[var(--color-muted)] flex items-center justify-center gap-1.5">
-              <Terminal size={11} className="text-[var(--color-accent)]" />
-              <span>PROJECT: kdarjiawiiqnfreijqzo &bull; RLS ENABLED</span>
+            {/* Quick Demo 1-Click Access Section */}
+            <div className="mt-5 pt-4 border-t hairline space-y-2">
+              <span className="text-[10px] text-[var(--color-muted)] uppercase tracking-wider block text-center">
+                Fast Evaluator 1-Click Sandbox Access
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoLogin('operator')}
+                  className="py-2 px-2.5 rounded border border-[var(--color-accent)]/30 hover:border-[var(--color-accent)] bg-[var(--color-accent)]/5 hover:bg-[var(--color-accent)]/15 text-[11px] font-mono text-[var(--color-accent)] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <User size={12} />
+                  <span>Demo Operator</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoLogin('admin')}
+                  className="py-2 px-2.5 rounded border border-amber-500/30 hover:border-amber-500 bg-amber-500/5 hover:bg-amber-500/15 text-[11px] font-mono text-amber-300 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Shield size={12} />
+                  <span>Demo Admin</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>

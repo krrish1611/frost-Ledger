@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, ArrowRight, Play, LogIn, UserCheck } from 'lucide-react';
+import { Shield, ArrowRight, LogIn, UserCheck } from 'lucide-react';
 import { ScrollProgress } from './ScrollProgress';
 import { AmbientBackground } from './AmbientBackground';
 import { AsciiReveal } from './AsciiReveal';
@@ -31,9 +31,11 @@ export const LandingView: React.FC<LandingViewProps> = ({
   const isLight = theme === 'light';
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [authPortal, setAuthPortal] = useState<'operator' | 'admin'>('operator');
 
-  const openAuth = (mode: 'login' | 'signup') => {
+  const openAuth = (mode: 'login' | 'signup' = 'login', portal: 'operator' | 'admin' = 'operator') => {
     setAuthMode(mode);
+    setAuthPortal(portal);
     setAuthOpen(true);
   };
 
@@ -134,22 +136,24 @@ export const LandingView: React.FC<LandingViewProps> = ({
               </>
             ) : (
               <>
-                {/* Login Button */}
+                {/* Operator Login Button */}
                 <button
-                  onClick={() => openAuth('login')}
+                  onClick={() => openAuth('login', 'operator')}
                   className="px-3 py-1.5 rounded border hairline hover:border-[var(--color-accent)] text-xs font-mono text-neutral-300 hover:text-white bg-[#111113] hover:bg-[#18181c] transition-all flex items-center gap-1.5 cursor-pointer"
+                  title="Sign in as Cold Chain Operator or Field Receiver"
                 >
                   <LogIn size={13} className="text-[var(--color-accent)]" />
-                  <span>Login</span>
+                  <span>Operator Login</span>
                 </button>
 
-                {/* Sign In / Register Button */}
+                {/* Admin Portal Button */}
                 <button
-                  onClick={() => openAuth('signup')}
-                  className="hidden sm:inline-flex px-3 py-1.5 rounded border border-[var(--color-accent)]/40 hover:border-[var(--color-accent)] text-xs font-mono text-[var(--color-accent)] bg-[var(--color-accent)]/10 hover:bg-[var(--color-accent)]/20 transition-all items-center gap-1.5 cursor-pointer"
+                  onClick={() => openAuth('login', 'admin')}
+                  className="px-3 py-1.5 rounded border border-amber-500/40 hover:border-amber-400 text-xs font-mono text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                  title="Sign in with Administrator Governance Privileges"
                 >
-                  <UserCheck size={13} />
-                  <span>Register</span>
+                  <Shield size={13} className="text-amber-400" />
+                  <span>Admin Portal</span>
                 </button>
               </>
             )}
@@ -223,16 +227,16 @@ export const LandingView: React.FC<LandingViewProps> = ({
                   : 'bg-[var(--color-accent)] text-[#0a0a0b] hover:bg-[#6febb5]'
               }`}
             >
-              <span className={isLight ? '!text-white force-white' : ''}>Launch Live Dashboard</span>
+              <span className={isLight ? '!text-white force-white' : ''}>Launch Operator Console</span>
               <ArrowRight size={16} className={isLight ? '!text-white force-white' : ''} />
             </button>
 
             <button
-              onClick={() => openAuth('login')}
-              className="w-full sm:w-auto px-6 py-3.5 rounded border hairline hover:border-[var(--color-accent)] bg-[#111113]/80 hover:bg-[#18181c] text-white font-mono text-sm flex items-center justify-center gap-2 backdrop-blur transition-all cursor-pointer"
+              onClick={() => openAuth('login', 'admin')}
+              className="w-full sm:w-auto px-6 py-3.5 rounded border border-amber-500/40 hover:border-amber-400 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-mono text-sm flex items-center justify-center gap-2 backdrop-blur transition-all cursor-pointer"
             >
-              <Play size={14} className="text-[var(--color-accent)]" />
-              <span>Instant 1-Click Guest Access</span>
+              <Shield size={15} className="text-amber-400" />
+              <span>Admin Governance Portal</span>
             </button>
           </motion.div>
 
@@ -264,7 +268,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
 
       {/* 9. TERMINAL QUOTE, FINAL CTA & LIVE HEALTH POLLING FOOTER */}
       <FooterQuote
-        onOpenAuth={openAuth}
+        onOpenAuth={(mode) => openAuth(mode, 'operator')}
         onLaunchDashboard={() => onEnterDashboard('operator')}
       />
 
@@ -272,6 +276,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
       <AuthModal
         isOpen={authOpen}
         initialMode={authMode}
+        initialPortal={authPortal}
         onClose={() => setAuthOpen(false)}
         onSuccess={handleAuthSuccess}
       />
