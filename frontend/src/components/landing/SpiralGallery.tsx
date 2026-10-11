@@ -69,7 +69,7 @@ const Pillar1Playable: React.FC = () => {
       }`}>
         <div className="flex justify-between items-center">
           <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">RFC 8785 CANONICAL DIGEST</span>
-          <span className="text-[#033500] dark:text-neutral-300 font-bold">{isTampered ? '0xTAMPERED_BYTE_42' : current.hash}</span>
+          <span className="font-bold" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>{isTampered ? '0xTAMPERED_BYTE_42' : current.hash}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">ED25519 HARDWARE SIG</span>
@@ -165,7 +165,7 @@ const Pillar2Playable: React.FC = () => {
         <div>
           <div className="flex justify-between text-[11px] mb-0.5">
             <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-semibold">TRANSIT EXPOSURE:</span>
-            <span className="text-[#033500] dark:text-white font-bold">{duration} HOURS</span>
+            <span className="font-bold" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>{duration} HOURS</span>
           </div>
           <input
             type="range"
@@ -256,7 +256,7 @@ const Pillar3Playable: React.FC = () => {
     <div className="space-y-2.5 font-mono text-xs select-none">
       <div className="text-[11px] flex justify-between items-center">
         <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-semibold">SELECT BATCH LEAF TO PROVE ON-CHAIN:</span>
-        <span className="text-[#033500] dark:text-[var(--color-pass)] font-bold">POLYGON AMOY #49281</span>
+        <span className="font-bold" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>POLYGON AMOY #49281</span>
       </div>
 
       {/* 4 Leaf Selector */}
@@ -288,7 +288,7 @@ const Pillar3Playable: React.FC = () => {
       }`}>
         <div className="flex justify-between items-center">
           <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">LEAF HASH (BATCH #{selectedBatch + 41}):</span>
-          <span className="text-[#033500] dark:text-white font-bold">{isCorrupted && selectedBatch === 1 ? '0xCORRUPT_LEAF_DATA' : batches[selectedBatch].hash}</span>
+          <span className="font-bold" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>{isCorrupted && selectedBatch === 1 ? '0xCORRUPT_LEAF_DATA' : batches[selectedBatch].hash}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">POLYGON MERKLE ROOT:</span>
@@ -360,7 +360,7 @@ const Pillar4Playable: React.FC = () => {
     <div className="space-y-2.5 font-mono text-xs select-none">
       <div className="flex items-center justify-between text-[11px]">
         <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-semibold">INJECT STREAMING EVENT:</span>
-        <span className="text-[#033500] dark:text-[#9d7bff] font-bold">RIVER ONLINE ML</span>
+        <span className="font-bold" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>RIVER ONLINE ML</span>
       </div>
 
       {/* Event Trigger Buttons */}
@@ -429,7 +429,7 @@ const Pillar4Playable: React.FC = () => {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-[#2d552b] dark:text-[var(--color-muted)] font-medium">EARLY WARNING ADVISORY:</span>
-          <span className="text-[#033500] dark:text-white font-bold">{current.leadTime}</span>
+          <span className="font-bold" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>{current.leadTime}</span>
         </div>
         <div className="p-1.5 rounded text-[11px] font-bold bg-[#9d7bff]/10 border border-[#9d7bff]/30 text-[#4c1d95] dark:text-[#c4b5fd] flex items-center justify-between">
           <span>🛡️ CORE LEDGER UNMUTATED</span>
@@ -624,7 +624,10 @@ export const SpiralGallery: React.FC = () => {
               ARCHITECTURE // 4 CORE PILLARS
             </div>
 
-            <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#033500] dark:text-white leading-tight">
+            <h2
+              className="font-display text-2xl sm:text-3xl font-bold tracking-tight leading-tight"
+              style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}
+            >
               The Four Pillars of FrostLedger
             </h2>
 
@@ -705,7 +708,7 @@ export const SpiralGallery: React.FC = () => {
                   </button>
                 ))}
               </div>
-              <span className="font-mono text-xs font-bold text-[#033500] dark:text-[var(--color-muted)] hidden sm:inline">
+              <span className="font-mono text-xs font-bold hidden sm:inline" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>
                 {CARDS[activeCardIndex].footerRight}
               </span>
             </div>
@@ -735,43 +738,6 @@ export const SpiralGallery: React.FC = () => {
               )}
             </div>
 
-            {/* Quick Navigation Control Strip */}
-            <div className={`w-full max-w-[580px] flex items-center justify-between pt-3 mt-1 border-t text-xs font-mono ${
-              isLight ? 'border-black/10' : 'border-white/[0.08]'
-            }`}>
-              <button
-                onClick={() => handleStepClick(Math.max(0, activeCardIndex - 1))}
-                disabled={activeCardIndex === 0}
-                className={`px-3.5 py-1.5 rounded-lg border font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1.5 ${
-                  isLight
-                    ? 'border-[#a7d3a2] bg-white text-[#033500] hover:border-[#033500] shadow-sm'
-                    : 'border-white/[0.08] bg-[var(--color-panel)] text-[var(--color-muted)] hover:text-white hover:border-white/20'
-                }`}
-              >
-                ← PREV PILLAR
-              </button>
-              <div className="text-xs font-semibold text-[#2d552b] dark:text-[var(--color-muted)]">
-                {activeCardIndex === 3 ? (
-                  <span className="text-[#033500] dark:text-[var(--color-accent)] font-bold">
-                    SHUFFLE COMPLETE · SCROLL DOWN TO CONTINUE ↓
-                  </span>
-                ) : (
-                  'CLICK CARDS OR SCROLL TO SHUFFLE'
-                )}
-              </div>
-              <button
-                onClick={() => handleStepClick(Math.min(CARDS.length - 1, activeCardIndex + 1))}
-                disabled={activeCardIndex === CARDS.length - 1}
-                style={isLight ? { color: '#ffffff' } : undefined}
-                className={`px-4 py-1.5 rounded-lg border font-bold disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1.5 shadow-sm ${
-                  isLight
-                    ? 'border-[#033500] bg-[#033500] !text-white force-white hover:bg-[#044a00]'
-                    : 'border-[var(--color-accent)]/40 bg-[var(--color-panel)] text-[var(--color-accent)] hover:bg-[var(--color-accent)]/15 hover:border-[var(--color-accent)]'
-                }`}
-              >
-                NEXT PILLAR →
-              </button>
-            </div>
 
           </div>
 
@@ -901,7 +867,7 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
       <div>
         {/* Top Tag & Status */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2 font-mono text-[13px] text-[#033500] dark:text-[var(--color-muted)] font-bold">
+          <div className="flex items-center gap-2 font-mono text-[13px] font-bold" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>
             {card.icon}
             <span className="tracking-wider">{card.tag}</span>
           </div>
@@ -920,7 +886,7 @@ const StackedCard: React.FC<StackedCardProps> = ({ card, index, activeFloat, isA
         {/* Inner Content - Faded out while card is waiting in stack, blooms in as it reaches front */}
         <motion.div style={{ opacity: contentOpacity }}>
           {/* Title */}
-          <h3 className="card-title text-2xl sm:text-[25px] text-[#033500] dark:text-white font-extrabold mb-1.5 leading-snug tracking-tight">
+          <h3 className="card-title text-2xl sm:text-[25px] font-extrabold mb-1.5 leading-snug tracking-tight" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>
             {card.title}
           </h3>
 
@@ -1034,7 +1000,7 @@ const StaticCard: React.FC<{ card: ModuleCard }> = ({ card }) => {
     >
       <div>
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2 font-mono text-[13px] text-[#033500] dark:text-[var(--color-muted)] font-bold">
+          <div className="flex items-center gap-2 font-mono text-[13px] font-bold" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>
             {card.icon}
             <span className="tracking-wider">{card.tag}</span>
           </div>
@@ -1050,7 +1016,7 @@ const StaticCard: React.FC<{ card: ModuleCard }> = ({ card }) => {
           </span>
         </div>
 
-        <h3 className="card-title text-2xl sm:text-[25px] text-[#033500] dark:text-white font-extrabold mb-1.5 leading-snug tracking-tight">
+        <h3 className="card-title text-2xl sm:text-[25px] font-extrabold mb-1.5 leading-snug tracking-tight" style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}>
           {card.title}
         </h3>
 

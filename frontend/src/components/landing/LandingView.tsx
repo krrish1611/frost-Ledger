@@ -65,16 +65,25 @@ export const LandingView: React.FC<LandingViewProps> = ({
           
           {/* Logo & Brand Identity */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded border hairline bg-[var(--color-panel-elevated)] dark:bg-[#131316] flex items-center justify-center text-[#033500] dark:text-[var(--color-accent)] dot-matrix shadow-[0_0_12px_rgba(3,53,0,0.2)] dark:shadow-[0_0_12px_rgba(125,249,196,0.2)]">
+            <div
+              className="w-8 h-8 rounded border hairline bg-[var(--color-panel-elevated)] dark:bg-[#131316] flex items-center justify-center dot-matrix shadow-[0_0_12px_rgba(3,53,0,0.2)] dark:shadow-[0_0_12px_rgba(125,249,196,0.2)]"
+              style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}
+            >
               <Shield size={17} />
             </div>
-            <div>
-              <div className="font-display font-extrabold text-base tracking-tight text-[#033500] dark:text-white flex items-center gap-2">
+            <div className="flex items-center">
+              <div
+                className="font-display font-black text-base tracking-tight flex items-center gap-2"
+                style={{ color: isLight ? '#033500' : 'var(--color-accent)' }}
+              >
                 <span>FROSTLEDGER</span>
-                <span className="w-2 h-2 rounded-full bg-[#033500] dark:bg-[var(--color-accent)] shadow-[0_0_8px_#033500] animate-pulse" />
-              </div>
-              <div className="font-mono text-[9px] text-[var(--color-muted)] tracking-wider uppercase hidden sm:block">
-                POLYGON AMOY &bull; COLD CHAIN INTEGRITY &bull; ED25519
+                <span
+                  className="w-2 h-2 rounded-full animate-pulse"
+                  style={{
+                    backgroundColor: isLight ? '#033500' : 'var(--color-accent)',
+                    boxShadow: isLight ? '0 0 8px #033500' : '0 0 8px var(--color-accent)',
+                  }}
+                />
               </div>
             </div>
           </div>

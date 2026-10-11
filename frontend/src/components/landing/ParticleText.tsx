@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
+import { useTheme } from '../../context/ThemeContext';
 
 interface Particle {
   x: number;
@@ -20,6 +21,8 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
   text = 'FROSTLEDGER',
   className = '',
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
@@ -196,7 +199,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({
   if (isMobile || shouldReduceMotion) {
     return (
       <div className={`text-center py-2 select-none ${className}`}>
-        <h1 className="font-display font-extrabold tracking-tight text-5xl sm:text-7xl md:text-8xl text-[#033500] dark:text-white drop-shadow-[0_2px_12px_rgba(3,53,0,0.22)] dark:drop-shadow-[0_0_35px_rgba(125,249,196,0.35)]">
+        <h1 className={`font-display font-extrabold tracking-tight text-5xl sm:text-7xl md:text-8xl drop-shadow-[0_2px_12px_rgba(3,53,0,0.22)] dark:drop-shadow-[0_0_35px_rgba(125,249,196,0.35)] ${isLight ? 'text-[#033500]' : 'text-[var(--color-accent)]'}`}>
           {text}
         </h1>
       </div>

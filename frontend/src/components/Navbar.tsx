@@ -81,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 fontSize: '1.1rem',
                 fontWeight: 800,
                 letterSpacing: '-0.02em',
-                color: isLight ? '#033500' : 'var(--color-text)',
+                color: isLight ? '#033500' : 'var(--color-accent)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.4rem',
