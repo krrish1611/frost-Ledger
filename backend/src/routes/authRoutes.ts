@@ -14,7 +14,10 @@ import { authenticateJwt, AuthenticatedRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'frostledger_default_development_secret_32_chars';
+
+function getJwtSecret(): string {
+  return process.env.JWT_SECRET || 'frostledger_default_development_secret_32_chars';
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 router.post(
@@ -81,7 +84,7 @@ router.post(
         email: user.email,
         role: user.role,
       },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: JWT_EXPIRES_IN as any }
     );
 

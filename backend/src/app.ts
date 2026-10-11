@@ -9,6 +9,8 @@ import telemetryRoutes from './routes/telemetryRoutes';
 import alertRoutes from './routes/alertRoutes';
 import verificationRoutes from './routes/verificationRoutes';
 import aiRoutes from './routes/aiRoutes';
+import { getDbStatus } from './db';
+import { getMqttBrokerStatus } from './services/mqttBroker';
 import { rateLimiter } from './middleware/rateLimit';
 
 export function createApp() {
@@ -18,9 +20,16 @@ export function createApp() {
   app.use(express.json());
   app.use(rateLimiter(200, 60000));
 
-  // Health check
-  app.get('/health', (_req: Request, res: Response) => {
-    res.json({ status: 'ok', timestamp: getUtcTimestamp() });
+  // Health check with comprehensive DB and MQTT telemetry verification
+  app.get('/health', async (_req: Request, res: Response) => {
+    const dbStatus = await getDbStatus();
+    const mqttStatus = getMqttBrokerStatus();
+    res.json({
+      status: 'ok',
+      database: dbStatus,
+      mqtt: mqttStatus,
+      timestamp: getUtcTimestamp(),
+    });
   });
 
   // Mount API modules

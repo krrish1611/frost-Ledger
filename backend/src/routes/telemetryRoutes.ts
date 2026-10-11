@@ -4,267 +4,141 @@ import { getDbClient } from '../db';
 import {
   TelemetrySubmissionSchema,
   EventSubmissionSchema,
-  computeBatchHash,
-  verifyEd25519Signature,
-  getUtcTimestamp,
   createErrorResponse,
-  GENESIS_PREV_HASH,
 } from '@frostledger/shared';
 import { validateBody } from '../middleware/validate';
 import { authenticateWebhook } from '../middleware/webhookAuth';
 import { asyncHandler } from '../middleware/asyncHandler';
-import { createSecurityAlert } from '../services/alertService';
-import { enqueueBatchProcessing } from '../services/queueService';
+import { ingestTelemetryBatch, TelemetryIngestError } from '../services/telemetryService';
 
 const router = Router();
 
 /**
  * POST /telemetry
- * Ingests signed batches forwarded by MQTT broker webhook.
- * Enforces:
- *  - Device existence and active status
- *  - Idempotent deduplication (same batch again succeeds)
- *  - Canonical hash integrity
- *  - Ed25519 digital signature
- *  - Sequence continuity (exactly last + 1)
- *  - Hash-chain integrity (prev_hash matches previous batch)
- *  - Creates security alerts on any tampering/forgery/gap
- *  - Enqueues background worker job on success
+ * Ingests signed batches forwarded by MQTT broker webhook or HTTP clients.
  */
 router.post(
   '/telemetry',
   authenticateWebhook,
   validateBody(TelemetrySubmissionSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    const { batch_id, shipment_id, device_id, sequence_no, prev_hash, hash, signature, payload } = req.body;
-    const db = await getDbClient();
-
-    // 1. Verify device exists and is not revoked
-    const deviceRes = await db.query(
-      'SELECT device_id, public_key, status FROM devices WHERE device_id = $1',
-      [device_id]
-    );
-
-    if (deviceRes.rowCount === 0) {
-      await createSecurityAlert(
-        shipment_id,
-        'unknown_device',
-        'critical',
-        `Telemetry received for unregistered device: ${device_id}`
-      );
-      return res
-        .status(400)
-        .json(createErrorResponse('UNKNOWN_DEVICE', `Device '${device_id}' does not exist`));
-    }
-
-    const device = deviceRes.rows[0];
-    if (device.status === 'revoked') {
-      await createSecurityAlert(
-        shipment_id,
-        'revoked_device',
-        'critical',
-        `Telemetry received from revoked device: ${device_id}`
-      );
-      return res
-        .status(403)
-        .json(createErrorResponse('DEVICE_REVOKED', `Device '${device_id}' has been revoked`));
-    }
-
-    // 2. Check Idempotency First: (device_id, sequence_no)
-    const existingBatchRes = await db.query(
-      'SELECT batch_id, hash, signature FROM batches WHERE device_id = $1 AND sequence_no = $2',
-      [device_id, sequence_no]
-    );
-
-    if (existingBatchRes.rowCount > 0) {
-      const existingBatch = existingBatchRes.rows[0];
-      if (existingBatch.hash === hash) {
-        // Same batch delivered again: store once and return success (idempotent)
+    try {
+      const result = await ingestTelemetryBatch(req.body);
+      if (result.status === 'duplicate') {
         return res.status(200).json({
           message: 'Duplicate batch ignored without error (idempotent)',
-          batch_id: existingBatch.batch_id,
-          sequence_no,
+          batch_id: result.batch_id,
+          sequence_no: result.sequence_no,
           status: 'duplicate',
         });
-      } else {
-        // Same sequence number with conflicting hash: replay tampering
-        await createSecurityAlert(
-          shipment_id,
-          'replay_conflict',
-          'critical',
-          `Sequence ${sequence_no} already exists with different hash`
-        );
-        return res
-          .status(400)
-          .json(
-            createErrorResponse(
-              'SEQUENCE_CONFLICT',
-              `Sequence ${sequence_no} already exists with differing payload hash`
-            )
-          );
+      }
+
+      return res.status(201).json({
+        message: 'Batch accepted and stored successfully',
+        batch_id: result.batch_id,
+        sequence_no: result.sequence_no,
+        status: 'accepted',
+        received_at: result.received_at,
+      });
+    } catch (err: any) {
+      if (err instanceof TelemetryIngestError) {
+        return res.status(err.status).json(createErrorResponse(err.code, err.message));
+      }
+      throw err;
+    }
+  })
+);
+
+/**
+ * GET /telemetry/live/:shipmentId
+ * Returns chronological sensor readings and batch trail directly from PostgreSQL DB.
+ */
+router.get(
+  '/telemetry/live/:shipmentId',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { shipmentId } = req.params;
+    const db = await getDbClient();
+
+    const batchesRes = await db.query(
+      `SELECT batch_id, sequence_no, prev_hash, hash, signature, payload, received_at
+       FROM batches
+       WHERE shipment_id = $1
+       ORDER BY sequence_no ASC`,
+      [shipmentId]
+    );
+
+    const readings: any[] = [];
+    for (const b of batchesRes.rows) {
+      const p = typeof b.payload === 'string' ? JSON.parse(b.payload) : b.payload;
+      if (p.readings) {
+        for (const r of p.readings) {
+          readings.push({
+            sequence_no: Number(b.sequence_no),
+            batch_id: b.batch_id,
+            timestamp: r.timestamp ? r.timestamp.substring(11, 19) : '00:00:00',
+            full_timestamp: r.timestamp,
+            temperature: Number(r.temperature),
+            humidity: Number(r.humidity),
+            shock: r.shock_events && r.shock_events.length > 0 ? Number(r.shock_events[0].magnitude_g) : 0,
+            speed: r.gps?.speed || 45.0,
+            hash: b.hash,
+            signature: b.signature,
+            received_at: b.received_at,
+          });
+        }
       }
     }
 
-    // 3. Verify Canonical Hash Integrity
-    const expectedHash = computeBatchHash({
-      device_id,
-      shipment_id,
-      sequence_no,
-      prev_hash,
-      payload,
+    return res.json({
+      shipment_id: shipmentId,
+      batch_count: batchesRes.rowCount,
+      readings,
     });
+  })
+);
 
-    if (hash !== expectedHash) {
-      await createSecurityAlert(
-        shipment_id,
-        'hash_mismatch',
-        'critical',
-        `Batch hash ${hash} does not match expected canonical hash ${expectedHash}`
-      );
-      return res
-        .status(400)
-        .json(createErrorResponse('HASH_MISMATCH', 'Batch hash does not match computed canonical hash'));
-    }
+/**
+ * GET /telemetry/resume/:deviceId
+ * Returns the latest recorded batch for a device to allow seamless auto-resumption
+ * without sequence number collisions or broken hash chains.
+ */
+router.get(
+  ['/telemetry/resume/:deviceId', '/telemetry/device/:deviceId/last'],
+  asyncHandler(async (req: Request, res: Response) => {
+    const { deviceId } = req.params;
+    const db = await getDbClient();
 
-    // 4. Verify Digital Signature
-    const isSignatureValid = verifyEd25519Signature(hash, signature, device.public_key);
-    if (!isSignatureValid) {
-      await createSecurityAlert(
-        shipment_id,
-        'bad_signature',
-        'critical',
-        `Cryptographic signature verification failed for device ${device_id} on seq ${sequence_no}`
-      );
-      return res
-        .status(400)
-        .json(createErrorResponse('INVALID_SIGNATURE', 'Ed25519 cryptographic signature verification failed'));
-    }
-
-    // 5. Verify Sequence Continuity and Hash Chain
     const lastBatchRes = await db.query(
-      'SELECT sequence_no, hash FROM batches WHERE device_id = $1 ORDER BY sequence_no DESC LIMIT 1',
-      [device_id]
+      `SELECT batch_id, shipment_id, device_id, sequence_no, hash, received_at
+       FROM batches
+       WHERE device_id = $1
+       ORDER BY sequence_no DESC
+       LIMIT 1`,
+      [deviceId]
     );
+
+    const GENESIS_HASH = '0000000000000000000000000000000000000000000000000000000000000000';
 
     if (lastBatchRes.rowCount === 0) {
-      // First batch for this device: sequence must be 1, prev_hash must be genesis
-      if (sequence_no !== 1) {
-        await createSecurityAlert(
-          shipment_id,
-          'sequence_gap',
-          'critical',
-          `Initial batch sequence expected 1, received ${sequence_no}`
-        );
-        return res
-          .status(400)
-          .json(createErrorResponse('SEQUENCE_GAP', `Expected initial sequence 1, received ${sequence_no}`));
-      }
-
-      if (prev_hash !== GENESIS_PREV_HASH) {
-        await createSecurityAlert(
-          shipment_id,
-          'bad_prev_hash',
-          'critical',
-          `Genesis prev_hash expected ${GENESIS_PREV_HASH}, received ${prev_hash}`
-        );
-        return res
-          .status(400)
-          .json(createErrorResponse('BAD_PREV_HASH', 'Invalid genesis previous hash'));
-      }
-    } else {
-      const lastSeq = Number(lastBatchRes.rows[0].sequence_no);
-      const lastHash = lastBatchRes.rows[0].hash;
-
-      if (sequence_no <= lastSeq) {
-        // Replay attack with older sequence
-        await createSecurityAlert(
-          shipment_id,
-          'replay_attack',
-          'critical',
-          `Replay detected: received seq ${sequence_no} <= last recorded seq ${lastSeq}`
-        );
-        return res
-          .status(400)
-          .json(
-            createErrorResponse(
-              'REPLAY_DETECTED',
-              `Replay detected: sequence ${sequence_no} is less than or equal to last recorded sequence ${lastSeq}`
-            )
-          );
-      }
-
-      if (sequence_no > lastSeq + 1) {
-        // Sequence gap detected
-        await createSecurityAlert(
-          shipment_id,
-          'sequence_gap',
-          'critical',
-          `Sequence gap detected: expected ${lastSeq + 1}, received ${sequence_no}`
-        );
-        return res
-          .status(400)
-          .json(
-            createErrorResponse(
-              'SEQUENCE_GAP',
-              `Sequence gap detected: expected ${lastSeq + 1}, received ${sequence_no}`
-            )
-          );
-      }
-
-      if (prev_hash !== lastHash) {
-        // Hash chain broken
-        await createSecurityAlert(
-          shipment_id,
-          'hash_chain_broken',
-          'critical',
-          `Hash chain broken: prev_hash ${prev_hash} does not match previous batch hash ${lastHash}`
-        );
-        return res
-          .status(400)
-          .json(
-            createErrorResponse(
-              'HASH_CHAIN_BROKEN',
-              `Previous hash ${prev_hash} does not match recorded previous batch hash ${lastHash}`
-            )
-          );
-      }
+      return res.json({
+        device_id: deviceId,
+        last_sequence_no: 0,
+        next_sequence_no: 1,
+        last_hash: GENESIS_HASH,
+        has_history: false,
+      });
     }
 
-    // 6. Store Batch
-    const finalBatchId = batch_id || `batch-${crypto.randomUUID()}`;
-    const receivedAt = getUtcTimestamp();
-
-    await db.query(
-      `INSERT INTO batches (
-        batch_id, shipment_id, device_id, sequence_no, prev_hash, hash, signature, payload, received_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [
-        finalBatchId,
-        shipment_id,
-        device_id,
-        sequence_no,
-        prev_hash,
-        hash,
-        signature,
-        JSON.stringify(payload),
-        receivedAt,
-      ]
-    );
-
-    // 7. Enqueue Job for the background worker
-    await enqueueBatchProcessing({
-      batch_id: finalBatchId,
-      shipment_id,
-      device_id,
-      sequence_no,
-    });
-
-    return res.status(201).json({
-      message: 'Batch accepted and stored successfully',
-      batch_id: finalBatchId,
-      sequence_no,
-      status: 'accepted',
-      received_at: receivedAt,
+    const last = lastBatchRes.rows[0];
+    return res.json({
+      device_id: deviceId,
+      shipment_id: last.shipment_id,
+      batch_id: last.batch_id,
+      last_sequence_no: Number(last.sequence_no),
+      next_sequence_no: Number(last.sequence_no) + 1,
+      last_hash: last.hash,
+      received_at: last.received_at,
+      has_history: true,
     });
   })
 );
