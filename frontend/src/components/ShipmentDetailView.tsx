@@ -17,23 +17,10 @@ import {
   AlertTriangle,
   ShieldAlert,
   Flame,
-  Cpu,
-  Usb,
-  Wifi,
-  Send,
-  RefreshCw,
 } from 'lucide-react';
 import {
   MOCK_SHIPMENTS,
-  ShipmentSummary,
-  TelemetryReading,
-  LiveAlertRecord,
   generateTelemetryHistory,
-  fetchDashboardState,
-  fetchEsp32StatusApi,
-  ingestEsp32PacketApi,
-  acknowledgeAlertApi,
-  API_BASE,
 } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { PolygonScanLink } from './PolygonScanLink';
@@ -78,60 +65,16 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
   const [ackNote, setAckNote] = useState('');
   const [isAcknowledging, setIsAcknowledging] = useState(false);
 
-  // ESP-32 Hardware & Web Serial State
-  const [esp32Status, setEsp32Status] = useState<{
-    host_com_ports: string[];
-    hardware_usb_detected: boolean;
-    active_esp32_streams: number;
-    heartbeats: Record<string, any>;
-  } | null>(null);
-  const [usbSerialConnected, setUsbSerialConnected] = useState<boolean>(false);
-  const [usbSerialLog, setUsbSerialLog] = useState<string>('');
-  const [simTemp, setSimTemp] = useState<number>(4.4);
-  const [simHumidity, setSimHumidity] = useState<number>(49.0);
-  const [isSendingPacket, setIsSendingPacket] = useState<boolean>(false);
-  const [lastIngestResult, setLastIngestResult] = useState<string | null>(null);
-  const serialPortRef = useRef<any>(null);
-
-  const refreshLiveState = useCallback(async () => {
-    const [dash, esp] = await Promise.all([
-      fetchDashboardState(),
-      fetchEsp32StatusApi(),
-    ]);
-    if (dash && dash.shipments && dash.shipments.length > 0) {
-      setBackendConnected(true);
-      setShipments(dash.shipments);
-      setTelemetryByShipment(dash.telemetryByShipment || {});
-      setAlertsByShipment(dash.alertsByShipment || {});
-    } else {
-      setBackendConnected(false);
-    }
-    if (esp) {
-      setEsp32Status(esp);
-    }
-  }, []);
-
-  useEffect(() => {
-    refreshLiveState();
-    const timer = setInterval(refreshLiveState, 3000);
-    return () => clearInterval(timer);
-  }, [refreshLiveState]);
-
   const shipment = useMemo(() => {
     return (
-      shipments.find((s) => s.shipment_id === selectedShipmentId) ||
-      shipments[0] ||
+      MOCK_SHIPMENTS.find((s) => s.shipment_id === selectedShipmentId) ||
       MOCK_SHIPMENTS[0]
     );
-  }, [shipments, selectedShipmentId]);
+  }, [selectedShipmentId]);
 
   const telemetryData = useMemo(() => {
-    const liveSeries = telemetryByShipment[shipment.shipment_id];
-    if (liveSeries && liveSeries.length > 0) {
-      return liveSeries;
-    }
     return generateTelemetryHistory(shipment);
-  }, [telemetryByShipment, shipment]);
+  }, [shipment]);
 
   // Sync existing database alerts on shipment load
   useEffect(() => {
@@ -197,12 +140,12 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
           gap: '1rem',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ fontSize: '12px', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)' }}>
             ACTIVE SHIPMENT:
           </span>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {shipments.map((s) => {
+            {MOCK_SHIPMENTS.map((s) => {
               const active = s.shipment_id === selectedShipmentId;
               return (
                 <button
@@ -415,11 +358,11 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
               Live Telemetry Stream &amp; Environmental Ingestion
             </h3>
             <p style={{ fontSize: '12px', color: 'var(--color-muted)', marginTop: '0.2rem' }}>
-              Canonical sensor readings authenticated with Ed25519 signatures ({telemetryData.length} batches recorded).
+              Canonical sensor readings authenticated with Ed25519 signatures.
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <span className="badge badge-pass">SAMPLING: LIVE STREAM</span>
+            <span className="badge badge-pass">SAMPLING: 10s PINGS</span>
             <span className="badge badge-warn">HUMIDITY: ACTIVE</span>
           </div>
         </div>
@@ -489,56 +432,7 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
           <span className="badge badge-critical">OFFICIAL RECORD &bull; DETERMINISTIC ONLY</span>
         </div>
 
-        {liveAlerts.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {liveAlerts.slice(0, 5).map((al) => {
-              const isAcked = Boolean(al.acknowledged_by) || acknowledgedAlerts.has(al.alert_id);
-              return (
-                <div
-                  key={al.alert_id}
-                  style={{
-                    backgroundColor: 'rgba(224, 87, 76, 0.08)',
-                    border: '1px solid rgba(224, 87, 76, 0.3)',
-                    padding: '1rem',
-                    borderRadius: 'var(--radius-sm)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '0.75rem',
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span className="badge badge-critical">{al.severity.toUpperCase()}</span>
-                      <span style={{ fontWeight: 600, fontSize: '13px' }}>{al.type.toUpperCase()}</span>
-                      <span className="data" style={{ color: 'var(--color-muted)' }}>
-                        Alert ID: {al.alert_id}
-                      </span>
-                    </div>
-                    <p style={{ fontSize: '13px', color: 'var(--color-text-dim)', marginTop: '0.35rem' }}>
-                      {al.note || 'Deterministic threshold violation recorded.'}
-                    </p>
-                  </div>
-
-                  {isAcked ? (
-                    <span className="badge badge-pass">
-                      ACKNOWLEDGED BY {(al.acknowledged_by || 'OPERATOR').toUpperCase()}
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => setAckModalAlertId(al.alert_id)}
-                      className="btn btn-danger"
-                      style={{ fontSize: '12px' }}
-                    >
-                      Acknowledge Alert
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : shipment.status === 'flagged' ? (
+        {shipment.status === 'flagged' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div
               style={{
@@ -562,7 +456,7 @@ export const ShipmentDetailView: React.FC<ShipmentDetailViewProps> = ({
                   </span>
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--color-text-dim)', marginTop: '0.35rem' }}>
-                  Temperature rose to {shipment.current_temp.toFixed(2)}°C, breaching profile maximum threshold ({shipment.temp_max_c.toFixed(2)}°C).
+                  Temperature rose to 14.20°C, breaching profile maximum threshold (4.00°C) by +10.20°C.
                 </p>
               </div>
 

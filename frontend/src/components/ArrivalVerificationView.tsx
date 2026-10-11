@@ -105,29 +105,7 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
   const [thresholdTestResult, setThresholdTestResult] = useState<boolean | null>(null);
   const [isTestingThreshold, setIsTestingThreshold] = useState(false);
 
-  const shipment = shipments.find((s) => s.shipment_id === selectedId) || shipments[0] || MOCK_SHIPMENTS[0];
-
-  const runLiveVerification = useCallback(async (sid: string) => {
-    setIsVerifying(true);
-    try {
-      const [dash, rep] = await Promise.all([
-        fetchDashboardState(),
-        verifyShipmentArrivalApi(sid),
-      ]);
-      if (dash?.shipments?.length) {
-        setShipments(dash.shipments);
-      }
-      if (rep) {
-        setLiveReport(rep);
-      }
-    } finally {
-      setIsVerifying(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    runLiveVerification(selectedId);
-  }, [selectedId, runLiveVerification]);
+  const shipment = MOCK_SHIPMENTS.find((s) => s.shipment_id === selectedId) || MOCK_SHIPMENTS[0];
 
   // Live Query Smart Contract
   const handleQueryContractLive = useCallback(async () => {
@@ -418,7 +396,7 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
             }}
             style={{ padding: '0.45rem 0.75rem', fontFamily: 'var(--font-mono)' }}
           >
-            {shipments.map((s) => (
+            {MOCK_SHIPMENTS.map((s) => (
               <option key={s.shipment_id} value={s.shipment_id}>
                 {s.shipment_id} ({s.profile_name})
               </option>
@@ -1089,13 +1067,10 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
                 Canonical Payload Hash
               </td>
               <td>RFC-8785 JSON canonicalization + SHA-256</td>
-              <td className="data">
-                {latestBatchDetail?.recomputed_hash ||
-                  'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}
-              </td>
+              <td className="data">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</td>
               <td>
-                <span className={`badge ${!isTamperSimulated && (liveReport ? liveReport.checks.hash_integrity.pass : true) ? 'badge-pass' : 'badge-critical'}`}>
-                  {!isTamperSimulated && (liveReport ? liveReport.checks.hash_integrity.pass : true) ? 'MATCHED' : 'HASH MISMATCH'}
+                <span className={`badge ${!isTamperSimulated ? 'badge-pass' : 'badge-critical'}`}>
+                  {!isTamperSimulated ? 'MATCHED' : 'HASH MISMATCH'}
                 </span>
               </td>
             </tr>
@@ -1106,12 +1081,10 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
                 Ed25519 Hardware Signature
               </td>
               <td>Curve25519 onboard crypto key verification</td>
-              <td className="data">
-                device: {liveReport?.device_id || shipment.device_id} ({totalBatches} signed batches)
-              </td>
+              <td className="data">pub: a7f8e329... signature: 8f2b3149...</td>
               <td>
-                <span className={`badge ${!isTamperSimulated && (liveReport ? liveReport.checks.signature_authenticity.pass : true) ? 'badge-pass' : 'badge-critical'}`}>
-                  {!isTamperSimulated && (liveReport ? liveReport.checks.signature_authenticity.pass : true) ? 'VALID SIGNATURE' : 'FORGERY REJECTED'}
+                <span className={`badge ${!isTamperSimulated ? 'badge-pass' : 'badge-critical'}`}>
+                  {!isTamperSimulated ? 'VALID SIGNATURE' : 'FORGERY REJECTED'}
                 </span>
               </td>
             </tr>
@@ -1122,12 +1095,10 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
                 Sequential Hash Chain
               </td>
               <td>prev_hash pointer verification across all batches</td>
-              <td className="data">
-                Continuity verified [1..{totalBatches}] with zero sequence gaps
-              </td>
+              <td className="data">Continuity verified [1..40] with zero sequence gaps</td>
               <td>
-                <span className={`badge ${!isTamperSimulated && (liveReport ? liveReport.checks.hash_chain_continuity.pass : true) ? 'badge-pass' : 'badge-critical'}`}>
-                  {!isTamperSimulated && (liveReport ? liveReport.checks.hash_chain_continuity.pass : true) ? 'CONTINUOUS' : 'BROKEN CHAIN'}
+                <span className={`badge ${!isTamperSimulated ? 'badge-pass' : 'badge-critical'}`}>
+                  {!isTamperSimulated ? 'CONTINUOUS' : 'BROKEN CHAIN'}
                 </span>
               </td>
             </tr>

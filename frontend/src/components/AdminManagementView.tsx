@@ -6,9 +6,6 @@ import {
   MOCK_DEVICES,
   MOCK_PROFILES,
   MOCK_AUDIT_LOGS,
-  fetchDashboardState,
-  revokeDeviceKeyApi,
-  createProfileApi,
 } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { PolygonScanLink } from './PolygonScanLink';
@@ -127,10 +124,9 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({
     };
     setAuditLogs((prev) => [newLog, ...prev]);
     setRevokeTarget(null);
-    await loadAdminState();
   };
 
-  const handleCreateProfile = async (e: React.FormEvent) => {
+  const handleCreateProfile = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProfileName) return;
 
@@ -146,8 +142,10 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({
       temp_max_c: newProfileMax,
       max_excursion_seconds: newProfileMaxExcursion,
       mkt_activation_energy_kj: newProfileEa,
-      actor: 'admin@coldchain.test',
-    });
+      version: 1,
+      profile_hash: mockHash,
+      created_at: new Date().toISOString(),
+    };
 
     setProfiles((prev) => [...prev, newProf]);
 
