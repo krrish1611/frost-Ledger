@@ -200,6 +200,7 @@ export default function App() {
             <AiRiskIntelligenceView
               currentShipment={selectedShipment}
               onSelectShipment={(s: ShipmentSummary) => setSelectedShipment(s)}
+              shipmentsList={shipmentsList}
             />
           )}
 

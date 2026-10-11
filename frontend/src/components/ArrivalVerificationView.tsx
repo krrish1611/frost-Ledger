@@ -44,6 +44,7 @@ import {
   LiveContractAuditResult,
   POLYGON_AMOY_CHAIN_ID,
   DEFAULT_CONTRACT_ADDRESS,
+  POLYGON_AMOY_RPC_URL,
 } from '../lib/contracts';
 import { ethers } from 'ethers';
 import { PalletQrScannerModal } from './PalletQrScannerModal';
@@ -157,7 +158,7 @@ export const ArrivalVerificationView: React.FC<ArrivalVerificationViewProps> = (
       let runner: ethers.ContractRunner | null = signer || provider;
       if (!runner) {
         // Fallback read-only provider for Polygon Amoy
-        runner = new ethers.JsonRpcProvider('https://rpc-amoy.polygon.technology');
+        runner = new ethers.JsonRpcProvider(POLYGON_AMOY_RPC_URL);
       }
 
       const result = await queryColdChainContract(

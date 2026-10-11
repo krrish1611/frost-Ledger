@@ -1,59 +1,149 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import {
   ShipmentSummary,
   AiInsightItem,
+  EvaluationBenchmark,
+  GeminiDiagnostic,
   MOCK_SHIPMENTS,
   MOCK_AI_INSIGHTS,
   MOCK_EVALUATION_BENCHMARKS,
+  fetchLiveAiInsights,
+  fetchLiveAiRisk,
+  fetchLiveAiEvaluations,
+  fetchLiveAiDiagnosis,
 } from '../services/api';
 
 interface AiRiskIntelligenceViewProps {
   currentShipment: ShipmentSummary;
   onSelectShipment: (s: ShipmentSummary) => void;
+  shipmentsList?: ShipmentSummary[];
 }
 
 export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
   currentShipment,
   onSelectShipment,
+  shipmentsList,
 }) => {
   const { theme } = useTheme();
   const isLight = theme === 'light';
   const [selectedShipmentId, setSelectedShipmentId] = useState<string>(currentShipment.shipment_id);
+  const [liveInsights, setLiveInsights] = useState<AiInsightItem[]>([]);
+  const [liveRiskData, setLiveRiskData] = useState<any>(null);
+  const [isLiveFromBackend, setIsLiveFromBackend] = useState<boolean>(false);
+  const [evaluations, setEvaluations] = useState<EvaluationBenchmark[]>(MOCK_EVALUATION_BENCHMARKS);
+  const [geminiDiag, setGeminiDiag] = useState<GeminiDiagnostic | null>(null);
+  const [isDiagnosing, setIsDiagnosing] = useState<boolean>(false);
 
+  const availableShipments = shipmentsList && shipmentsList.length > 0 ? shipmentsList : MOCK_SHIPMENTS;
   const activeShipment =
-    MOCK_SHIPMENTS.find((s) => s.shipment_id === selectedShipmentId) || currentShipment;
+    availableShipments.find((s) => s.shipment_id === selectedShipmentId) || currentShipment;
 
-  const insights: AiInsightItem[] = MOCK_AI_INSIGHTS[activeShipment.shipment_id] || [];
+  // Load evaluation benchmarks from backend
+  useEffect(() => {
+    let mounted = true;
+    fetchLiveAiEvaluations().then((benchmarks) => {
+      if (mounted && benchmarks && benchmarks.length > 0) {
+        setEvaluations(benchmarks);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-  // Calculate simulated 5-factor breakdown based on shipment
-  const factorBreakdown = {
-    thermal:
-      activeShipment.ai_risk_tier === 'CRITICAL'
-        ? 94
-        : activeShipment.ai_risk_tier === 'ELEVATED'
-        ? 65
-        : 12,
-    anomaly:
-      activeShipment.ai_risk_tier === 'CRITICAL'
-        ? 91
-        : activeShipment.ai_risk_tier === 'ELEVATED'
-        ? 58
-        : 8,
-    drift:
-      activeShipment.ai_risk_tier === 'CRITICAL'
-        ? 82
-        : activeShipment.ai_risk_tier === 'ELEVATED'
-        ? 74
-        : 14,
-    kinetics:
-      activeShipment.ai_risk_tier === 'CRITICAL'
-        ? 88
-        : activeShipment.ai_risk_tier === 'ELEVATED'
-        ? 45
-        : 10,
-    security: 4, // Intact crypto signatures
+  // Poll backend for real AI insights and composite risk factors
+  useEffect(() => {
+    let mounted = true;
+    const loadAiData = async () => {
+      try {
+        const [insightsData, riskData] = await Promise.all([
+          fetchLiveAiInsights(selectedShipmentId),
+          fetchLiveAiRisk(selectedShipmentId),
+        ]);
+        if (mounted) {
+          if (insightsData && insightsData.length > 0) {
+            setLiveInsights(insightsData);
+            setIsLiveFromBackend(true);
+          } else {
+            setLiveInsights(MOCK_AI_INSIGHTS[selectedShipmentId] || []);
+            setIsLiveFromBackend(false);
+          }
+          if (riskData) {
+            setLiveRiskData(riskData);
+          }
+        }
+      } catch {
+        if (mounted) {
+          setLiveInsights(MOCK_AI_INSIGHTS[selectedShipmentId] || []);
+          setIsLiveFromBackend(false);
+        }
+      }
+    };
+
+    loadAiData();
+    const interval = setInterval(loadAiData, 4000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [selectedShipmentId]);
+
+  const handleRunGeminiDiagnosis = async () => {
+    setIsDiagnosing(true);
+    try {
+      const result = await fetchLiveAiDiagnosis(selectedShipmentId);
+      if (result) {
+        setGeminiDiag(result);
+      }
+    } catch (err) {
+      console.warn('Gemini diagnosis error:', err);
+    } finally {
+      setIsDiagnosing(false);
+    }
   };
+
+  const insights: AiInsightItem[] =
+    liveInsights.length > 0
+      ? liveInsights
+      : MOCK_AI_INSIGHTS[activeShipment.shipment_id] || [];
+
+  // Use live computed factors from backend if available, otherwise calculate from tier
+  const factorBreakdown = liveRiskData?.factors
+    ? {
+        thermal: Math.round(Number(liveRiskData.factors.thermalRisk) || 12),
+        anomaly: Math.round(Number(liveRiskData.factors.anomalyRisk) || 8),
+        drift: Math.round(Number(liveRiskData.factors.driftRisk) || 14),
+        kinetics: Math.round(Number(liveRiskData.factors.kineticsRisk) || 10),
+        security: Math.round(Number(liveRiskData.factors.securityPenalty) || 4),
+      }
+    : {
+        thermal:
+          activeShipment.ai_risk_tier === 'CRITICAL'
+            ? 94
+            : activeShipment.ai_risk_tier === 'ELEVATED'
+            ? 65
+            : 12,
+        anomaly:
+          activeShipment.ai_risk_tier === 'CRITICAL'
+            ? 91
+            : activeShipment.ai_risk_tier === 'ELEVATED'
+            ? 58
+            : 8,
+        drift:
+          activeShipment.ai_risk_tier === 'CRITICAL'
+            ? 82
+            : activeShipment.ai_risk_tier === 'ELEVATED'
+            ? 74
+            : 14,
+        kinetics:
+          activeShipment.ai_risk_tier === 'CRITICAL'
+            ? 88
+            : activeShipment.ai_risk_tier === 'ELEVATED'
+            ? 45
+            : 10,
+        security: 4, // Intact crypto signatures
+      };
 
   const getTierColor = (tier: string) => {
     switch (tier) {
@@ -93,7 +183,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span
             style={{
-              background: 'rgba(125, 249, 196, 0.15)',
+              background: isLiveFromBackend ? 'rgba(125, 249, 196, 0.25)' : 'rgba(125, 249, 196, 0.15)',
               color: 'var(--fl-mint)',
               padding: '4px 8px',
               borderRadius: '4px',
@@ -102,7 +192,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
               fontWeight: 600,
             }}
           >
-            ADVISORY LAYER ACTIVE
+            {isLiveFromBackend ? '⚡ LIVE FROM AI SERVICE' : 'ADVISORY LAYER ACTIVE'}
           </span>
           <span style={{ fontSize: '13px', color: 'var(--fl-muted)' }}>
             AI/ML outputs are advisory-only warnings and forecasts. The official cold chain record
@@ -128,7 +218,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
             SELECT SHIPMENT TELEMETRY STREAM
           </div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {MOCK_SHIPMENTS.map((s) => (
+            {availableShipments.map((s) => (
               <button
                 key={s.shipment_id}
                 onClick={() => {
@@ -427,6 +517,208 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
         </div>
       </div>
 
+      {/* Google Gemini 2.5 Flash Lite Root-Cause Diagnostic Advisory Panel */}
+      <div
+        className="fl-card"
+        style={{
+          border: '1px solid rgba(125, 249, 196, 0.35)',
+          background: isLight ? 'rgba(3, 53, 0, 0.02)' : 'rgba(125, 249, 196, 0.02)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '18px' }}>🤖</span>
+              <span style={{ fontSize: '15px', fontWeight: 700, letterSpacing: '0.02em', color: 'var(--fl-mint)' }}>
+                GEMINI 3.5 FLASH LITE ROOT-CAUSE ADVISORY
+              </span>
+              <span
+                style={{
+                  background: 'rgba(125, 249, 196, 0.15)',
+                  color: 'var(--fl-mint)',
+                  fontSize: '10px',
+                  fontFamily: 'var(--fl-font-mono)',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontWeight: 600,
+                }}
+              >
+                LIVE LLM REASONING
+              </span>
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--fl-muted)', marginTop: '4px' }}>
+              Deep supply-chain physical reasoning: analyzes IoT thermal decay rates, shock axes, and seal humidity to identify root causes.
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={handleRunGeminiDiagnosis}
+              disabled={isDiagnosing}
+              className="fl-button"
+              style={{
+                background: isDiagnosing ? 'var(--fl-bg-secondary)' : 'var(--fl-mint)',
+                color: isDiagnosing ? 'var(--fl-muted)' : '#000000',
+                fontWeight: 700,
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: isDiagnosing ? 'not-allowed' : 'pointer',
+                borderColor: 'var(--fl-mint)',
+              }}
+            >
+              {isDiagnosing ? 'Synthesizing with Gemini 3.5...' : '⚡ Run Gemini Deep Diagnosis'}
+            </button>
+            <span className="fl-badge fl-badge-ai">AI-generated, advisory</span>
+          </div>
+        </div>
+
+        {geminiDiag && geminiDiag.diagnostic ? (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              background: 'var(--fl-bg-secondary)',
+              padding: '16px',
+              borderRadius: '8px',
+              border: '1px solid var(--fl-hairline)',
+            }}
+          >
+            {/* Headline Summary */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                paddingBottom: '12px',
+                borderBottom: '1px solid var(--fl-hairline)',
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>🚨</span>
+              <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--fl-text)' }}>
+                {geminiDiag.diagnostic.summary}
+              </div>
+            </div>
+
+            {/* Root Cause & Impact Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+              <div
+                style={{
+                  background: 'var(--fl-bg-primary)',
+                  padding: '12px 14px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--fl-hairline)',
+                }}
+              >
+                <div style={{ fontSize: '11px', color: 'var(--fl-mint)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Likely Physical Root Cause
+                </div>
+                <div style={{ fontSize: '13px', lineHeight: '1.5', color: 'var(--fl-text)' }}>
+                  {geminiDiag.diagnostic.root_cause}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: 'var(--fl-bg-primary)',
+                  padding: '12px 14px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--fl-hairline)',
+                }}
+              >
+                <div style={{ fontSize: '11px', color: 'var(--fl-warning)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Biological & Shelf-Life Impact
+                </div>
+                <div style={{ fontSize: '13px', lineHeight: '1.5', color: 'var(--fl-text)' }}>
+                  {geminiDiag.diagnostic.impact_evaluation}
+                </div>
+              </div>
+            </div>
+
+            {/* Recommended Mitigation Protocol */}
+            {geminiDiag.diagnostic.mitigation_actions && geminiDiag.diagnostic.mitigation_actions.length > 0 && (
+              <div
+                style={{
+                  background: 'var(--fl-bg-primary)',
+                  padding: '12px 14px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--fl-hairline)',
+                }}
+              >
+                <div style={{ fontSize: '11px', color: 'var(--fl-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Recommended Operational Mitigation Protocol
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {geminiDiag.diagnostic.mitigation_actions.map((act, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--fl-mint)', fontWeight: 700 }}>0{idx + 1}.</span>
+                      <span style={{ color: 'var(--fl-text)' }}>{act}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Metadata Footer */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '11px',
+                color: 'var(--fl-muted)',
+                paddingTop: '8px',
+                borderTop: '1px solid var(--fl-hairline)',
+                flexWrap: 'wrap',
+                gap: '8px',
+              }}
+            >
+              <span>Model: <strong style={{ color: 'var(--fl-text)' }}>{geminiDiag.model || 'gemini-3.5-flash-lite'}</strong></span>
+              <span>Generated: {new Date(geminiDiag.generated_at || Date.now()).toLocaleTimeString()}</span>
+              <span>Advisory Notice: Telemetry integrity anchored on Polygon Amoy.</span>
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              padding: '16px',
+              background: 'var(--fl-bg-secondary)',
+              borderRadius: '8px',
+              border: '1px dashed var(--fl-hairline)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}
+          >
+            <div style={{ fontSize: '13px', color: 'var(--fl-muted)' }}>
+              No active diagnosis generated for <strong style={{ color: 'var(--fl-text)' }}>{activeShipment.shipment_id}</strong> yet. Click above to execute real-time reasoning with Gemini 3.5 Flash Lite across sensor rates and excursion curves.
+            </div>
+            <button
+              onClick={handleRunGeminiDiagnosis}
+              disabled={isDiagnosing}
+              className="fl-button"
+              style={{ fontSize: '12px', padding: '6px 12px' }}
+            >
+              Run Diagnostic
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Streaming AI Insights & Explanations Feed */}
       <div className="fl-card">
         <div
@@ -618,7 +910,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
               </tr>
             </thead>
             <tbody>
-              {MOCK_EVALUATION_BENCHMARKS.map((m) => (
+              {evaluations.map((m: EvaluationBenchmark) => (
                 <tr key={m.evaluation_id}>
                   <td style={{ fontWeight: 600, color: m.model_name.includes('River') ? 'var(--fl-mint)' : 'var(--fl-text)' }}>
                     {m.model_name}

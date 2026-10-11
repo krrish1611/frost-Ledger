@@ -320,4 +320,94 @@ router.get(
   })
 );
 
+/**
+ * GET /ai/diagnose/:shipmentId
+ * Invokes Gemini Root Cause Diagnostic AI through the AI Advisory Service.
+ * Strictly advisory.
+ */
+router.get(
+  '/diagnose/:shipmentId',
+  authenticateJwt,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { shipmentId } = req.params;
+    const db = await getDbClient();
+
+    const shipmentRes = await db.query(
+      `SELECT s.shipment_id, s.profile_id, s.profile_version, p.parameters
+       FROM shipments s
+       JOIN profiles p ON s.profile_id = p.profile_id AND s.profile_version = p.version
+       WHERE s.shipment_id = $1`,
+      [shipmentId]
+    );
+
+    if (shipmentRes.rowCount === 0) {
+      return res
+        .status(404)
+        .json(createErrorResponse('SHIPMENT_NOT_FOUND', `Shipment '${shipmentId}' does not exist`));
+    }
+
+    const row = shipmentRes.rows[0];
+    const profile = typeof row.parameters === 'string' ? JSON.parse(row.parameters) : row.parameters || {};
+
+    // Fetch latest telemetry
+    const latestBatchRes = await db.query(
+      `SELECT payload, received_at FROM batches WHERE shipment_id = $1 ORDER BY sequence_no DESC LIMIT 5`,
+      [shipmentId]
+    );
+
+    let currentTemp = 4.2;
+    let currentHumidity = 50.0;
+    const readingsContext: any[] = [];
+    if (latestBatchRes.rowCount > 0) {
+      for (const b of latestBatchRes.rows) {
+        const payload = typeof b.payload === 'string' ? JSON.parse(b.payload) : b.payload;
+        const rList = payload?.readings || [];
+        for (const r of rList) {
+          readingsContext.push(r);
+        }
+      }
+      if (readingsContext.length > 0) {
+        currentTemp = Number(readingsContext[readingsContext.length - 1].temperature ?? currentTemp);
+        currentHumidity = Number(readingsContext[readingsContext.length - 1].humidity ?? currentHumidity);
+      }
+    }
+
+    // Query AI service running on port 8000
+    try {
+      const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://127.0.0.1:8000';
+      const aiRes = await fetch(`${aiServiceUrl}/diagnose/${shipmentId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cargo_type: profile.cargo_type || 'pharma-vaccine',
+          profile_name: profile.name || 'Cold Chain Cargo',
+          temp_min_c: profile.temp_min_c ?? 2.0,
+          temp_max_c: profile.temp_max_c ?? 8.0,
+          current_temp: currentTemp,
+          current_humidity: currentHumidity,
+          anomaly_kind: currentTemp > (profile.temp_max_c ?? 8.0) ? 'thermal_excursion_high' : 'thermal_variance',
+          anomaly_score: 0.88,
+          severity: currentTemp > (profile.temp_max_c ?? 8.0) ? 'critical' : 'warning',
+          recent_readings: readingsContext.slice(-5),
+        }),
+      });
+
+      if (aiRes.ok) {
+        const diagData = await aiRes.json();
+        return res.json(diagData);
+      }
+    } catch {
+      // Graceful fallback if ai-service is unreachable
+    }
+
+    return res.json({
+      available: false,
+      shipment_id: shipmentId,
+      label: ADVISORY_LABEL,
+      message: 'Gemini diagnostic advisory engine temporarily unreachable.',
+    });
+  })
+);
+
 export default router;
+

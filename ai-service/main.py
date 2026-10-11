@@ -270,6 +270,44 @@ def trigger_cargo_models_training():
         "summary": summary,
     }
 
+from gemini_analyzer import GeminiRootCauseAnalyzer
+
+gemini_analyzer = GeminiRootCauseAnalyzer()
+
+class DiagnoseRequest(BaseModel):
+    cargo_type: Optional[str] = "pharma-vaccine"
+    profile_name: Optional[str] = "Cold Chain Cargo"
+    temp_min_c: Optional[float] = 2.0
+    temp_max_c: Optional[float] = 8.0
+    current_temp: Optional[float] = 4.2
+    current_humidity: Optional[float] = 50.0
+    anomaly_kind: Optional[str] = "thermal_excursion_high"
+    anomaly_score: Optional[float] = 0.85
+    severity: Optional[str] = "warning"
+    recent_readings: Optional[List[Dict[str, Any]]] = None
+
+@app.api_route("/diagnose/{shipment_id}", methods=["GET", "POST"])
+def get_gemini_diagnosis(shipment_id: str, payload: Optional[DiagnoseRequest] = None):
+    """
+    Invokes Google Gemini to diagnose an anomaly/incident on a cold chain shipment.
+    Strictly advisory.
+    """
+    if payload is None:
+        payload = DiagnoseRequest()
+    return gemini_analyzer.diagnose_excursion(
+        shipment_id=shipment_id,
+        cargo_type=payload.cargo_type or "pharma-vaccine",
+        profile_name=payload.profile_name or "Cold Chain Cargo",
+        temp_min_c=payload.temp_min_c if payload.temp_min_c is not None else 2.0,
+        temp_max_c=payload.temp_max_c if payload.temp_max_c is not None else 8.0,
+        current_temp=payload.current_temp if payload.current_temp is not None else 4.2,
+        current_humidity=payload.current_humidity if payload.current_humidity is not None else 50.0,
+        anomaly_kind=payload.anomaly_kind or "thermal_excursion_high",
+        anomaly_score=payload.anomaly_score if payload.anomaly_score is not None else 0.85,
+        severity=payload.severity or "warning",
+        recent_readings=payload.recent_readings,
+    )
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=AI_SERVICE_PORT, reload=True)

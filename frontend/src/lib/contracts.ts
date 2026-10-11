@@ -24,11 +24,15 @@ export const DEFAULT_CONTRACT_ADDRESS =
 export const POLYGON_AMOY_CHAIN_ID = 80002;
 export const HARDHAT_CHAIN_ID = 31337;
 
+export const POLYGON_AMOY_RPC_URL =
+  (import.meta as any).env?.VITE_POLYGON_AMOY_RPC_URL ||
+  'https://rpc-amoy.polygon.technology';
+
 export const POLYGON_AMOY_CONFIG = {
   chainId: '0x13882', // 80002
   chainName: 'Polygon Amoy Testnet',
   nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-  rpcUrls: ['https://rpc-amoy.polygon.technology'],
+  rpcUrls: [POLYGON_AMOY_RPC_URL, 'https://rpc-amoy.polygon.technology'],
   blockExplorerUrls: ['https://amoy.polygonscan.com/'],
 };
 

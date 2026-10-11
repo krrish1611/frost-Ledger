@@ -1,17 +1,17 @@
-# Graph Report - FROSTLEDGER  (2026-10-11)
+# Graph Report - FROSTLEDGER  (2026-10-12)
 
 ## Corpus Check
-- 149 files · ~127,523 words
+- 155 files · ~136,712 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 13 file(s) not represented in the graph (top: .example 8, .joblib 2, (none) 1)
+- Unclassified: 1037 file(s) not represented in the graph (top: (none) 1013, .example 8, .map 4)
 
 ## Summary
-- 1392 nodes · 2472 edges · 72 communities (63 shown, 9 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 78 edges (avg confidence: 0.89)
+- 1501 nodes · 2688 edges · 78 communities (68 shown, 10 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 81 edges (avg confidence: 0.89)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2a9fac3e`
+- Built from commit: `abdae0fd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,19 +19,19 @@
 - shared/src/index.ts
 - LandingView.tsx
 - ColdChainTracker
-- test_cargo_models.py
+- ProduceColdChainModel
 - frontend/package.json
 - worker/package.json
-- ShipmentLearner
+- EwmaCusumDetector
 - main.py
 - ArrivalVerificationView.tsx
 - contracts/package.json
 - api.ts
-- stage4_blockchain_verification.test.ts
-- getUtcTimestamp
+- db/index.ts
+- deterministicCore.ts
 - App.tsx
-- CompositeRiskScorer
-- simulator/package.json
+- run-simulator.js
+- DeviceSimulator
 - AiDatabaseClient
 - useTheme
 - 001_initial_schema.sql
@@ -41,11 +41,11 @@
 - scripts
 - shared/package.json
 - app.ts
-- verificationService.ts
+- getUtcTimestamp
 - Animation Recipes
-- stage2_ingestion.test.ts
+- AiService
 - compilerOptions
-- CommandPalette.tsx
+- ThemeContext.tsx
 - Worst-Case Catalog
 - Animation Standards Reference
 - devDependencies
@@ -57,21 +57,21 @@
 - Write Swift
 - Apple Design
 - compilerOptions
-- RuleDetector
+- ShipmentLearner
 - The Fixes
 - scripts
 - Prototyping Variants
 - FeatureDeepDive.tsx
 - ci.js
 - Sentry for AI Agents Aesthetic Archetype
-- supabase.ts
+- mqttBroker.ts
 - Glossary
 - vite-env.d.ts
 - Cryptographic Tamper Detection & Simulation
 - Monorepo Service Commands & CI
 - Finding Animation Opportunities
 - Working With Sonner
-- HalfSpaceTreesDetector
+- stage1_foundation.test.ts
 - The list
 - Design Engineering
 - Component Building Principles
@@ -85,28 +85,34 @@
 - Core Philosophy
 - Debugging Animations
 - copilot-instructions.md
+- GeminiRootCauseAnalyzer
+- 2. Running the Emulator on Any Laptop
+- firmware/platformio.ini (ESP32 Environment & Libs)
+- OfflineMlEvaluator
+- test_risk_notifications.py
+- supabase.ts
 
 ## God Nodes (most connected - your core abstractions)
 1. `AiDatabaseClient` - 37 edges
-2. `useTheme()` - 33 edges
-3. `react` - 32 edges
-4. `getUtcTimestamp()` - 32 edges
+2. `getUtcTimestamp()` - 35 edges
+3. `useTheme()` - 33 edges
+4. `react` - 32 edges
 5. `ShipmentLearner` - 28 edges
-6. `getDbClient()` - 23 edges
+6. `getDbClient()` - 26 edges
 7. `ColdChainTracker` - 21 edges
 8. `createErrorResponse()` - 21 edges
 9. `Apple Design` - 21 edges
 10. `framer-motion` - 20 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `River Streaming HST & CUSUM Anomaly Detection` --implements--> `HalfSpaceTreesDetector`  [INFERRED]
-  docs/ARCHITECTURE_AND_VERIFICATION.md → ai-service/models/hst_detector.py
 - `5-Point Arrival Verification Proof` --references--> `WindowAnchored`  [INFERRED]
   docs/ARCHITECTURE_AND_VERIFICATION.md → contracts/contracts/ColdChainTracker.sol
 - `Terminal-Adjacent Design Tokens & Tailwind v4 Theme` --conceptually_related_to--> `ArrivalVerificationView()`  [INFERRED]
   docs/design.md → frontend/src/components/ArrivalVerificationView.tsx
 - `River Streaming HST & CUSUM Anomaly Detection` --implements--> `EwmaCusumDetector`  [INFERRED]
   docs/ARCHITECTURE_AND_VERIFICATION.md → ai-service/models/ewma_cusum.py
+- `River Streaming HST & CUSUM Anomaly Detection` --implements--> `HalfSpaceTreesDetector`  [INFERRED]
+  docs/ARCHITECTURE_AND_VERIFICATION.md → ai-service/models/hst_detector.py
 - `USP <1160> Arrhenius Kinetic Shelf-Life Engine` --implements--> `calculateMKT()`  [INFERRED]
   docs/ARCHITECTURE_AND_VERIFICATION.md → shared/src/kinetics.ts
 
@@ -118,23 +124,23 @@
 - **5-Point Arrival Verification Flow** — docs_architecture_and_verification_five_point_arrival_proof, backend_src_services_verificationservice_verifyshipmentarrival, frontend_src_components_arrivalverificationview_arrivalverificationview, shared_src_kinetics_calculatemkt, backend_migrations_001_initial_schema_anchors [INFERRED 0.95]
 - **Streaming AI Advisory ML Pipeline** — docs_architecture_and_verification_immutable_separation_rule, docs_architecture_and_verification_ai_advisory_plane, ai_service_models_hst_detector_halfspacetreesdetector, ai_service_models_ewma_cusum_ewmacusumdetector, ai_service_db_aidatabaseclient [INFERRED 0.95]
 
-## Communities (72 total, 9 thin omitted)
+## Communities (78 total, 10 thin omitted)
 
 ### Community 0 - "shared/src/index.ts"
 Cohesion: 0.04
-Nodes (55): AiEvaluation, AiEvaluationSchema, AiInsight, AiInsightKind, AiInsightKindSchema, AiInsightSchema, AiInsightSeverity, AiInsightSeveritySchema (+47 more)
+Nodes (50): AiEvaluation, AiEvaluationSchema, AiInsight, AiInsightKind, AiInsightKindSchema, AiInsightSchema, AiInsightSeverity, AiInsightSeveritySchema (+42 more)
 
 ### Community 1 - "LandingView.tsx"
 Cohesion: 0.09
-Nodes (35): AmbientBackground(), AnnotatedText(), AnnotatedTextProps, AsciiReveal(), AsciiRevealProps, AuthModal(), AuthModalProps, ClosingNotes() (+27 more)
+Nodes (33): AmbientBackground(), AnnotatedText(), AnnotatedTextProps, AsciiReveal(), AsciiRevealProps, AuthModal(), AuthModalProps, ClosingNotes() (+25 more)
 
 ### Community 2 - "ColdChainTracker"
 Cohesion: 0.05
 Nodes (30): blockchainService, ColdChainTracker, ShipmentRegistered, SubmitterUpdated, WindowAnchored, anchorBatchWindow(), registerShipment(), setSubmitter() (+22 more)
 
-### Community 3 - "test_cargo_models.py"
-Cohesion: 0.10
-Nodes (8): BaseCargoModel, ProduceColdChainModel, VaccineColdChainModel, test_produce_model_transpiration_and_condensation(), test_vaccine_model_freezing_and_heat_excursion(), generate_produce_training_data(), generate_vaccine_training_data(), train_and_evaluate()
+### Community 3 - "ProduceColdChainModel"
+Cohesion: 0.09
+Nodes (10): BaseCargoModel, ProduceColdChainModel, VaccineColdChainModel, produce_model.joblib (Respiration Q10=2.2 Model), vaccine_model.joblib (Arrhenius Ea=83.14 kJ/mol Model), test_produce_model_transpiration_and_condensation(), test_vaccine_model_freezing_and_heat_excursion(), generate_produce_training_data() (+2 more)
 
 ### Community 4 - "frontend/package.json"
 Cohesion: 0.05
@@ -144,53 +150,53 @@ Nodes (41): dependencies, ethers, framer-motion, jspdf, lucide-react, react, rea
 Cohesion: 0.05
 Nodes (36): BatchJobData, clearMemoryEnqueuedJobs(), enqueueBatchProcessing(), getMemoryEnqueuedJobs(), getQueue(), memoryQueue, bullmq, ioredis (+28 more)
 
-### Community 6 - "ShipmentLearner"
-Cohesion: 0.08
-Nodes (12): ShipmentLearner, EwmaCusumDetector, RateOfChangeDetector, create_sample_reading(), test_flat_copied_readings_triggers_spoofing_warning(), test_known_event_downweighting_door_open(), test_normal_simulation_produces_no_warnings(), test_slow_drift_triggers_cusum_drift_warning() (+4 more)
+### Community 6 - "EwmaCusumDetector"
+Cohesion: 0.07
+Nodes (5): EwmaCusumDetector, HalfSpaceTreesDetector, RateOfChangeDetector, RuleDetector, River Streaming HST & CUSUM Anomaly Detection
 
 ### Community 7 - "main.py"
-Cohesion: 0.12
-Nodes (22): EvaluationRecord, EvaluationsListResponse, get_cargo_models_metadata(), get_evaluations(), get_shipment_insights(), get_shipment_notifications(), get_shipment_risk(), health_check() (+14 more)
+Cohesion: 0.10
+Nodes (24): DiagnoseRequest, EvaluationRecord, EvaluationsListResponse, get_cargo_models_metadata(), get_evaluations(), get_gemini_diagnosis(), get_shipment_insights(), get_shipment_notifications() (+16 more)
 
 ### Community 8 - "ArrivalVerificationView.tsx"
-Cohesion: 0.13
-Nodes (24): ArrivalVerificationView(), ArrivalVerificationViewProps, OnChainVerificationModalProps, getNetworkDisplayName(), METAMASK_CHROME_STORE_URL, resolveMetaMaskProvider(), useWeb3(), Web3Context (+16 more)
+Cohesion: 0.16
+Nodes (25): ArrivalVerificationView(), ArrivalVerificationViewProps, CommandItem, CommandPalette(), anchorBatchWindowOnChain(), checkOnChainThresholds(), DEFAULT_CONTRACT_ADDRESS, getColdChainTrackerContract() (+17 more)
 
 ### Community 9 - "contracts/package.json"
 Cohesion: 0.07
 Nodes (20): config, description, devDependencies, ethers, hardhat, @nomicfoundation/hardhat-toolbox, @types/node, typescript (+12 more)
 
 ### Community 10 - "api.ts"
-Cohesion: 0.12
-Nodes (23): AdminManagementViewProps, AiRiskIntelligenceViewProps, CommandPaletteProps, PalletQrScannerModalProps, alertService, DatabaseAlert, DatabaseAuditLog, UserProfileItem (+15 more)
-
-### Community 11 - "stage4_blockchain_verification.test.ts"
 Cohesion: 0.10
-Nodes (27): createApp(), DbClient, setTestDbClient(), runMigrations(), runSeed(), bootstrap(), close(), exec() (+19 more)
+Nodes (32): AdminManagementViewProps, AiRiskIntelligenceView(), AiRiskIntelligenceViewProps, CommandPaletteProps, PalletQrScannerModalProps, alertService, DatabaseAlert, DatabaseAuditLog (+24 more)
 
-### Community 12 - "getUtcTimestamp"
-Cohesion: 0.09
-Nodes (29): AlertRecord, createAlert(), createSecurityAlert(), DeterministicProcessingResult, notificationDispatcher, processBatchDeterministic(), close(), exec() (+21 more)
+### Community 11 - "db/index.ts"
+Cohesion: 0.10
+Nodes (31): DbClient, DbStatusInfo, setTestDbClient(), runMigrations(), close(), exec(), query(), close() (+23 more)
+
+### Community 12 - "deterministicCore.ts"
+Cohesion: 0.11
+Nodes (22): AlertRecord, DeterministicProcessingResult, notificationDispatcher, processBatchDeterministic(), USP <1160> Arrhenius Kinetic Shelf-Life Engine, dotenv, SensorReading, calculateMKT() (+14 more)
 
 ### Community 13 - "App.tsx"
-Cohesion: 0.18
-Nodes (19): App(), AdminManagementView(), AiRiskIntelligenceView(), AtmosphereCanvas(), ExcursionSimulatorModal(), ExcursionSimulatorModalProps, ActiveTab, Navbar() (+11 more)
+Cohesion: 0.16
+Nodes (21): App(), AdminManagementView(), AtmosphereCanvas(), ExcursionSimulatorModal(), ExcursionSimulatorModalProps, OnChainVerificationModal(), OnChainVerificationModalProps, PalletQrScannerModal() (+13 more)
 
-### Community 14 - "CompositeRiskScorer"
-Cohesion: 0.31
-Nodes (6): CompositeRiskScorer, test_composite_risk_scorer_differentiates_domains(), test_composite_risk_freezing_hazard(), test_composite_risk_high_thermal_excursion(), test_composite_risk_normal_temperature(), test_composite_risk_security_penalty()
+### Community 14 - "run-simulator.js"
+Cohesion: 0.11
+Nodes (15): RFC-8032, canonicalSerialize(), computeBatchHash(), computeCanonicalHash(), computeSha256(), crypto, { execSync }, getUtcTimestamp() (+7 more)
 
-### Community 15 - "simulator/package.json"
-Cohesion: 0.09
-Nodes (22): dependencies, @frostledger/shared, description, devDependencies, tsx, @types/node, typescript, vitest (+14 more)
+### Community 15 - "DeviceSimulator"
+Cohesion: 0.05
+Nodes (30): mqtt, signWithEd25519(), TelemetrySubmission, dependencies, @frostledger/shared, mqtt, description, devDependencies (+22 more)
 
 ### Community 16 - "AiDatabaseClient"
-Cohesion: 0.07
-Nodes (13): AiDatabaseClient, OfflineMlEvaluator, NotificationService, AiService, test_checkpoint_and_restart_resumption_no_duplicates(), test_database_client_enforces_read_only_on_official_tables(), test_two_simultaneous_shipments_maintain_isolated_states(), test_generate_benchmark_dataset_structure() (+5 more)
+Cohesion: 0.13
+Nodes (8): AiDatabaseClient, NotificationService, test_checkpoint_and_restart_resumption_no_duplicates(), test_database_client_enforces_read_only_on_official_tables(), test_notification_debouncing_quiet_period(), test_notification_dispatched_when_email_enabled(), test_notification_hourly_rate_limit(), test_notification_suppressed_when_email_disabled()
 
 ### Community 17 - "useTheme"
-Cohesion: 0.20
-Nodes (18): AsciiImage(), AsciiImageProps, BAYER_4X4, CARDS, ModuleCard, Pillar1Playable(), Pillar2Playable(), Pillar3Playable() (+10 more)
+Cohesion: 0.30
+Nodes (14): AsciiImage(), AsciiImageProps, BAYER_4X4, CARDS, ModuleCard, Pillar1Playable(), Pillar2Playable(), Pillar3Playable() (+6 more)
 
 ### Community 19 - "001_initial_schema.sql"
 Cohesion: 0.19
@@ -198,7 +204,7 @@ Nodes (19): ai_evaluations, ai_insights, ai_model_state, ai_notifications, alert
 
 ### Community 20 - "backend/package.json"
 Cohesion: 0.10
-Nodes (19): description, @frostledger/shared, pg, tsx, @types/node, @types/pg, typescript, vitest (+11 more)
+Nodes (20): description, @frostledger/shared, pg, tsx, @types/node, @types/pg, typescript, vitest (+12 more)
 
 ### Community 21 - "Expo Animation Recipes"
 Cohesion: 0.06
@@ -209,36 +215,32 @@ Cohesion: 0.11
 Nodes (17): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, lib, module, moduleResolution, noEmit (+9 more)
 
 ### Community 23 - "scripts"
-Cohesion: 0.11
-Nodes (17): description, devDependencies, typescript, typescript, name, private, scripts, bootstrap (+9 more)
+Cohesion: 0.10
+Nodes (19): description, devDependencies, typescript, typescript, name, private, scripts, bootstrap (+11 more)
 
 ### Community 24 - "shared/package.json"
 Cohesion: 0.11
 Nodes (17): dependencies, zod, description, devDependencies, @types/node, typescript, @types/node, typescript (+9 more)
 
 ### Community 25 - "app.ts"
-Cohesion: 0.18
-Nodes (24): getDbClient(), asyncHandler(), AuthenticatedRequest, authenticateJwt(), requireAdmin, requireRole(), clientRecords, rateLimiter() (+16 more)
+Cohesion: 0.12
+Nodes (32): asyncHandler(), AuthenticatedRequest, authenticateJwt(), getJwtSecret(), optionalAuthenticateJwt(), requireAdmin, requireRole(), clientRecords (+24 more)
 
-### Community 26 - "verificationService.ts"
-Cohesion: 0.17
-Nodes (16): router, AnchoringResult, checkAndCloseBatchWindow(), computeWindowHash(), OnChainProfileRecord, OnChainWindowRecord, BatchVerificationDetail, generateHtmlIntegrityReport() (+8 more)
+### Community 26 - "getUtcTimestamp"
+Cohesion: 0.14
+Nodes (25): getDbClient(), getDbStatus(), createAlert(), createSecurityAlert(), writeAuditLog(), AnchoringResult, checkAndCloseBatchWindow(), computeWindowHash() (+17 more)
 
 ### Community 27 - "Animation Recipes"
 Cohesion: 0.06
 Nodes (31): Accordion / collapse, Animation Recipes, Button press, Drag to dismiss, Drawer / sheet, Dropdown, popover, menu, select, Hold to confirm, Masking a crossfade that won't settle (+23 more)
 
-### Community 28 - "stage2_ingestion.test.ts"
-Cohesion: 0.15
-Nodes (10): close(), exec(), query(), computeBatchHash(), GENESIS_PREV_HASH, signWithEd25519(), TelemetrySubmission, DeviceSimulator (+2 more)
-
 ### Community 29 - "compilerOptions"
 Cohesion: 0.13
 Nodes (14): compilerOptions, declaration, declarationMap, esModuleInterop, forceConsistentCasingInFileNames, module, moduleResolution, outDir (+6 more)
 
-### Community 30 - "CommandPalette.tsx"
-Cohesion: 0.29
-Nodes (12): CommandItem, CommandPalette(), generateTelemetryHistory(), TelemetryReading, buildDeepThermalAnalyticsPdf(), buildOfficialAuditCertificatePdf(), generateDeepThermalAnalyticsPdf(), generateOfficialAuditCertificatePdf() (+4 more)
+### Community 30 - "ThemeContext.tsx"
+Cohesion: 0.11
+Nodes (19): ActiveTab, Navbar(), NavbarProps, UserRole, ThemeToggle(), ThemeToggleProps, Theme, ThemeContext (+11 more)
 
 ### Community 31 - "Worst-Case Catalog"
 Cohesion: 0.06
@@ -269,8 +271,8 @@ Cohesion: 0.17
 Nodes (11): compilerOptions, esModuleInterop, forceConsistentCasingInFileNames, module, moduleResolution, outDir, rootDir, skipLibCheck (+3 more)
 
 ### Community 38 - "dependencies"
-Cohesion: 0.18
-Nodes (11): dependencies, bcrypt, cors, dotenv, @electric-sql/pglite, express, @frostledger/shared, @frostledger/simulator (+3 more)
+Cohesion: 0.14
+Nodes (14): dependencies, aedes, bcrypt, cors, dotenv, @electric-sql/pglite, express, @frostledger/shared (+6 more)
 
 ### Community 39 - "Write Swift"
 Cohesion: 0.09
@@ -283,6 +285,10 @@ Nodes (21): 10. Gesture design details (the "feel" checklist), 11. Frame-level s
 ### Community 41 - "compilerOptions"
 Cohesion: 0.18
 Nodes (10): compilerOptions, esModuleInterop, forceConsistentCasingInFileNames, module, moduleResolution, skipLibCheck, strict, target (+2 more)
+
+### Community 42 - "ShipmentLearner"
+Cohesion: 0.16
+Nodes (9): ShipmentLearner, create_sample_reading(), test_flat_copied_readings_triggers_spoofing_warning(), test_known_event_downweighting_door_open(), test_normal_simulation_produces_no_warnings(), test_slow_drift_triggers_cusum_drift_warning(), test_temperature_spike_triggers_warning_with_explanation(), test_two_simultaneous_shipments_maintain_isolated_states() (+1 more)
 
 ### Community 43 - "The Fixes"
 Cohesion: 0.09
@@ -308,9 +314,9 @@ Nodes (4): { execSync }, path, rootDir, steps
 Cohesion: 0.33
 Nodes (5): Sentry for AI Agents Aesthetic Archetype, Terminal-Adjacent Design Tokens & Tailwind v4 Theme, Black Box Landing Page Animation Architecture, Invariant Scanner & Suffix Replay Showcase, AsciiReveal Matrix & ParticleText Canvas
 
-### Community 49 - "supabase.ts"
-Cohesion: 0.33
-Nodes (5): Shipment, supabase, TelemetryReading, UserProfile, @supabase/supabase-js
+### Community 49 - "mqttBroker.ts"
+Cohesion: 0.22
+Nodes (5): aedesModule, MqttBrokerStatus, mqttEvents, aedes, ws
 
 ### Community 51 - "Glossary"
 Cohesion: 0.11
@@ -323,6 +329,10 @@ Nodes (16): 1. Frequency — how often will a user see this?, 2. Purpose — why
 ### Community 57 - "Working With Sonner"
 Cohesion: 0.15
 Nodes (11): Functions, Sonner API Reference, `toast()` options, `<Toaster />`, Initial Response, Picking the right call, Recipes, Setup (+3 more)
+
+### Community 58 - "stage1_foundation.test.ts"
+Cohesion: 0.29
+Nodes (8): createApp(), runSeed(), bootstrap(), getMqttBrokerStatus(), setupMqttBroker(), close(), exec(), query()
 
 ### Community 59 - "The list"
 Cohesion: 0.18
@@ -372,25 +382,41 @@ Nodes (4): Beauty is leverage, Core Philosophy, Taste is trained, not innate, Un
 Cohesion: 0.50
 Nodes (4): Debugging Animations, Frame-by-frame inspection, Slow motion testing, Test on real devices
 
+### Community 73 - "2. Running the Emulator on Any Laptop"
+Cohesion: 0.20
+Nodes (9): 1. Architecture Overview, 2. Running the Emulator on Any Laptop, 3. Verifying PostgreSQL Database Storage, 4. Frontend Dashboard Verification, Command Line Options, Command to Run, Examples, FrostLedger MQTT Telemetry & Hardware Device Emulator Guide (+1 more)
+
+### Community 76 - "OfflineMlEvaluator"
+Cohesion: 0.29
+Nodes (3): OfflineMlEvaluator, test_generate_benchmark_dataset_structure(), test_run_offline_evaluation_benchmarks()
+
+### Community 77 - "test_risk_notifications.py"
+Cohesion: 0.15
+Nodes (7): CompositeRiskScorer, test_composite_risk_scorer_differentiates_domains(), test_shipment_learner_specializes_by_cargo_type(), test_composite_risk_freezing_hazard(), test_composite_risk_high_thermal_excursion(), test_composite_risk_normal_temperature(), test_composite_risk_security_penalty()
+
+### Community 80 - "supabase.ts"
+Cohesion: 0.33
+Nodes (5): Shipment, supabase, TelemetryReading, UserProfile, @supabase/supabase-js
+
 ## Knowledge Gaps
-- **48 isolated node(s):** `@frostledger/shared`, `@frostledger/simulator`, `pg`, `zod`, `@types/bcrypt` (+43 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 794 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **56 isolated node(s):** `@frostledger/shared`, `@frostledger/simulator`, `@types/ws`, `pg`, `zod` (+51 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 849 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `5-Point Arrival Verification Proof` connect `verificationService.ts` to `ColdChainTracker`?**
-  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Why does `5-Point Arrival Verification Proof` connect `getUtcTimestamp` to `ColdChainTracker`?**
+  _High betweenness centrality (0.023) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `AiDatabaseClient` (e.g. with `OfflineMlEvaluator` and `NotificationService`) actually correct?**
   _`AiDatabaseClient` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `@frostledger/shared`, `@frostledger/simulator`, `pg` to the rest of the system?**
-  _48 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `@frostledger/shared`, `@frostledger/simulator`, `@types/ws` to the rest of the system?**
+  _56 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `shared/src/index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.03571428571428571 - nodes in this community are weakly interconnected._
-- **Why does `bullmq` connect `worker/package.json` to `getUtcTimestamp`?**
-  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+  _Cohesion score 0.0392156862745098 - nodes in this community are weakly interconnected._
+- **Why does `WindowAnchored` connect `ColdChainTracker` to `getUtcTimestamp`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **Are the 8 inferred relationships involving `ShipmentLearner` (e.g. with `OfflineMlEvaluator` and `ProduceColdChainModel`) actually correct?**
   _`ShipmentLearner` has 8 INFERRED edges - model-reasoned connections that need verification._
 - **Should `LandingView.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.08599290780141844 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._

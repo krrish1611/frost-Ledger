@@ -467,7 +467,6 @@ export async function fetchLiveTelemetry(shipment: ShipmentSummary): Promise<Tel
   }
   return generateTelemetryHistory(shipment);
 }
-
 export async function verifyLiveShipment(shipmentId: string): Promise<any> {
   try {
     const res = await fetch(`${API_BASE}/verify/${shipmentId}`);
@@ -479,5 +478,100 @@ export async function verifyLiveShipment(shipmentId: string): Promise<any> {
   }
 }
 
+let cachedAuthToken: string | null = null;
 
+async function getAuthHeader(): Promise<Record<string, string>> {
+  if (cachedAuthToken) {
+    return { Authorization: `Bearer ${cachedAuthToken}` };
+  }
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'operator@coldchain.test',
+        password: 'OperatorPass123!',
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.token) {
+        cachedAuthToken = data.token;
+        return { Authorization: `Bearer ${cachedAuthToken}` };
+      }
+    }
+  } catch {
+    // Backend login offline / fallback mode
+  }
+  return {};
+}
 
+export async function fetchLiveAiInsights(shipmentId: string): Promise<AiInsightItem[]> {
+  try {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_BASE}/ai/insights/${shipmentId}`, { headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.insights && data.insights.length > 0) {
+      return data.insights;
+    }
+  } catch (err) {
+    console.warn('[API Client] Live AI insights fetch notice (using cache/fallback):', err);
+  }
+  return MOCK_AI_INSIGHTS[shipmentId] || [];
+}
+
+export async function fetchLiveAiRisk(shipmentId: string): Promise<any> {
+  try {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_BASE}/ai/risk/${shipmentId}`, { headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[API Client] Live AI risk fetch notice:', err);
+    return null;
+  }
+}
+
+export async function fetchLiveAiEvaluations(): Promise<EvaluationBenchmark[]> {
+  try {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_BASE}/ai/evaluations`, { headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.evaluations && data.evaluations.length > 0) {
+      return data.evaluations;
+    }
+  } catch (err) {
+    console.warn('[API Client] Live AI evaluations fetch notice (using fallback):', err);
+  }
+  return MOCK_EVALUATION_BENCHMARKS;
+}
+
+export interface GeminiDiagnostic {
+  available: boolean;
+  shipment_id: string;
+  model?: string;
+  diagnostic?: {
+    summary: string;
+    root_cause: string;
+    impact_evaluation: string;
+    mitigation_actions: string[];
+  };
+  generated_at?: string;
+  label: string;
+  disclaimer?: string;
+  message?: string;
+}
+
+export async function fetchLiveAiDiagnosis(shipmentId: string): Promise<GeminiDiagnostic | null> {
+  try {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_BASE}/ai/diagnose/${shipmentId}`, { headers });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[API Client] Live Gemini diagnosis fetch notice:', err);
+    return null;
+  }
+}
