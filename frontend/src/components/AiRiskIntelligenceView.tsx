@@ -199,7 +199,34 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
             is produced strictly by deterministic code and Polygon Amoy smart contracts.
           </span>
         </div>
-        <span className="fl-badge fl-badge-ai">AI-generated, advisory</span>
+        <button
+          type="button"
+          onClick={() => {
+            handleRunGeminiDiagnosis();
+            const el = document.getElementById('gemini-diagnostic-panel');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }}
+          disabled={isDiagnosing}
+          className="fl-badge fl-badge-ai"
+          style={{
+            cursor: isDiagnosing ? 'wait' : 'pointer',
+            border: '1px solid var(--fl-mint)',
+            background: isDiagnosing ? 'rgba(125, 249, 196, 0.25)' : 'rgba(125, 249, 196, 0.12)',
+            color: 'var(--fl-mint)',
+            fontWeight: 700,
+            fontSize: '12px',
+            padding: '6px 12px',
+            borderRadius: '4px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s ease',
+            outline: 'none',
+          }}
+          title="Click to generate or refresh AI advisory diagnosis"
+        >
+          {isDiagnosing ? '⚡ Synthesizing AI Advisory...' : '⚡ AI-generated, advisory'}
+        </button>
       </div>
 
       {/* Shipment Switcher */}
@@ -519,6 +546,7 @@ export const AiRiskIntelligenceView: React.FC<AiRiskIntelligenceViewProps> = ({
 
       {/* Google Gemini 2.5 Flash Lite Root-Cause Diagnostic Advisory Panel */}
       <div
+        id="gemini-diagnostic-panel"
         className="fl-card"
         style={{
           border: '1px solid rgba(125, 249, 196, 0.35)',
