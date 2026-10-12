@@ -6,7 +6,7 @@ A secure, hardware-agnostic IoT cold chain monitoring system with deterministic 
 
 ## Core Design Rule
 > **The official record** (sensor telemetry, hashes, blockchain anchors, MKT and shelf-life numbers, official alerts) is produced strictly by deterministic code.
-> The AI/ML layer only adds warnings, scores, forecasts, and suggestions as an advisory overlay. It **never edits, replaces, or feeds into** the official record.
+> The AI/ML layer only adds warnings, scores, forecasts, and suggestions as an advisory overlay. It **never edits, replaces, or feeds into** the official record. 
 
 ---
 
