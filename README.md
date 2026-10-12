@@ -1,4 +1,4 @@
-# FrostLedger: Blockchain-Enabled Cold Chain & Tamper Detection
+# FrostLedger: Blockchain-Enabled IOT based Cold Chain & Tamper Detection. 
 
 A secure, hardware-agnostic IoT cold chain monitoring system with deterministic Arrhenius kinetic shelf-life decay, Ed25519 cryptographic batch signing, on-chain hash anchoring, and an isolated streaming AI/ML advisory layer.
 
